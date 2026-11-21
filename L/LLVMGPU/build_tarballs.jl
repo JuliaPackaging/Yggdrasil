@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "LLVMGPU"
-version = v"1.3.0"
+version = v"1.4.0"
 llvm_version = v"23.1.4"
 
 # This JLL ships `libLLVMGPU`, a shared library that statically links a patched
@@ -27,7 +27,7 @@ sources = [
     # LLVMExtra, and the CMake project that links the library: the same commit
     # as LLVMExtra_jll
     GitSource("https://github.com/JuliaLLVM/LLVM.jl.git",
-              "3b1464b778543ec90356f370bb578e712c7667f3"),
+              "baba1ea6a8b5de904bbe277ab8ba105cae908084"),
     DirectorySource("./bundled"),
 ]
 
