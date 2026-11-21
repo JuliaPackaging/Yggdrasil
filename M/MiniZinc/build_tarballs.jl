@@ -2,33 +2,55 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "MiniZinc"
 
-version = v"2.10.1"
+version = v"2.11.0"
 
 sources = [
     GitSource(
         "https://github.com/MiniZinc/libminizinc.git",
-        "c3448c48e7f05f13805616cfd1b9e94972eef58c",
+        "aac81d56847356090a4d915576e8719d196a1395";
+        tag="$(version)",
     ),
-    DirectorySource("./bundled"),
+    # libminizinc fetches these with CMake FetchContent at configure time. The
+    # tags must match the versions in cmake/targets/libminizinc_parser.cmake and
+    # cmake/targets/libmzn.cmake.
+    GitSource(
+        "https://github.com/tree-sitter/tree-sitter.git",
+        "808e4b1fc06e269a107c4bd8bd936cc6fde18b00";
+        tag="v0.26.12",
+    ),
+    GitSource(
+        "https://github.com/Dekker1/tree-feller.git",
+        "d7fbfcf156cbb4568989841a3dee7090b3028139";
+        tag="v0.1.1",
+    ),
+    GitSource(
+        "https://github.com/microsoft/mimalloc.git",
+        "d4881d338125e1cb7c47ba4cfb398d6f7c0c8d45";
+        tag="v3.5.3",
+    ),
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir/libminizinc
 
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fixes.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/01-file_utils-use-_WIN32-guards.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/02-file_utils-cxx11-lambda.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/03-process-qualify-std-thread.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/04-FILE_PATH-libstdcxx-wchar.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/05-mingw-municode-wmain.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/06-highs-plugin-libhighs-dll.patch
-
-# Patch for MinGW toolchain
-find .. -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
-
-CMAKE_FLAGS=()
+CMAKE_FLAGS=(
+    # Use the sources downloaded above instead of fetching them during the build.
+    -DFETCHCONTENT_FULLY_DISCONNECTED=ON
+    -DFETCHCONTENT_SOURCE_DIR_TREE-SITTER=${WORKSPACE}/srcdir/tree-sitter
+    -DFETCHCONTENT_SOURCE_DIR_TREE_FELLER=${WORKSPACE}/srcdir/tree-feller
+    -DFETCHCONTENT_SOURCE_DIR_MIMALLOC=${WORKSPACE}/srcdir/mimalloc
+    # mimalloc adds -march=armv8.1-a by default on arm64, which BinaryBuilder forbids.
+    -DMI_OPT_ARCH=OFF
+    # libmzn is dlopen'ed into Julia, so mimalloc must not replace the
+    # process-wide malloc (it segfaults on load). MiniZinc still uses mimalloc
+    # for its own AST allocations.
+    -DMZN_MIMALLOC_OVERRIDE=OFF
+)
 if [[ "${target}" == *-mingw* ]]; then
     # The tree-sitter grammars mark two symbols __declspec(dllexport), which
     # disables MinGW's automatic export of every other symbol in libmzn.
@@ -43,7 +65,11 @@ cmake -B build \
     "${CMAKE_FLAGS[@]}"
 cmake --build build --parallel ${nproc}
 cmake --install build
+install_license LICENSE.txt
 """
+
+# std::filesystem needs the macOS 10.15 SDK on x86_64-apple-darwin.
+sources, script = require_macos_sdk("10.15", sources, script)
 
 products = [
     ExecutableProduct("minizinc", :minizinc),
@@ -61,7 +87,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     # Use an exact version for HiGHS. @odow has observed segfaults with
     # HiGHS_jll v1.5.3 when libminizinc compiled with v1.5.1.
-    Dependency("HiGHS_jll"; compat="=1.15.1"),
+    Dependency("HiGHS_jll"; compat="=1.16.0"),
 ]
 
 build_tarballs(
