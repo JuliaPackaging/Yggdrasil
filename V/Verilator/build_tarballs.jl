@@ -22,12 +22,14 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/configure-cxx14-cross.patch
 autoconf
 # configure takes FlexLexer.h from next to `flex`; the rootfs flex comes without it
 ./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} LEX=${host_bindir}/flex
+# Build and install only the optimized binaries. The debug ones (-ggdb -D_GLIBCXX_DEBUG)
+# aren't needed to run Verilator, and don't compile on MinGW: its sal.h defines `__deref`,
+# which libstdc++'s debug/functions.h uses as a name.
+make -j${nproc} -C src opt
 # `make install` also builds the man pages, which need help2man
-make -j${nproc} verilator_exe
-make installbin installredirect installdata
-# Debug builds (-ggdb) and examples aren't needed to run Verilator
-rm -v ${bindir}/verilator_bin_dbg ${bindir}/verilator_coverage_bin_dbg
-rm -v ${prefix}/share/verilator/bin/verilator_bin_dbg ${prefix}/share/verilator/bin/verilator_coverage_bin_dbg
+make installbin installredirect installdata \
+    VL_INST_PUBLIC_BIN_FILES="verilator_bin${exeext} verilator_coverage_bin${exeext}"
+# The examples aren't needed to run Verilator
 rm -rv ${prefix}/share/verilator/examples
 # Verilator is LGPL-3.0-only OR Artistic-2.0; installed headers also carry IEEE-1800 and MIT texts
 install_license LICENSE LICENSES/*
@@ -41,8 +43,9 @@ platforms = expand_cxxstring_abis(platforms)
 
 products = [
     ExecutableProduct("verilator_bin", :verilator_bin),
-    # Perl wrapper around verilator_bin; needs `perl` on the PATH
-    ExecutableProduct("verilator", :verilator),
+    # Perl wrapper around verilator_bin; needs `perl` on the PATH. A FileProduct because it
+    # has no .exe on Windows.
+    FileProduct("bin/verilator", :verilator),
     FileProduct("share/verilator/include/verilated.h", :verilated_h),
 ]
 
