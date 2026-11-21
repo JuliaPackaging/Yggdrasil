@@ -1,8 +1,23 @@
+Spell AVFoundation's AVMediaType as NSString *: with the x86_64 macOS SDK, AVMediaType resolves to FFmpeg's enum AVMediaType instead.
+Not reported upstream.
+
 --- a/libavdevice/avfoundation.m
 +++ b/libavdevice/avfoundation.m
-@@ -761,4 +761,4 @@ static void list_formats(AVFormatContext *s) {
+@@ -811,7 +811,7 @@
+     return 0;
  }
  
 -static NSArray* getDevicesWithMediaType(AVMediaType mediaType) {
 +static NSArray* getDevicesWithMediaType(NSString *mediaType) {
-     if (@available(macOS 10.15, *)) {
+ #if ((TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MIN_REQUIRED >= 100000) || (TARGET_OS_OSX && __MAC_OS_X_VERSION_MIN_REQUIRED >= 101500))
+     NSMutableArray *deviceTypes = nil;
+     if (mediaType == AVMediaTypeVideo) {
+@@ -1049,7 +1049,7 @@
+ }
+ 
+ // Returns 1 if a device id was set (*device = match, or nil after logging on miss), else 0.
+-static int avf_device_from_id(AVFContext *ctx, AVMediaType media_type,
++static int avf_device_from_id(AVFContext *ctx, NSString *media_type,
+     NSArray *devices, NSArray *devices_muxed,
+     const char *id, AVCaptureDevice **device, int *is_muxed)
+ {
