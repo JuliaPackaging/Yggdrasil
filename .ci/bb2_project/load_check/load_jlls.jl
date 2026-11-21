@@ -13,7 +13,8 @@
 #  2. fails if Pkg ignored or overrode one of its `[compat]` entries, as it does for
 #     standard libraries that the running Julia ships at another version,
 #  3. loads it with `using`, which runs its `__init__()` (and so loads its libraries), and
-#  4. `dlopen()`s each of its library products with `RTLD_NOW`, and checks that its
+#  4. `dlopen()`s each of its library products with `RTLD_NOW` (the product itself, not
+#     its path, so that the libraries of its dependencies load first), and checks that its
 #     executable and file products exist.
 # JLLs that the running Julia ships as standard libraries are skipped: Pkg installs the
 # bundled version instead of the requested one.
@@ -145,16 +146,19 @@ function check_products(mod::Module, jll_toml::Dict)
                 isfile(path) || push!(problems, "library $(name): $(path) does not exist")
                 continue
             end
-            handle = Libdl.dlopen(path, Libdl.RTLD_NOW; throw_error=false)
-            if handle === nothing
-                err = try
-                    Libdl.dlopen(path, Libdl.RTLD_NOW)
-                    ""
-                catch e
-                    sprint(showerror, e)
-                end
-                push!(problems, "library $(name): dlopen($(path), RTLD_NOW) failed: $(err)")
+            # `dlopen()` the product rather than its path: on Julia v1.11 and later it is a
+            # `LazyLibrary` that loads the libraries of the JLL's dependencies first, and
+            # before that a `String` naming a library that `__init__()` already loaded
+            # after them.  The `LazyLibrary`'s path needs methods that the JLL's wrapper
+            # package defined after this function was compiled, hence `invokelatest`.
+            lib = getfield(mod, Symbol(name))
+            err = try
+                Base.invokelatest(Libdl.dlopen, lib, Libdl.RTLD_NOW)
+                ""
+            catch e
+                sprint(showerror, e)
             end
+            isempty(err) || push!(problems, "library $(name): dlopen($(path), RTLD_NOW) failed: $(err)")
         elseif !ispath(path)
             push!(problems, "$(product["type"]) $(name): $(path) does not exist")
         elseif product["type"] == "executable" && Sys.islinux()
