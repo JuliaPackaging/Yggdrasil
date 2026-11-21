@@ -29,14 +29,14 @@ make installbin installredirect installdata
 rm -v ${bindir}/verilator_bin_dbg ${bindir}/verilator_coverage_bin_dbg
 rm -v ${prefix}/share/verilator/bin/verilator_bin_dbg ${prefix}/share/verilator/bin/verilator_coverage_bin_dbg
 rm -rv ${prefix}/share/verilator/examples
-install_license LICENSE
+# Verilator is LGPL-3.0-only OR Artistic-2.0; installed headers also carry IEEE-1800 and MIT texts
+install_license LICENSE LICENSES/*
 """
 
 # C++17 aligned operator new/delete (std::align_val_t) are only in libc++ from macOS 10.14
 sources, script = require_macos_sdk("10.14", sources, script)
 
-# Not attempted on Windows
-platforms = supported_platforms(; exclude=Sys.iswindows)
+platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
@@ -50,9 +50,10 @@ dependencies = [
     HostBuildDependency("Bison_jll"),
     HostBuildDependency("flex_jll"),
     # verilator_bin links libatomic
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency("CompilerSupportLibraries_jll"; compat="1.0.5"),
 ]
 
-# Verilator needs C++14
+# configure builds with the newest of -std=gnu++17/c++17/gnu++14/c++14 that the compiler
+# accepts; GCC 7 is the first with full C++17, which upstream says is what it regularly tests
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7")
+               julia_compat="1.10", preferred_gcc_version=v"7")
