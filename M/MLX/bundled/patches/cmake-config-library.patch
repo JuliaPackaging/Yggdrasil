@@ -1,0 +1,16 @@
+Find the MLX library from its imported target, so that find_package(MLX) also works for a renamed library
+https://github.com/ml-explore/mlx/pull/4928
+
+diff --git a/mlx.pc.in b/mlx.pc.in
+index a202028b1..c0f46551c 100644
+--- a/mlx.pc.in
++++ b/mlx.pc.in
+@@ -37,7 +37,7 @@ set_and_check(MLX_LIBRARY_DIRS @PACKAGE_CMAKE_INSTALL_LIBDIR@)
+ set_and_check(MLX_INCLUDE_DIRS @PACKAGE_CMAKE_INSTALL_INCLUDEDIR@)
+ set(MLX_LIBRARIES mlx)
+ 
+-find_library(MLX_LIBRARY mlx PATHS ${MLX_LIBRARY_DIRS})
++get_target_property(MLX_LIBRARY mlx LOCATION)
+ 
+ if (@MLX_BUILD_ACCELERATE@)
+     set(MLX_BUILD_ACCELERATE @MLX_BUILD_ACCELERATE@)
