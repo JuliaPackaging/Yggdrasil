@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "juliaup"
-version = v"1.19.9"
+version = v"1.22.7"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/JuliaLang/juliaup.git", "f12e43abb626bbad9217e8941661fa67b35053d1")
+    ArchiveSource("https://github.com/JuliaLang/juliaup/archive/refs/tags/$(version).tar.gz", "220d0d58db0a46d8676cc4972149789899c1e68386a5260b08e135622921d7bf")
 ]
 
 # Bash recipe for building across all platforms
@@ -33,7 +33,7 @@ filter!(p -> !(arch(p) == "powerpc64le"), platforms)
 
 # The products that we will ensure are always built
 products = [
-    ExecutableProduct("juliaup", :juliaup) 
+    ExecutableProduct("juliaup", :juliaup)
     ExecutableProduct("julia", :julia)
 ]
 
