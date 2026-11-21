@@ -39,11 +39,17 @@ if [[ "${nbits}" == 32 ]]; then
     # kernel, which is not built, on i686. Use the portable code there instead.
     cmake_args+=(-DKIWI_CPU_ARCH=other -DKIWI_USE_CPUINFO=OFF)
 fi
+jobs=${nproc}
 if [[ "${target}" == *-mingw32 ]]; then
     # Equivalent of MSVC /bigobj, which upstream uses: the templated SIMD kernels exceed the
     # default COFF section count. Their long section names also need binutils >= 2.41, which
     # encodes string table offsets above 9999999 in base64 ("string table overflow" otherwise).
     export CXXFLAGS="-Wa,-mbig-obj"
+fi
+if [[ "${target}" == x86_64-w64-mingw32 ]]; then
+    # Compiling CoNgramModel.cpp, Knlm.cpp and SkipBigramModel.cpp here takes up to 9.5, 5.3
+    # and 3.0 GB; with ${nproc} jobs CI killed cc1plus for lack of memory.
+    jobs=1
 fi
 
 cmake -B build \
@@ -57,7 +63,7 @@ cmake -B build \
     -DKIWI_BUILD_MODEL_BUILDER=OFF \
     -DKIWI_BUILD_TEST=OFF \
     "${cmake_args[@]}"
-cmake --build build --parallel ${nproc}
+cmake --build build --parallel ${jobs}
 cmake --install build
 
 install_license LICENSE NOTICE
