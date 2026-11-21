@@ -44,35 +44,13 @@ if [[ "$target" != *-apple-darwin* &&
 fi
 
 if [[ $bb_full_target == *cuda* ]]; then
-    cuda_version=$(echo $bb_full_target | sed -E 's/.*-cuda\+([0-9]+\.[0-9]+).*/\1/')
-    # Binaries for an arch also run on later GPUs of the same major (e.g. sm_80 on sm_86 and sm_89), except
-    # for arch-specific ("a") ones, and the last arch is also included as PTX for future GPUs; MLX uses half-precision
-    # atomics, which need sm_70
-    if [[ $cuda_version == "12.6" ]]; then
-        cuda_archs="70-real;75-real;80-real;90a-real;90-virtual"
-    elif [[ $cuda_version == "12.8" ]]; then
-        cuda_archs="70-real;75-real;80-real;90a-real;100a-real;120a-real;120-virtual"
-    elif [[ $cuda_version == "12.9" ]]; then
-        cuda_archs="70-real;75-real;80-real;90a-real;100a-real;103a-real;120a-real;121a-real;120-virtual"
-    elif [[ $cuda_version == "13.0" ]]; then
-        # CUDA 13 dropped sm_70
-        cuda_archs="75-real;80-real;90a-real;100a-real;103a-real;120a-real;121a-real;120-virtual"
-    else
-        false # Fail for unexpected CUDA version
-    fi
-    if [[ $bb_full_target == *cuda_platform+jetson* ]]; then
-        cuda_archs="87-real;87-virtual" # Jetson Orin, the only Jetson supported by CUDA 12
-    elif [[ $target == aarch64-* && $cuda_version == 13.* ]]; then
-        cuda_archs="87-real;110a-real;$cuda_archs" # Jetson Orin and Thor, as CUDA 13 has a single aarch64 toolkit
-    fi
-
     export TMPDIR=${WORKSPACE}/tmpdir # nvcc exhausts /tmp
     mkdir -pv ${TMPDIR}
 
     CMAKE_EXTRA_OPTIONS+=(
         -DMLX_BUILD_CUDA=ON
         -DCMAKE_RELEASE_POSTFIX=_cuda # A SONAME of its own, so that libmlx_cuda can be loaded next to MLX_jll's libmlx
-        -DMLX_CUDA_ARCHITECTURES=$cuda_archs
+        -DMLX_CUDA_ARCHITECTURES=$cuda_archs # Set by MLX_CUDA per platform
         -DCMAKE_CUDA_COMPILER=${prefix}/cuda/bin/nvcc
         -DCMAKE_CUDA_FLAGS=-L${prefix}/cuda/lib # nvcc searches lib64; the SDK uses lib
         -DCUDAToolkit_ROOT=${prefix}/cuda

@@ -37,6 +37,11 @@ for platform in platforms
         RuntimeDependency(PackageSpec(name="CUDNN_jll"); compat="9.28"),
     ]
 
+    # Machine code for sm_80 also runs on sm_86 and sm_89; MLX uses features specific to sm_90 and later (CUTLASS's
+    # Hopper kernels, Blackwell's FP4 conversions)
+    cuda_archs = CUDA.cuda_gpu_archs_cmake(filter(!in(("86", "89")), CUDA.cuda_gpu_archs(platform)); min_specific_arch="90")
+    platform_script = "cuda_archs=\"$(cuda_archs)\"\n" * script
+
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     cuda_major = VersionNumber(platform["cuda"]).major
     if arch(platform) == "aarch64"
@@ -56,7 +61,7 @@ for platform in platforms
     append!(platform_sources, get_sources("cudnn", ["cudnn"]; version=v"9.28.0", platform=source_platform,
                                           variant="cuda$(cuda_major)"))
 
-    build_tarballs(ARGS, name, version, platform_sources, script, [platform], products, [dependencies; cuda_deps; cuda_libraries];
+    build_tarballs(ARGS, name, version, platform_sources, platform_script, [platform], products, [dependencies; cuda_deps; cuda_libraries];
                    lazy_artifacts=true,
                    julia_compat,
                    preferred_gcc_version,
