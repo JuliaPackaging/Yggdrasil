@@ -323,29 +323,9 @@ function gcc_sources(gcc_version::VersionNumber, compiler_target::Platform; kwar
             ]
         end
     elseif Sys.isapple(compiler_target)
-        if arch(compiler_target) == "aarch64"
-            libc_sources = [
-                ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
-                              "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"),
-            ]
-        else
-            libc_sources = [
-                ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
-                              "6852728af94399193599a55d00ae9c4a900925b6431534a3816496b354926774"),
-            ]
-        end
+        libc_sources = [macos_sdk_source(compiler_target)]
     elseif Sys.isfreebsd(compiler_target)
-        if arch(compiler_target) == "aarch64"
-            libc_sources = [
-                ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/arm64/14.1-RELEASE/base.txz",
-                              "b25830252e0dce0161004a5b69a159cbbd92d5e92ae362b06158dbb3f2568d32"),
-            ]
-        else
-            libc_sources = [
-                ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/13.4-RELEASE/base.txz",
-                              "8e13b0a93daba349b8d28ad246d7beb327659b2ef4fe44d89f447392daec5a7c"),
-            ]
-        end
+        libc_sources = [freebsd_base_source(compiler_target)]
     elseif Sys.iswindows(compiler_target)
         libc_sources = [
             ArchiveSource("https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v11.0.1.tar.bz2",
