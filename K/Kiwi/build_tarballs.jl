@@ -7,12 +7,12 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Kiwi"
-version = v"0.24.1"
+version = v"0.25.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/bab2min/Kiwi.git",
-              "724d00718f527bac3f8aef2f6ae3b6523b2aae74"; tag="v$(version)"),
+              "6ffacb7c59da6fabf3cc7a6e6ee3652126fc6004"; tag="v$(version)"),
     # Header-only B-tree fork vendored by Kiwi as a git submodule; no JLL exists.
     GitSource("https://github.com/bab2min/cpp-btree.git",
               "226ce3aed24702bef1b03dba4b3cb55bc0bf31dd"),
