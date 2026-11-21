@@ -1,7 +1,7 @@
-version = v"3.13.0"
+version = v"3.14.0"
 
 sources = [
-    GitSource("https://github.com/protocolbuffers/protobuf.git", "fde7cf7358ec7cd69e8db9be4f1fa6a5c431386a"),
+    GitSource("https://github.com/protocolbuffers/protobuf.git", "2514f0bd7da7e2af1bed4c5d1b84f031c4d12c10"),
     DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
@@ -33,17 +33,16 @@ products_map = Dict{String, Vector{Product}}(
         LibraryProduct("lib$name", symbol) for (symbol, name) in protobuf_lite_library_symbols
     ],
 )
-products_map["ProtocolBuffersCompiler"] = vcat(
+products_map["ProtocolBuffersCompiler"] = [
+    ExecutableProduct("$binary_symbol", binary_symbol) for binary_symbol in binary_symbols
+]
+products_map["ProtocolBuffersSDK"] = vcat(
     products_map["ProtocolBuffers"],
+    products_map["ProtocolBuffersLite"],
     [
         LibraryProduct("lib$name", symbol) for (symbol, name) in protoc_library_symbols
-    ], [
-        ExecutableProduct("$binary_symbol", binary_symbol) for binary_symbol in binary_symbols
-    ]
-)
-products_map["ProtocolBuffersSDK"] = vcat(
+    ],
     products_map["ProtocolBuffersCompiler"],
-    products_map["ProtocolBuffersLite"],
     [
         FileProduct("include/$name", symbol) for (symbol, name) in all_include_symbols
     ],[
@@ -74,12 +73,21 @@ sed -i -e 's!set(CMAKE_CXX_COMPILER.*!set(CMAKE_CXX_COMPILER '${WORKSPACE}/srcdi
 
 atomic_patch -p1 ../patches/protobuf-cmake-install-components.patch
 
+# MinGW's std::mutex has no constexpr constructor, so use the MSVC workaround on all of Windows
+atomic_patch -p1 ../patches/protobuf-mingw-maybe-constexpr.patch
+
 cmake_extra_args=()
 
-if [[ "$BB_PROTOBUF_PRODUCT" == ProtocolBuffersSDK_static ]]; then
+if [[ "$SRC_NAME" == ProtocolBuffersSDK_static ]]; then
     cmake_extra_args+=(
         -DBUILD_SHARED_LIBS=OFF
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+    )
+elif [[ "$SRC_NAME" == ProtocolBuffersCompiler ]]; then
+    # A shared libprotoc here would clash with ProtocolBuffersSDK's when both JLLs are loaded:
+    # each registers plugin.proto in libprotobuf, and the second aborts
+    cmake_extra_args+=(
+        -DBUILD_SHARED_LIBS=OFF
     )
 else
     cmake_extra_args+=(
@@ -87,7 +95,7 @@ else
     )
 fi
 
-if [[ "$BB_PROTOBUF_PRODUCT" == ProtocolBuffersCompiler ]] || [[ "$BB_PROTOBUF_PRODUCT" == ProtocolBuffersSDK* ]]; then
+if [[ "$SRC_NAME" == ProtocolBuffersCompiler ]] || [[ "$SRC_NAME" == ProtocolBuffersSDK* ]]; then
     cmake_extra_args+=(
         -Dprotobuf_BUILD_PROTOC_BINARIES=ON
     )
@@ -97,7 +105,7 @@ else
     )
 fi
 
-if [[ "$BB_PROTOBUF_PRODUCT" == ProtocolBuffers ]]; then
+if [[ "$SRC_NAME" == ProtocolBuffers ]]; then
     cmake_extra_args+=(
         -Dprotobuf_INSTALL_PROTOBUF=ON
     )
@@ -107,7 +115,7 @@ else
     )
 fi
 
-if [[ "$BB_PROTOBUF_PRODUCT" == ProtocolBuffersLite ]]; then
+if [[ "$SRC_NAME" == ProtocolBuffersLite ]]; then
     cmake_extra_args+=(
         -Dprotobuf_INSTALL_PROTOBUF_LITE=ON
     )
@@ -117,7 +125,7 @@ else
     )
 fi
 
-if [[ "$BB_PROTOBUF_PRODUCT" == ProtocolBuffersSDK* ]]; then
+if [[ "$SRC_NAME" == ProtocolBuffersSDK* ]]; then
     cmake_extra_args+=(
         -Dprotobuf_INSTALL_SDK=ON
     )
@@ -151,3 +159,8 @@ dependencies = [
 
 julia_compat = "1.6"
 preferred_gcc_version = v"8"
+
+function build_protobuf(name, ARGS)
+    build_tarballs(ARGS, name, version, sources, script, platforms, products_map[name], dependencies;
+                   julia_compat, preferred_gcc_version)
+end
