@@ -18,7 +18,7 @@ if [[ "${target}" == *-musl* ]]; then
 fi
 
 cargo build --release --locked --target=${rust_target}
-install -Dvm755 target/${rust_target}/release/*datamonger_ffi.${dlext} -t ${libdir}
+install -Dvm755 target/${rust_target}/release/*datamonger_ffi.${dlext} ${libdir}/datamonger_ffi.${dlext}
 install -Dvm644 include/datamonger.h ${includedir}/datamonger.h
 install_license ../../LICENSE
 """
@@ -30,7 +30,7 @@ filter!(p -> arch(p) != "riscv64", platforms)
 filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 
 products = [
-    LibraryProduct(["libdatamonger_ffi", "datamonger_ffi"], :libdatamonger_ffi),
+    LibraryProduct("datamonger_ffi", :libdatamonger_ffi),
 ]
 
 # The Rust library links to libgcc_s for unwinding on glibc Linux.
