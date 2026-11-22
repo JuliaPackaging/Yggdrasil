@@ -1,0 +1,15 @@
+# Agents, Copilot code review included, read their instructions from a PR's own
+# branch, so a PR can rewrite the rules it is reviewed against. GitHub reads this
+# file from the base branch, so these paths need a maintainer's review whatever
+# the PR changes. Recipe reviewers are assigned by component_owners.yml instead.
+AGENTS.md          @JuliaPackaging/yggdrasil-team
+/CLAUDE.md          @JuliaPackaging/yggdrasil-team
+/GEMINI.md          @JuliaPackaging/yggdrasil-team
+/REVIEW.md          @JuliaPackaging/yggdrasil-team
+/.agents/           @JuliaPackaging/yggdrasil-team
+/.mcp.json          @JuliaPackaging/yggdrasil-team
+/.devcontainer/     @JuliaPackaging/yggdrasil-team
+/.buildkite/        @JuliaPackaging/yggdrasil-team
+/.github/           @JuliaPackaging/yggdrasil-team
+/.ci/               @JuliaPackaging/yggdrasil-team
+/platforms/         @JuliaPackaging/yggdrasil-team
