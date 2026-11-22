@@ -2,12 +2,12 @@ using BinaryBuilder
 
 name = "rapidyaml"
 # Match the release pinned by the PALSParserCpp consumer.
-version = v"0.11.1"
+version = v"0.15.0"
 sources = [
     GitSource("https://github.com/biojppm/rapidyaml.git",
-              "119b6042064d3828819e428e32e5a0f3035d5643"; tag="v$(version)"),
-    GitSource("https://github.com/biojppm/c4core.git", "18543ed436cd32a375057ba4d9b0a7d9c5d60584"),
-    GitSource("https://github.com/biojppm/cmake.git", "1e65b7b29e872ccc1df7ea3cb8091bfb56b24147"),
+              "e80ab40670a16fd70a3972cb77e59f280670f581"; tag="v$(version)"),
+    GitSource("https://github.com/biojppm/c4core.git", "f46d6abb17bff2f597b1fcc6243d1daf95f41b74"),
+    GitSource("https://github.com/biojppm/cmake.git", "9b4161420e7af50796bb2c984bbfc7b451cbb668"),
     GitSource("https://github.com/biojppm/debugbreak.git", "328e4abca3384cbd0a69e70f263cc7b2794bff09"),
     GitSource("https://github.com/fastfloat/fast_float.git", "eb9ab42c0aa86d3cc41871ba7306527d95077b3b"),
 ]
