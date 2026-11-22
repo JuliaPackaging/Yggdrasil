@@ -43,8 +43,19 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 
 make -j${nproc} "${args[@]}" tools
-install -Dvm 755 "build/release/mutool${exeext}" "${bindir}/mutool${exeext}"
+# The Makefile names it without `.exe`, which some MinGW linkers add and others don't.
+exe=build/release/mutool
+[[ -f "${exe}${exeext}" ]] && exe="${exe}${exeext}"
+install -Dvm 755 "${exe}" "${bindir}/mutool${exeext}"
 install_license COPYING
+# The notices of the bundled libraries mutool links, and of the fonts it embeds.
+for f in thirdparty/{brotli/LICENSE,cmark-gfm/COPYING,extract/COPYING,freetype/LICENSE.TXT,freetype/docs/FTL.TXT} \
+         thirdparty/{gumbo-parser/COPYING,harfbuzz/COPYING,jbig2dec/LICENSE,lcms2/LICENSE,libjpeg/README} \
+         thirdparty/{mujs/COPYING,openjpeg/LICENSE,zlib/LICENSE} \
+         resources/fonts/{droid/NOTICE,han/LICENSE.txt,noto/COPYING,sil/OFL.txt,urw/OFL.txt}; do
+    n="${f#thirdparty/}"; n="${n#resources/fonts/}"
+    install -Dvm 644 "${f}" "${prefix}/share/licenses/${SRC_NAME}/${n//\//-}"
+done
 """
 
 # These are the platforms we will build for by default, unless further
@@ -61,5 +72,6 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# GCC 5 is the first to compile C as C99 or later by default, which the bundled libraries assume.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"8")
+               julia_compat="1.6", preferred_gcc_version=v"5")

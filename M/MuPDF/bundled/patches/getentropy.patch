@@ -1,3 +1,7 @@
+fz_memrnd() calls getentropy() on Linux, which glibc has from 2.25 and musl from 1.1.20.
+BinaryBuilder's Linux targets have older C libraries, so there this reads /dev/urandom instead.
+There is no upstream report; the patch can go once BinaryBuilder's targets have getentropy().
+
 --- a/source/fitz/random.c
 +++ b/source/fitz/random.c
 @@ -74,6 +74,24 @@
