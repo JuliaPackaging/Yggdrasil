@@ -38,7 +38,7 @@ install -Dvm 644 ext/c4core/src/c4/ext/fast_float/LICENSE-BOOST ${prefix}/share/
 """
 
 platforms = expand_cxxstring_abis(supported_platforms())
-products = [LibraryProduct("libryml", :libryml)]
+products = [LibraryProduct(["libryml", "ryml"], :libryml)]
 dependencies = [Dependency("CompilerSupportLibraries_jll"; compat="1")]
 
 # c4core uses posix_memalign; GCC >= 6 avoids its musl allocation issue.
