@@ -245,6 +245,7 @@ Examples:
 - CI only rebuilds a recipe when a file inside its directory changes. To rebuild the same upstream version, bump the `# Build trigger: N` line (see [Rebuilding Without Recipe Changes](#rebuilding-without-recipe-changes)).
 - Don't stack PRs. A PR that depends on another's JLL cannot pass CI until that JLL is registered, so wait for the first to merge.
 - Contributors cannot retry Buildkite jobs; ask a maintainer.
+- Reviewing a recipe PR needs only its files, the skills that match them, and the recipes of the JLLs it depends on. Leave `0_RootFS/`, `.buildkite/` and `.ci/` alone unless the PR changes them.
 
 ## Testing
 
