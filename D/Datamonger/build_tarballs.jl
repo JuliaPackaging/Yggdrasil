@@ -1,6 +1,6 @@
 using BinaryBuilder
 
-name = "datamonger_ffi"
+name = "Datamonger"
 version = v"0.2.0"
 
 sources = [GitSource(
