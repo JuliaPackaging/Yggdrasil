@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Datamonger"
-version = v"0.2.0"
+version = v"0.3.1"
 
 sources = [GitSource(
     "https://github.com/jolars/datamonger.git",
-    "3fbd8cd83ec2b3ee55e277096e1f575ae9795e54";
+    "8c5aa5bad6b4efae540542312ef33fd4f7e99c98";
     tag = "datamonger-ffi-v$(version)",
 )]
 
@@ -17,7 +17,7 @@ if [[ "${target}" == *-musl* ]]; then
     export RUSTFLAGS="${RUSTFLAGS} -C target-feature=-crt-static"
 fi
 
-cargo build --release --locked --target=${rust_target}
+cargo build --release --locked --target=${rust_target} --target-dir target
 install -Dvm755 target/${rust_target}/release/*datamonger_ffi.${dlext} ${libdir}/datamonger_ffi.${dlext}
 install -Dvm644 include/datamonger.h ${includedir}/datamonger.h
 install_license ../../LICENSE
