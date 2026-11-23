@@ -3,6 +3,8 @@ using BinaryBuilderBase: sanitize
 
 name = "LibUnwind"
 version = v"1.8.3"
+# Raising julia_compat needs a new JLL version: compat bounds cannot tell build numbers apart
+ygg_version = v"1.8.4"
 
 # Collection of sources required to build libunwind
 sources = [
@@ -23,11 +25,6 @@ if [[ ${target} == aarch64-linux-musl ]]; then
     atomic_patch -p5 ${WORKSPACE}/srcdir/patches/linux-disentangle_sigcontext.patch
     popd
 fi
-# https://github.com/JuliaLang/julia/issues/51467, and
-# https://github.com/JuliaLang/julia/issues/51465, caused by
-# https://github.com/libunwind/libunwind/pull/203
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-revert_prelink_unwind.patch
-
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/libunwind-disable-initial-exec-tls.patch
 
 if [[ ${bb_full_target} == *-sanitize+memory* ]]; then
@@ -91,7 +88,8 @@ dependencies = [
 
 # Build the tarballs. Note that libunwind started using `stdatomic.h`, which is only
 # available with GCC version 4.9 or later, so we need to set a higher preferred version
-# than the default.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", preferred_gcc_version=v"11",
+# than the default. Julia before 1.15 was compiled against libunwind headers with
+# https://github.com/libunwind/libunwind/pull/203 reverted, and is ABI-incompatible with this build.
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               julia_compat="1.15", preferred_gcc_version=v"11",
                preferred_llvm_version=llvm_version)
