@@ -33,6 +33,7 @@ Recurring gotchas:
 
 - **Platform availability** per ABI is encoded in the `mpi_abis` table in `platforms/mpi.jl`; don't re-filter in the recipe.
 - **Expand before augmenting**: call `expand_gfortran_versions`, `expand_cxxstring_abis`, etc. *before* `MPI.augment_platforms`. The MPI dependencies are restricted to the platforms that exist at augmentation time, so platforms added later get no MPI dependency. Filtering afterwards is fine.
+- **`julia_compat`** must be at least `"1.10"`: `MPI.augment_platforms` adds `MPICH_jll` 5, which requires Julia 1.10. With a lower bound the build passes, but General's AutoMerge cannot install the JLL on the oldest Julia it admits and blocks the registration. Many existing MPI recipes still have a lower one; raise it whenever you change them.
 - **Per-ABI linking** is selected with `if [[ ${bb_full_target} == *mpiabi* ]]; then …` blocks. Each ABI provides different libraries (C, then Fortran):
   - `mpiabi`: `libmpi_abi`; `libmpif` (from `mpif_jll`)
   - `mpich`: `libmpi`; `libmpifort`
