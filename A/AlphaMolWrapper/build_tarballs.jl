@@ -30,7 +30,9 @@ products = [
 dependencies = [
     BuildDependency(PackageSpec(; name="libjulia_jll", version="1.11.6")),
     Dependency("libcxxwrap_julia_jll"; compat="0.14.8"),
-    Dependency("GMP_jll"; compat="6.2.1"),
+    # No compat: Pkg resolves this stdlib to the version each `julia_version` ships,
+    # but a compat bound makes BinaryBuilder build against its lower bound on every one.
+    Dependency("GMP_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
