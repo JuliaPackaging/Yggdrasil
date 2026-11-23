@@ -8,6 +8,9 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Kiwi"
 version = v"0.25.0"
+# Raising julia_compat needed a new JLL version after Kiwi_jll v0.25.0 was built.
+# Drop ygg_version once upstream releases a version above 0.25.1.
+ygg_version = v"0.25.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -94,7 +97,7 @@ dependencies = [
     # Kiwi pins Eigen 3.4.0
     BuildDependency(PackageSpec(; name="Eigen_jll", version="3.4.0")),
     BuildDependency(PackageSpec(; name="nlohmann_json_jll", version="3.12.0")),
-    # libgcc_s and libstdc++; 1.0.2 is the version Julia 1.9 ships
+    # libgcc_s and libstdc++; admits the 1.0.5 that Julia 1.10 ships
     Dependency(PackageSpec(; name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae");
                compat="1.0.2"),
     Dependency("StreamVByte_jll"; compat="2.0.0"),
@@ -105,8 +108,9 @@ dependencies = [
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC 11: Kiwi builds its AVX-VNNI kernel only with GCC >= 11.
 # Windows needs GCC 13 for its binutils 2.41 (see the comment in the script above).
-# julia_compat matches KiwiKorean.jl, the package using this JLL; Julia 1.9's libstdc++
-# covers what the GCC 11 (Linux) and GCC 13 (Windows) builds of libkiwi import.
+# julia_compat 1.10: Julia 1.9.4's libopenlibm needs an executable stack, which current glibc
+# refuses, so Julia 1.9 no longer starts on General's AutoMerge runners. Julia 1.10's
+# libstdc++ covers what the GCC 11 (Linux) and GCC 13 (Windows) builds of libkiwi import.
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
     preferred_gcc_version = if Sys.iswindows(platform)
@@ -114,6 +118,6 @@ for platform in platforms
     else
         v"11"
     end
-    build_tarballs(ARGS, name, version, sources, script, [platform], products, dependencies;
-                   julia_compat="1.9", preferred_gcc_version)
+    build_tarballs(ARGS, name, ygg_version, sources, script, [platform], products, dependencies;
+                   julia_compat="1.10", preferred_gcc_version)
 end
