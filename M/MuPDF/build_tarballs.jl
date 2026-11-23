@@ -22,12 +22,13 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/getentropy.patch
 # (lcms2, mujs), and builds the rest with the configuration it expects. No viewers, OCR or barcodes.
 args=(
     build=release verbose=yes
-    CC=cc CXX=c++ AR=ar LD=ld RANLIB=ranlib
+    CC=${CC} CXX=${CXX} AR=ar LD=ld RANLIB=ranlib
     USE_SYSTEM_LIBS=no HAVE_GLUT=no HAVE_X11=no HAVE_LIBCRYPTO=no HAVE_CURL=no
     tesseract=no barcode=no
 )
 if [[ "${target}" == *-apple-* ]]; then
-    # Darwin's rules call the compilers through xcrun; the arguments above override them.
+    # ld64 needs Darwin's -dead_strip in place of --gc-sections; the arguments above override
+    # the xcrun compilers Darwin's rules would otherwise call.
     args+=(OS=Darwin)
 elif [[ "${target}" == *-linux-* ]]; then
     # Linux's rules embed the fonts with `ld -r -b binary`.
@@ -43,10 +44,7 @@ if [[ "${target}" == *-mingw* ]]; then
 fi
 
 make -j${nproc} "${args[@]}" tools
-# The Makefile names it without `.exe`, which some MinGW linkers add and others don't.
-exe=build/release/mutool
-[[ -f "${exe}${exeext}" ]] && exe="${exe}${exeext}"
-install -Dvm 755 "${exe}" "${bindir}/mutool${exeext}"
+install -Dvm 755 build/release/mutool "${bindir}/mutool${exeext}"
 install_license COPYING
 # The notices of the bundled libraries mutool links, and of the fonts it embeds.
 for f in thirdparty/{brotli/LICENSE,cmark-gfm/COPYING,extract/COPYING,freetype/LICENSE.TXT,freetype/docs/FTL.TXT} \
@@ -68,8 +66,7 @@ products = [
 ]
 
 # Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
+dependencies = Dependency[]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # GCC 5 is the first to compile C as C99 or later by default, which the bundled libraries assume.
