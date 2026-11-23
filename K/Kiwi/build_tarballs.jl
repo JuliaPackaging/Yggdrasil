@@ -8,9 +8,6 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Kiwi"
 version = v"0.25.0"
-# Raising julia_compat needed a new JLL version after Kiwi_jll v0.25.0 was built.
-# Drop ygg_version once upstream releases a version above 0.25.1.
-ygg_version = v"0.25.1"
 
 # Collection of sources required to complete build
 sources = [
@@ -118,6 +115,6 @@ for platform in platforms
     else
         v"11"
     end
-    build_tarballs(ARGS, name, ygg_version, sources, script, [platform], products, dependencies;
+    build_tarballs(ARGS, name, version, sources, script, [platform], products, dependencies;
                    julia_compat="1.10", preferred_gcc_version)
 end
