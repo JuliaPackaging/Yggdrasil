@@ -7,9 +7,9 @@ platforms_and_sources = Dict(
         ArchiveSource("https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.13.0/tars/TensorRT-10.13.0.35.Linux.aarch64-gnu.cuda-12.9.tar.gz",
                       "b2f7c7ae6da3588729b7a64825246cc59b643adbe373684fb9c5713262ed46c2")],
     Platform("x86_64", "linux") => [
-        ArchiveSource("https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.13.0/tars/TensorRT-10.13.0.35.Linux.x86_64-gnu.cuda-12.9.tar.gz",
-                      "899ff39e237f1351fccac7f6891617f68cbab71c13a7d7c703184424bdbbf621")],
+        ArchiveSource("https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.16.1/tars/TensorRT-10.16.1.11.Linux.x86_64-gnu.cuda-12.9.tar.gz",
+                      "48e64fc9231fe3aeaa18be13385b486ea7c7131dd64f09b54e5fcb051386f014")],
     Platform("x86_64", "windows") => [
-        ArchiveSource("https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.13.0/zip/TensorRT-10.13.0.35.Windows.win10.cuda-12.9.zip",
-                      "8b280dcdb9ce0bebed512ecb4cf8feaf5bd61dea9c981d5fc1fabfae7d06614f")],
+        ArchiveSource("https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/10.16.1/zip/TensorRT-10.16.1.11.Windows.amd64.cuda-12.9.zip",
+                      "80bbe8e07a4fccde33ae7d210ffc0e6d1af96dae5ffaaeed60209f775fbf4275")],
 )
