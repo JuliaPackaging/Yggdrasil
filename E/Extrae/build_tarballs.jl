@@ -11,6 +11,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Extrae"
 version = v"4.2.0"
+ygg_version = v"4.2.1"  # the CUDA_Runtime_jll, MPI and julia compat bounds changed
 sources = [
     ArchiveSource("https://ftp.tools.bsc.es/extrae/extrae-$version-src.tar.bz2", "7b83a1ed008440bbc1bda88297d2d0e9256780db1cf8401b3c12718451f8919a"),
     DirectorySource(joinpath(@__DIR__, "bundled")),
@@ -77,11 +78,17 @@ platforms = expand_cxxstring_abis(platforms)
 cuda_platforms = CUDA.supported_platforms(; max_version=v"12.3.999")
 cuda_platforms = expand_cxxstring_abis(cuda_platforms)
 
+# Extrae doesn't support the standard MPI ABI yet: its configure only looks for the
+# implementations' own library names (not libmpi_abi), and its Fortran wrappers take
+# `MPI_Message` to be an integer, which the standard ABI makes a pointer. Re-enable
+# `mpiabi` once upstream handles both.
+excluded_mpi_abis = ("mpitrampoline", "mpiabi")
+
 mpi_platforms, mpi_dependencies = MPI.augment_platforms(platforms)
-filter!(platform -> platform["mpi"] != "mpitrampoline", mpi_platforms)
+filter!(platform -> platform["mpi"] ∉ excluded_mpi_abis, mpi_platforms)
 
 cudampi_platforms, cudampi_dependencies = MPI.augment_platforms(cuda_platforms)
-filter!(platform -> platform["mpi"] != "mpitrampoline", cudampi_platforms)
+filter!(platform -> platform["mpi"] ∉ excluded_mpi_abis, cudampi_platforms)
 
 # Concatenate the platforms _after_ the C++ string ABI expansion, otherwise the
 # `platform in platforms` test below is meaningless.
@@ -131,31 +138,21 @@ cudampi_products = [
 
 dependencies = [
     # `MADV_HUGEPAGE` and `MAP_HUGE_SHIFT` require glibc 2.19, but we only
-    # package glibc 2.17 on some architectures.
-    BuildDependency(PackageSpec(name="Glibc_jll", version="2.19"); platforms=glibc_platforms),
+    # package glibc 2.17 on some architectures. The linker can't read the
+    # compressed debug sections of Glibc_jll 2.19.1.
+    BuildDependency(PackageSpec(name="Glibc_jll", version="2.19.0"); platforms=glibc_platforms),
     Dependency("Binutils_jll"; compat="~2.41"),
     Dependency("LibUnwind_jll"),
-    Dependency("PAPI_jll"; compat="~7.1"),
-    # We had to restrict compat with XML2 because of ABI breakage:
+    # PAPI_jll 7.1.1 falls back to its CPU build where it has no matching CUDA build.
+    Dependency("PAPI_jll"; compat="~7.1.1"),
+    # XML2 breaks its ABI in minor releases:
     # https://github.com/JuliaPackaging/Yggdrasil/pull/10965#issuecomment-2798501268
-    # Updating to `compat="~2.14.1"` is likely possible without problems but requires rebuilding this package
-    Dependency("XML2_jll"; compat="~2.12.0, ~2.13"),
-    RuntimeDependency("CUDA_Runtime_jll"; platforms=cuda_platforms),
+    # MPICH_jll 5 requires Hwloc_jll 2.12.2+, which requires XML2_jll 2.13.6+.
+    Dependency("XML2_jll"; compat="~2.13.6"),
+    CUDA.required_dependencies(all_platforms)...,
 ]
 
-augment_platform_block = """
-                         using Base.BinaryPlatforms
-                         module __CUDA
-                             $(CUDA.augment)
-                         end
-
-                         $(MPI.augment)
-
-                         function augment_platform!(platform::Platform)
-                             augment_mpi!(platform)
-                             __CUDA.augment_platform!(platform)
-                         end
-                         """
+augment_platform_block = CUDA.augment_with(MPI.augment, "augment_mpi!")
 
 init_block = raw"""
 ENV["EXTRAE_SKIP_AUTO_LIBRARY_INITIALIZE"] = "1"
@@ -167,9 +164,6 @@ for platform in all_platforms
     _dependencies = copy(dependencies)
     if platform["cuda"] != "none" && platform["mpi"] != "none"
         append!(_dependencies, cudampi_dependencies)
-        append!(_dependencies, CUDA.required_dependencies(platform))
-    elseif platform["cuda"] != "none"
-        append!(_dependencies, CUDA.required_dependencies(platform))
     elseif platform["mpi"] != "none"
         append!(_dependencies, mpi_dependencies)
     end
@@ -185,8 +179,10 @@ for platform in all_platforms
         append!(_products, cudampi_products)
     end
 
-    build_tarballs(ARGS, name, version, sources, script, [platform],
+    # CUDA_Runtime_jll requires Julia 1.10. MPICH_jll 5 only has libgfortran5 builds,
+    # which the build environment provides from GCC 8.
+    build_tarballs(ARGS, name, ygg_version, sources, script, [platform],
         _products, _dependencies; lazy_artifacts=true,
-        julia_compat="1.6", augment_platform_block, init_block,
-        preferred_gcc_version=v"5")
+        julia_compat="1.10", augment_platform_block, init_block,
+        preferred_gcc_version=v"8")
 end

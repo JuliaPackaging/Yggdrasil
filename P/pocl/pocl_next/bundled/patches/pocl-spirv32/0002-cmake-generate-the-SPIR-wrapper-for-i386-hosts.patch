@@ -1,7 +1,7 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From 0c8ebefcb6407186ebfa9719fdf509669ea2eeca Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Sun, 25 Oct 2026 09:09:12 +0100
-Subject: [PATCH 42/46] cmake: generate the SPIR wrapper for i386 hosts
+Subject: [PATCH] cmake: generate the SPIR wrapper for i386 hosts
 
 Use the generated wrapper with --address-bits 32 instead of the checked-in
 spir_wrapper32.ll, which only has scalar builtins. Like on RISC-V, generate
@@ -47,3 +47,6 @@ index 4c62894f4..2cc60a47f 100644
      set(SPIR_WRAPPER_FILE "host/spir_wrapper32.ll")
    else()
      if(RISCV)
+-- 
+2.56.0
+

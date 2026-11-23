@@ -3,23 +3,22 @@
 using BinaryBuilder, Pkg
 
 name = "IVerilog"
-version = v"12.0.0"
+version = v"13.0.0"
 
 # Collection of sources required to complete build
 sources = [
-   GitSource("https://github.com/steveicarus/iverilog.git", "2693dd32b075243cca20400cf3a808cef119477e")
-]
-
-dependencies = [
-    HostBuildDependency("Bison_jll"),
-    HostBuildDependency("gperf_jll"),
-    Dependency("Readline_jll"; compat="8.1.1"),
-    Dependency("Zlib_jll"; compat="1.2.12"),
+   GitSource("https://github.com/steveicarus/iverilog.git", "dfeee909ed9f20b4870dd93423156c0170c0e1ff"),
+   DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd iverilog
+# https://github.com/steveicarus/iverilog/commit/f20865a5ea4ea7f5cdcbb6d19b0751a9390a8978
+atomic_patch -p1 ../patches/driver-mach-o-dyld.patch
+# Helper programs run during the build are compiled with the build compiler, so
+# they must not get the target's linker flags (`-Wl,-all_load` on macOS).
+sed -i 's/$(BUILDCC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS)/$(BUILDCC) $(CPPFLAGS) $(CFLAGS)/' Makefile.in vvp/Makefile.in
 export CFLAGS="-O2"
 export CXXFLAGS="-O2"
 sh ./autoconf.sh
@@ -35,6 +34,16 @@ make install
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
 
+dependencies = [
+    HostBuildDependency("Bison_jll"),
+    HostBuildDependency("gperf_jll"),
+    Dependency("Readline_jll"; compat="8.1.1"),
+    # On macOS, link the system zlib like bzip2 and readline. `iverilog` starts
+    # `ivl` through `/bin/sh`, which drops `DYLD_*` variables, so `ivl` could not
+    # load VPI modules that need `Zlib_jll`'s library.
+    Dependency("Zlib_jll"; compat="1.2.12", platforms=filter(!Sys.isapple, platforms)),
+]
+
 # The products that we will ensure are always built
 products = [
     ExecutableProduct("iverilog", :iverilog),
@@ -43,4 +52,5 @@ products = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.6", preferred_gcc_version=v"8")

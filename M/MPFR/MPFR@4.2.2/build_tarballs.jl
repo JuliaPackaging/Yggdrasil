@@ -41,3 +41,5 @@ for (n, platform) in enumerate(platforms)
     build_tarballs(args, name, version, sources, script, [platform], products, dependencies;
                    preferred_gcc_version=v"5", julia_compat="1.6", kw...)
 end
+
+# Build trigger: 1

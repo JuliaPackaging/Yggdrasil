@@ -30,7 +30,7 @@ macos_sdk_version = "11.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/pocl/pocl",
-              "4a2178224f5eea88cc6f170b808803c963ce5176"), # release_next (v7.2 + backports)
+              "0a8861d1b989a926dcdf506aeed69d0de2394274"), # release_next (v7.2 + backports)
     # vendored SPIR-V translator, built as a static library against our LLVM (see
     # common.jl); this is the latest LLVM-22.1 maintenance revision.
     GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
@@ -104,6 +104,9 @@ for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
     platform_sources = deepcopy(sources)
+    if needs_aarch64_isel_fix(platform)
+        push!(platform_sources, aarch64_isel_fix_source)
+    end
     platform_dependencies = deepcopy(dependencies)
 
     # On Windows we now link PoCL with the Clang/lld toolchain, but still build against this
@@ -146,4 +149,4 @@ for (i,build) in enumerate(builds)
                    julia_compat="1.10", init_block=init_block(true))
 end
 
-# Build trigger: 20
+# Build trigger: 26

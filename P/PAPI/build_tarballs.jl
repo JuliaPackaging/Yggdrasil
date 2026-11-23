@@ -8,6 +8,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "PAPI"
 version = v"7.1.0"
+ygg_version = v"7.1.1"  # the CUDA_Runtime_jll and julia compat bounds changed
 
 # Collection of sources required to complete build
 sources = [
@@ -63,8 +64,10 @@ make -j ${nproc}
 make install
 """
 
-# These are the platforms we will build for by default
 platforms = supported_platforms(; exclude=!Sys.islinux)
+# The bundled libpfm4 has no riscv64 support and falls back to its x86 cpuid code.
+filter!(p -> arch(p) != "riscv64", platforms)
+platforms = CUDA.cpu_platforms(platforms)
 
 # The products that we will ensure are always built
 products = [
@@ -91,22 +94,18 @@ products = [
 #     components/cuda/cupti_common.c:114:23: error: ‘CUPTIU_MAX_FILES’ undeclared (first use in this function)
 #          char *found_files[CUPTIU_MAX_FILES];
 #                            ^
+# Hosts with a newer toolkit get the CPU build.
 cuda_platforms = CUDA.supported_platforms(; max_version=v"12.3.999")
+platforms = [platforms; cuda_platforms]
 
-for platform in [platforms; cuda_platforms]
+dependencies = CUDA.required_dependencies(platforms)
+
+for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
-    dependencies = AbstractDependency[
-        RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
-        CUDA.required_dependencies(platform)...
-    ]
-
-    if platform in platforms && CUDA.is_supported(platform)
-        platform["cuda"] = "none"
-    end
-
-    build_tarballs(ARGS, name, version, sources, script, [platform],
+    # CUDA_Runtime_jll requires Julia 1.10.
+    build_tarballs(ARGS, name, ygg_version, sources, script, [platform],
                    products, dependencies; lazy_artifacts=true,
-                   julia_compat="1.6", augment_platform_block=CUDA.augment,
+                   julia_compat="1.10", augment_platform_block=CUDA.augment,
                    preferred_gcc_version=v"5")
 end

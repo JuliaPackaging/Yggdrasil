@@ -1,7 +1,7 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From d258bc4b5563f789cbd7a8a31937e8d0a9b5129e Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Sun, 25 Oct 2026 09:01:07 +0100
-Subject: [PATCH 41/46] SPIR wrapper: support 32-bit x86 hosts
+Subject: [PATCH] SPIR wrapper: support 32-bit x86 hosts
 
 Add an --address-bits option. With 32, size_t-typed builtin parameters and
 returns (vloadN/vstoreN, vload_half, async copies, prefetch,
@@ -188,3 +188,6 @@ index 0be521c8b..790ebd632 100644
  
  
  # Atomics
+-- 
+2.56.0
+

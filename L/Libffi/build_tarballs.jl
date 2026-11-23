@@ -1,13 +1,13 @@
 using BinaryBuilder
 
 name = "Libffi"
-upstream_version = "3.8.0"
+upstream_version = "3.8.1"
 version = VersionNumber(upstream_version)
 
 # Collection of sources required to build libffi
 sources = [
     ArchiveSource("https://github.com/libffi/libffi/releases/download/v$(upstream_version)/libffi-$(upstream_version).tar.gz",
-                  "7da3e2d9a171eb0a038f592ecad3ff2bb2550f3496d87b3b29ad0cf4430c0db4"),
+                  "81e879c094cc5ec3186c48510c6385ac6b3e866192e8bc71a35245703757ee40"),
 ]
 
 # Bash recipe for building across all platforms

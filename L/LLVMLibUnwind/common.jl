@@ -120,6 +120,14 @@ function configure(version; experimental::Bool=false)
             export CXXFLAGS="-D_WIN32_WINNT=0x0600"
         fi
 
+        if ! llvm-config --src-root >/dev/null 2>&1; then
+            # Recent llvm-config no longer supports `--src-root`, which the standalone
+            # build requires. Don't use it, and define what LLVM's HandleLLVMOptions
+            # would have.
+            CMAKE_FLAGS+=(-DLLVM_PATH=${WORKSPACE}/srcdir/no-llvm)
+            export CXXFLAGS="${CXXFLAGS} -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
+        fi
+
         # Apply all our patches
         if [ -d $WORKSPACE/srcdir/patches ]; then
             for f in $WORKSPACE/srcdir/patches/*.patch; do

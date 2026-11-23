@@ -1,4 +1,4 @@
-From baa6ef21d186fa7bed08faa5ce43a42135697265 Mon Sep 17 00:00:00 2001
+From e89e658c8508557a1b10b5f181559627dca3df02 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 17 Aug 2026 14:11:19 +0200
 Subject: [PATCH] UnreachablesToReturns: remove regions leading only to
@@ -324,7 +324,7 @@ index ba3cda03c..a63157e43 100644
  }
  
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index fc69a0182..8f5d9db2b 100644
+index 4372f2949..facc8b9ab 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
 @@ -28,7 +28,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
@@ -336,7 +336,7 @@ index fc69a0182..8f5d9db2b 100644
       test_rematerialized_alloca_load_with_outside_pr_users
       test_peeled_wi_global_id
       test_barrier_divergent_skip
-@@ -168,6 +168,8 @@ add_test_pocl(NAME "regression/test_issue_1794b" COMMAND "test_issue_1794" "0" "
+@@ -170,6 +170,8 @@ add_test_pocl(NAME "regression/test_issue_1794b" COMMAND "test_issue_1794" "0" "
  
  add_test_pocl(NAME "regression/test_issue_1747" COMMAND "test_issue_1747" "0" "${CMAKE_CURRENT_SOURCE_DIR}/test_issue_1747.spv" LABELS ${SPIRV_LABELS})
  

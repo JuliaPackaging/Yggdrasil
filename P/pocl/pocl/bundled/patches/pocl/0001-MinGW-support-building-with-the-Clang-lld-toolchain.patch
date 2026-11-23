@@ -1,7 +1,7 @@
-From b0d12a8768dadb66f4ea1bb771e8d1006642dae9 Mon Sep 17 00:00:00 2001
+From 4599168b100dc3a8e1b126c23a904e5f3876532e Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Fri, 26 Jun 2026 13:09:13 +0200
-Subject: [PATCH 1/6] MinGW: support building with the Clang/lld toolchain
+Subject: [PATCH] MinGW: support building with the Clang/lld toolchain
 
 GNU ld is pathologically slow at linking the static LLVM/Clang archives
 into a PE/COFF DLL (tens of minutes for libpocl). ld.lld is far faster,
@@ -36,7 +36,7 @@ Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
  3 files changed, 9 insertions(+), 8 deletions(-)
 
 diff --git a/bin/CMakeLists.txt b/bin/CMakeLists.txt
-index 6f2c8b3f0..6f7286c0e 100644
+index 07b595712..ba73b8060 100644
 --- a/bin/CMakeLists.txt
 +++ b/bin/CMakeLists.txt
 @@ -34,7 +34,8 @@ if(ENABLE_SPIRV)
@@ -116,3 +116,6 @@ index e18427ccb..6e553121b 100644
  endif()
  
  set_target_properties("${POCL_LIBRARY_NAME}" PROPERTIES SOVERSION "${LIB_API_VERSION}"
+-- 
+2.56.0
+

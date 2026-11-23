@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "SPIRV_LLVM_Translator"
-version = v"23.1.1"
-llvm_version = v"23.1.1+0"
+version = v"23.1.4"
+llvm_version = v"23.1.4+1"
 
 # This JLL ships `libllvm_spirv`, a shared library exposing a small, typed C API
 # (see bundled/libllvm_spirv.h) over a statically linked, symbol-hidden build of
@@ -21,7 +21,8 @@ llvm_version = v"23.1.1+0"
 sources = [
     GitSource(
         "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-        "e65dde28ce8f12ef7245914fa2850260328669e4"), # v23.1.2
+        "db5855d76a0ff33228bcf48032b350b25dcdbcf2";
+        tag="v23.1.3"),
     DirectorySource("bundled"),
     # LLVM 22 raised its minimum macOS deployment target to 11.0, and LLVM 23's
     # headers no longer compile against the older SDK's libc++.
@@ -47,6 +48,25 @@ atomic_patch -p1 ../sitofp-bool.patch
 # ("Translate llvm.minimum/maximum with NaN-propagating semantics"), without
 # which `llvm.minimum`/`llvm.maximum` ignore NaNs and don't order signed zeros.
 atomic_patch -p1 ../minimum-maximum.patch
+# Backport of https://github.com/KhronosGroup/SPIRV-LLVM-Translator/pull/4152
+# ("Convert boolean switch selectors to integers"; still open upstream): i1 is
+# a boolean in SPIR-V, which OpSwitch doesn't take as its selector, so
+# spirv-val rejected it. InstCombine leaves such switches when it narrows their
+# conditions, e.g. in Julia's union splits.
+atomic_patch -p1 ../switch-bool-selector.patch
+# Backport of https://github.com/KhronosGroup/SPIRV-LLVM-Translator/pull/4172
+# ("Don't emit loop controls for loops whose header ends in a switch"): they
+# were placed after the header's OpSwitch, which spirv-val rejects. LLVM's loop
+# unroller produces such headers, e.g. for `x^n` in a partially unrolled loop.
+atomic_patch -p1 ../loop-merge-switch-header.patch
+# Backport of https://github.com/KhronosGroup/SPIRV-LLVM-Translator/pull/4091
+# ("Translate signed with.overflow intrinsics, including vectors"; still open
+# upstream): llvm.smul.with.overflow and llvm.ssub.with.overflow were rejected
+# as unexpected intrinsics. Julia emits the former for checked `Int`
+# multiplication, e.g. in `Rational` arithmetic. Multiplication becomes
+# OpSMulExtended with a sign check on the high half, as the SPIR-V back-end
+# does since llvm/llvm-project#240309.
+atomic_patch -p1 ../signed-with-overflow.patch
 install_license LICENSE.TXT
 
 CMAKE_FLAGS=()
@@ -195,7 +215,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
-    Dependency("Zstd_jll"), # our LLVM 20 build has LLVM_ENABLE_ZSTD=ON
+    Dependency("Zstd_jll"), # our LLVM build has LLVM_ENABLE_ZSTD=ON
 ]
 
 # Determine the builds

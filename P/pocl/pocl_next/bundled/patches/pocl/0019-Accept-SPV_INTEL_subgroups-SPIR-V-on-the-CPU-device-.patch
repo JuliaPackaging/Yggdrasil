@@ -1,4 +1,4 @@
-From 0455a6af078fc0c66a0583ade523a1d4380d3702 Mon Sep 17 00:00:00 2001
+From a4a8085195bd32b5d8224f869c64f82242720605 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Sun, 11 Oct 2026 11:09:23 +0200
 Subject: [PATCH] Accept SPV_INTEL_subgroups SPIR-V on the CPU device again
@@ -25,10 +25,10 @@ block reads/writes are unimplemented.
  create mode 100644 tests/regression/test_spirv_intel_subgroups.c
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index bdecbf81f..e175f191d 100644
+index 31210d756..c0f08c1e9 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -1874,7 +1874,10 @@ endif()
+@@ -1874,7 +1874,10 @@ set(HOST_DEVICE_FEATURES  "${HOST_DEVICE_FEATURES} __opencl_c_read_write_images"
  # * cl_khr_subgroup_ballot: sub_group_ballot() works for uniform calls, the rest
  #   are unimplemented.
  #
@@ -54,7 +54,7 @@ index bdecbf81f..e175f191d 100644
  # don't include cl_khr_int64 in HOST_DEVICE_EXTENSIONS list, because
  # such extension doesn't exist in official extension list
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 363d36df6..8f47a991e 100644
+index 8c50288e9..a456bb347 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
 @@ -39,6 +39,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
@@ -65,7 +65,7 @@ index 363d36df6..8f47a991e 100644
       test_indirect_ptrs
       test_replicated_wi_subgroup_alloca
       test_usm_indirect_ptrs
-@@ -192,6 +193,8 @@ add_test_pocl(NAME "regression/barrier_divergent_skip" WORKITEM_HANDLER "loops;l
+@@ -194,6 +195,8 @@ add_test_pocl(NAME "regression/barrier_divergent_skip" WORKITEM_HANDLER "loops;l
  
  add_test_pocl(NAME "regression/barrier_early_exit" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_barrier_early_exit")
  
@@ -73,7 +73,7 @@ index 363d36df6..8f47a991e 100644
 +
  add_test_pocl(NAME "regression/divergent_implicit_barrier_entry" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_divergent_implicit_barrier_entry")
  
- add_test_pocl(NAME "regression/uniform_implicit_barrier_entry" WORKITEM_HANDLER "loops;loopvec;cbs;" COMMAND "test_uniform_implicit_barrier_entry")
+ add_test_pocl(NAME "regression/tall_grid" COMMAND "test_tall_grid")
 diff --git a/tests/regression/test_spirv_intel_subgroups.c b/tests/regression/test_spirv_intel_subgroups.c
 new file mode 100644
 index 000000000..339a7f9c2

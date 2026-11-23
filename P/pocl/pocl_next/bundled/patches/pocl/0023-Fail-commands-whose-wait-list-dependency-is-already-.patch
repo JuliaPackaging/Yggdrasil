@@ -1,4 +1,4 @@
-From 8926180289cd1290ad3b946304c4c5ee317ba4f0 Mon Sep 17 00:00:00 2001
+From 203ce00d048e27957a97db762bf81dc7ff56de16 Mon Sep 17 00:00:00 2001
 From: bricevideau-ai <brice.ai.videau@gmail.com>
 Date: Wed, 24 Jun 2026 06:39:07 -0500
 Subject: [PATCH] Fail commands whose wait-list dependency is already failed
@@ -58,7 +58,7 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
  5 files changed, 95 insertions(+), 7 deletions(-)
 
 diff --git a/lib/CL/devices/basic/basic.c b/lib/CL/devices/basic/basic.c
-index bece25d9e..f872c2962 100644
+index 2fd258c62..540efc142 100644
 --- a/lib/CL/devices/basic/basic.c
 +++ b/lib/CL/devices/basic/basic.c
 @@ -536,6 +536,19 @@ pocl_basic_submit (_cl_command_node *node, cl_command_queue cq)
@@ -94,7 +94,7 @@ index bece25d9e..f872c2962 100644
        /* Unlock the finished event in order to prevent a lock order violation
         * with the command queue that will be locked during
 diff --git a/lib/CL/devices/common.c b/lib/CL/devices/common.c
-index 44ca163fb..8b9d13771 100644
+index 44a287ee4..9d9c7bf25 100644
 --- a/lib/CL/devices/common.c
 +++ b/lib/CL/devices/common.c
 @@ -898,6 +898,20 @@ pocl_broadcast (cl_event brc_event)

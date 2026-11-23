@@ -42,6 +42,11 @@ script = raw"""
 #   yet, backported from its head cef234bcb436), expand `atomicrmw usub_sat`
 #   to a cmpxchg loop on LDS and flat where the target lacks the instruction,
 #   instead of failing to select it (llvm/llvm-project#229442).
+# - 239163-amdgpu-endpgm-divergent: llvm/llvm-project#239163 (not merged yet),
+#   lower `llvm.amdgcn.endpgm` like a trap without a trap handler, splitting its
+#   block when the call does not end it, as in divergent code, where its
+#   S_ENDPGM was followed by branches. That malformed code crashed branch
+#   relaxation in large kernels.
 # - amdgpu-i128-abi-name (not upstream): the ABI name "i128:64" selects an
 #   AMDGPU datalayout that aligns i128 to 64 bits, for hosts whose ABI does
 #   (Julia before 1.12); libamdgpu sets it from the module's datalayout.

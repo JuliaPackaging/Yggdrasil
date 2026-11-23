@@ -217,8 +217,10 @@ function openblas_script(;num_64bit_threads::Integer=32, openblas32::Bool=false,
         # Old GCC versions, with libgfortran3, can't build for newer
         # microarchitectures, let's just use the generic one
         flags+=(TARGET=ARMV8)
-    elif [[ ${target} == arm-* ]]; then
+    elif [[ ${bb_full_target} == armv7l-* ]]; then
         flags+=(TARGET=ARMV7)
+    elif [[ ${bb_full_target} == armv6l-* ]]; then
+        flags+=(TARGET=ARMV6)
     elif [[ ${target} == powerpc64le-* ]]; then
         flags+=(TARGET=POWER8 DYNAMIC_ARCH=1)
     elif [[ ${target} == riscv64-* ]]; then

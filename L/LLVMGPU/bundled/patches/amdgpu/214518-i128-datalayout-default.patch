@@ -1,0 +1,96 @@
+From: Simeon Schaub <simeon@schaub.rocks>
+Subject: [PATCH] [IR] change i128 datalayout default to match clang (#214518)
+
+Backport of https://github.com/llvm/llvm-project/pull/214518 to LLVM 23.1.1,
+functional parts only (no tests, docs or release notes).
+
+The default data layout aligned i128 to only 64 bits (falling back to the
+i64:64 entry), while clang's `__int128` is 128-bit aligned on targets such
+as AMDGPU. Kernel arguments of type `i128` therefore ended up at different
+offsets than clang/HIP expects. This makes `i128:128:128` the default
+primitive int spec, removes the AMDGPU/SPIR-V/VE exemptions from clang's
+data layout consistency check, and has SystemZ (whose i128 really is only
+64-bit aligned) spell out `-i128:64` explicitly, including when upgrading
+old data layout strings.
+
+The upstream change also touches comments in
+`AMDGPULowerBufferFatPointers.cpp`; those refer to the alloca-size fallback
+introduced by llvm/llvm-project#218973, which 23.1.1 doesn't have, so that
+hunk is dropped here.
+---
+ clang/lib/CodeGen/CodeGenModule.cpp         |  5 +----
+ llvm/lib/IR/AutoUpgrade.cpp                 | 10 ++++++++--
+ llvm/lib/IR/DataLayout.cpp                  |  9 +++++----
+ llvm/lib/TargetParser/TargetDataLayout.cpp  |  4 ++++
+ 4 files changed, 18 insertions(+), 10 deletions(-)
+
+diff --git a/clang/lib/CodeGen/CodeGenModule.cpp b/clang/lib/CodeGen/CodeGenModule.cpp
+--- a/clang/lib/CodeGen/CodeGenModule.cpp
++++ b/clang/lib/CodeGen/CodeGenModule.cpp
+@@ -451,10 +451,7 @@
+   if (Triple.getArch() != llvm::Triple::m68k)
+     Check("long long", llvm::Type::getIntNTy(Context, Target.LongLongWidth),
+           Target.LongLongAlign);
+-  // FIXME: There are int128 alignment mismatches on multiple targets.
+-  if (Target.hasInt128Type() && !Target.getTargetOpts().ForceEnableInt128 &&
+-      !Triple.isAMDGPU() && !Triple.isSPIRV() &&
+-      Triple.getArch() != llvm::Triple::ve)
++  if (Target.hasInt128Type() && !Target.getTargetOpts().ForceEnableInt128)
+     Check("__int128", llvm::Type::getIntNTy(Context, 128), Target.Int128Align);
+ 
+   if (Target.hasFloat16Type())
+diff --git a/llvm/lib/IR/AutoUpgrade.cpp b/llvm/lib/IR/AutoUpgrade.cpp
+--- a/llvm/lib/IR/AutoUpgrade.cpp
++++ b/llvm/lib/IR/AutoUpgrade.cpp
+@@ -7085,10 +7085,16 @@
+   }
+ 
+   if (T.isSystemZ() && !DL.empty()) {
++    Res = DL.str();
++    // i128 used to be aligned only to 64 bits by way of the i64:64 entry.
++    // Now that the default i128 alignment is 128 bits, this needs to be
++    // spelled out explicitly.
++    if (!DL.contains("-i128") && !DL.starts_with("i128"))
++      Res.append("-i128:64");
+     // Make sure the stack alignment is present.
+     if (!DL.contains("-S64"))
+-      return "E-S64" + DL.drop_front(1).str();
+-    return DL.str();
++      Res = "E-S64" + StringRef(Res).drop_front(1).str();
++    return Res;
+   }
+ 
+   auto AddPtr32Ptr64AddrSpaces = [&DL, &Res]() {
+diff --git a/llvm/lib/IR/DataLayout.cpp b/llvm/lib/IR/DataLayout.cpp
+--- a/llvm/lib/IR/DataLayout.cpp
++++ b/llvm/lib/IR/DataLayout.cpp
+@@ -178,10 +178,11 @@
+ // Default primitive type specifications.
+ // NOTE: These arrays must be sorted by type bit width.
+ constexpr DataLayout::PrimitiveSpec DefaultIntSpecs[] = {
+-    {8, Align::Constant<1>(), Align::Constant<1>()},  // i8:8:8
+-    {16, Align::Constant<2>(), Align::Constant<2>()}, // i16:16:16
+-    {32, Align::Constant<4>(), Align::Constant<4>()}, // i32:32:32
+-    {64, Align::Constant<4>(), Align::Constant<8>()}, // i64:32:64
++    {8, Align::Constant<1>(), Align::Constant<1>()},     // i8:8:8
++    {16, Align::Constant<2>(), Align::Constant<2>()},    // i16:16:16
++    {32, Align::Constant<4>(), Align::Constant<4>()},    // i32:32:32
++    {64, Align::Constant<4>(), Align::Constant<8>()},    // i64:32:64
++    {128, Align::Constant<16>(), Align::Constant<16>()}, // i128:128:128
+ };
+ constexpr DataLayout::PrimitiveSpec DefaultFloatSpecs[] = {
+     {16, Align::Constant<2>(), Align::Constant<2>()},    // f16:16:16
+diff --git a/llvm/lib/TargetParser/TargetDataLayout.cpp b/llvm/lib/TargetParser/TargetDataLayout.cpp
+--- a/llvm/lib/TargetParser/TargetDataLayout.cpp
++++ b/llvm/lib/TargetParser/TargetDataLayout.cpp
+@@ -389,6 +389,10 @@
+   // 64-bit integers are naturally aligned.
+   Ret += "-i64:64";
+ 
++  // 128-bit integers are aligned only to 64 bits, unlike the 128-bit default
++  // of the data layout.
++  Ret += "-i128:64";
++
+   // 128-bit floats are aligned only to 64 bits.
+   Ret += "-f128:64";
+ 

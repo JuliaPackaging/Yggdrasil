@@ -6,13 +6,14 @@ using BinaryBuilder, Pkg
 include("../../L/libjulia/common.jl")
 
 name = "libcxxwrap_julia"
-version = v"0.14.12"
+upstream_version = v"0.14.13"
+version = v"0.14.14"  # Rebuild against libjulia_jll 1.11.6
 
 git_repo = "https://github.com/JuliaInterop/libcxxwrap-julia.git"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource(git_repo, "970d35ef408e3aa378cb435b0a1aeaa44016334e"; tag="v$(version)"),
+    GitSource(git_repo, "36bf001d966008008e0022c27d5404ca55ce97fb"; tag="v$(upstream_version)"),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,7 +49,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.4")),
+    BuildDependency(PackageSpec(;name="libjulia_jll", version="1.11.6")),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

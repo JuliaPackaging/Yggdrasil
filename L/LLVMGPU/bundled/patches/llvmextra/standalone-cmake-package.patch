@@ -1,0 +1,185 @@
+Build the standalone library from LLVM's CMake package instead of llvm-config, which
+cannot run when cross-compiling and reports the build machine's system libraries; make
+its name configurable; support Windows (exports through a generated module definition
+file, DLL installed in bin) and FreeBSD (no -z defs).
+
+To be upstreamed into LLVM.jl's deps/LLVMExtra, after which this patch goes away.
+diff --git a/deps/LLVMExtra/lib/CMakeLists.txt b/deps/LLVMExtra/lib/CMakeLists.txt
+index 623e93f..16a2dc2 100644
+--- a/deps/LLVMExtra/lib/CMakeLists.txt
++++ b/deps/LLVMExtra/lib/CMakeLists.txt
+@@ -12,70 +12,114 @@ if(NOT LLVMEXTRA_STANDALONE)
+   return()
+ endif()
+ 
+-cmake_minimum_required(VERSION 3.19)   # for COMMAND_ERROR_IS_FATAL
++cmake_minimum_required(VERSION 3.19)
+ 
+-# the static libraries come from llvm-config, which knows their dependencies and the system
+-# libraries they need
+-find_program(LLVM_CONFIG llvm-config HINTS ${LLVM_TOOLS_BINARY_DIR} REQUIRED)
+-function(llvm_config var)
+-  execute_process(COMMAND ${LLVM_CONFIG} --link-static ${ARGN}
+-                  OUTPUT_VARIABLE output OUTPUT_STRIP_TRAILING_WHITESPACE
+-                  COMMAND_ERROR_IS_FATAL ANY)
+-  separate_arguments(output NATIVE_COMMAND "${output}")
+-  set(${var} ${output} PARENT_SCOPE)
+-endfunction()
++set(LLVMEXTRA_STANDALONE_NAME "LLVM-standalone-${LLVM_VERSION_MAJOR}"
++    CACHE STRING "Name of the standalone library, without prefix or suffix")
+ 
+-# the libraries that define the functions of the C API are linked in completely, as nothing
+-# in the library references most of them; the others only as far as they are needed. not
+-# every version of LLVM has every component, so only use those that this one has.
++# the libraries that define the functions of the C API, and the libraries they depend on,
++# are linked in completely, as nothing in the library references most of them. they come
++# from LLVM's CMake package, which also works when cross-compiling (unlike llvm-config,
++# which has to run on the build machine). not every version or build of LLVM has every
++# component, so only use those that this one has.
+ set(LLVMEXTRA_EXPORTED_COMPONENTS
+     core bitreader bitwriter irreader linker passes analysis transformutils ipo
+     instcombine scalaropts vectorize target codegen mc object remarks mcdisassembler
+     orcjit orcdebugging mcjit interpreter executionengine inteljitevents perfjitevents
+-    support all-targets
++    support
+     CACHE STRING "LLVM components whose C API the standalone library exports")
+-execute_process(COMMAND ${LLVM_CONFIG} --components
+-                OUTPUT_VARIABLE available_components OUTPUT_STRIP_TRAILING_WHITESPACE
+-                COMMAND_ERROR_IS_FATAL ANY)
+-separate_arguments(available_components NATIVE_COMMAND "${available_components}")
+-set(exported_components)
+-foreach(component ${LLVMEXTRA_EXPORTED_COMPONENTS})
+-  if(component IN_LIST available_components)
+-    list(APPEND exported_components ${component})
++llvm_map_components_to_libnames(candidate_libs ${LLVMEXTRA_EXPORTED_COMPONENTS})
++foreach(target ${LLVM_TARGETS_TO_BUILD})
++  foreach(component CodeGen AsmParser AsmPrinter Desc Disassembler Info Utils TargetMCA)
++    list(APPEND candidate_libs LLVM${target}${component})
++  endforeach()
++endforeach()
++set(exported_libs)
++while(candidate_libs)
++  list(POP_FRONT candidate_libs lib)
++  string(REGEX REPLACE "^\\$<LINK_ONLY:(.+)>$" "\\1" lib "${lib}")
++  if(NOT TARGET ${lib} OR lib IN_LIST exported_libs)
++    continue()
++  endif()
++  get_target_property(type ${lib} TYPE)
++  if(type STREQUAL "STATIC_LIBRARY")
++    list(APPEND exported_libs ${lib})
++    get_target_property(dependencies ${lib} INTERFACE_LINK_LIBRARIES)
++    if(dependencies)
++      list(APPEND candidate_libs ${dependencies})
++    endif()
+   endif()
++endwhile()
++set(exported_files)
++foreach(lib ${exported_libs})
++  list(APPEND exported_files "$<TARGET_FILE:${lib}>")
+ endforeach()
+-llvm_config(exported_libs --libfiles ${exported_components})
+-llvm_config(all_libs --libfiles all)
+-llvm_config(system_libs --system-libs)
+ 
+-set(name LLVM-standalone-${LLVM_VERSION_MAJOR})
+-add_library(${name} SHARED ${SOURCES})
++set(name ${LLVMEXTRA_STANDALONE_NAME})
++if(WIN32)
++  # a DLL exports what a module definition file lists, which is generated from the symbols
++  # that LLVMExtra and the exported libraries define, as PE has no wildcard export lists
++  add_library(${name}-objects OBJECT ${SOURCES})
++  add_library(${name} SHARED $<TARGET_OBJECTS:${name}-objects>
++              ${CMAKE_CURRENT_BINARY_DIR}/exports.def)
++  set_target_properties(${name} PROPERTIES LINKER_LANGUAGE CXX)
++  set(compiled ${name}-objects)
++  file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/exports.inputs
++       CONTENT "$<JOIN:$<TARGET_OBJECTS:${name}-objects>;${exported_files},\n>\n")
++  if(CMAKE_SIZEOF_VOID_P EQUAL 4)
++    set(symbol_prefix "_")    # 32-bit Windows decorates C names with an underscore
++  else()
++    set(symbol_prefix "")
++  endif()
++  add_custom_command(
++    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/exports.def
++    COMMAND ${CMAKE_COMMAND} -DNM=${CMAKE_NM} -DPREFIX=${symbol_prefix}
++            -DINPUTS=${CMAKE_CURRENT_BINARY_DIR}/exports.inputs
++            -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/exports.def
++            -P ${CMAKE_CURRENT_SOURCE_DIR}/exports_def.cmake
++    DEPENDS ${name}-objects ${exported_libs} ${CMAKE_CURRENT_BINARY_DIR}/exports.inputs
++            ${CMAKE_CURRENT_SOURCE_DIR}/exports_def.cmake
++    VERBATIM)
++else()
++  add_library(${name} SHARED ${SOURCES})
++  set(compiled ${name})
++endif()
++
+ # LLVMExtra's header doesn't annotate the functions it exports, so it is compiled with the
+ # default visibility, and the list of exported symbols hides everything else. besides the C
+ # API, that list includes the functions that support JIT-compiled code, which LLVM's JIT
+ # looks up by name (`llvm_orc_*`).
+-target_compile_options(${name} PRIVATE -ffunction-sections -fdata-sections)
++target_compile_options(${compiled} PRIVATE -ffunction-sections -fdata-sections)
+ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+   # unique symbols are global even when hidden, and would bind to another copy of LLVM
+-  target_compile_options(${name} PRIVATE -fno-gnu-unique)
++  target_compile_options(${compiled} PRIVATE -fno-gnu-unique)
+ endif()
+ 
+ if(APPLE)
+   set(whole_archive)
+-  foreach(lib ${exported_libs})
+-    list(APPEND whole_archive "-Wl,-force_load,${lib}")
++  foreach(file ${exported_files})
++    list(APPEND whole_archive "-Wl,-force_load,${file}")
+   endforeach()
+   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/exports.txt "_LLVM*\n_llvm_orc_*\n")
+   target_link_libraries(${name} PRIVATE
+-    ${whole_archive} ${all_libs} ${system_libs}
++    ${whole_archive} ${exported_libs}
+     "-Wl,-exported_symbols_list,${CMAKE_CURRENT_BINARY_DIR}/exports.txt"
+     -Wl,-dead_strip)
++elseif(WIN32)
++  target_link_libraries(${name} PRIVATE
++    -Wl,--whole-archive ${exported_files} -Wl,--no-whole-archive ${exported_libs}
++    -Wl,--exclude-all-symbols -Wl,--gc-sections)
+ else()
++  if(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
++    # `environ`, which LLVM references, is defined by the executable on FreeBSD, not libc
++    set(no_undefined)
++  else()
++    set(no_undefined -Wl,-z,defs)
++  endif()
+   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/exports.map "{ global: LLVM*; llvm_orc_*; local: *; };\n")
+   target_link_libraries(${name} PRIVATE
+-    -Wl,--whole-archive ${exported_libs} -Wl,--no-whole-archive
+-    -Wl,--start-group ${all_libs} -Wl,--end-group ${system_libs}
++    -Wl,--whole-archive ${exported_files} -Wl,--no-whole-archive ${exported_libs}
+     "-Wl,--version-script,${CMAKE_CURRENT_BINARY_DIR}/exports.map"
+-    -Wl,-Bsymbolic -Wl,--gc-sections -Wl,-z,defs)
++    -Wl,-Bsymbolic -Wl,--gc-sections ${no_undefined})
+ endif()
+-install(TARGETS ${name} DESTINATION lib)
++install(TARGETS ${name} RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+diff --git a/deps/LLVMExtra/lib/exports_def.cmake b/deps/LLVMExtra/lib/exports_def.cmake
+new file mode 100644
+index 0000000..04ae09c
+--- /dev/null
++++ b/deps/LLVMExtra/lib/exports_def.cmake
+@@ -0,0 +1,17 @@
++# write a module definition file that exports the LLVM C API, LLVMExtra and the functions
++# that support JIT-compiled code, as defined by the object files and archives in INPUTS
++file(STRINGS ${INPUTS} inputs)
++set(symbols)
++foreach(input ${inputs})
++  execute_process(COMMAND ${NM} --defined-only --extern-only --format=posix ${input}
++                  OUTPUT_VARIABLE output COMMAND_ERROR_IS_FATAL ANY)
++  string(REGEX MATCHALL "(^|\n)${PREFIX}(LLVM|llvm_orc_)[A-Za-z0-9_]* T" matches "${output}")
++  foreach(match ${matches})
++    string(REGEX REPLACE "^\n?${PREFIX}([A-Za-z0-9_]+) T$" "\\1" symbol "${match}")
++    list(APPEND symbols ${symbol})
++  endforeach()
++endforeach()
++list(REMOVE_DUPLICATES symbols)
++list(SORT symbols)
++list(JOIN symbols "\n  " exports)
++file(WRITE ${OUTPUT} "EXPORTS\n  ${exports}\n")

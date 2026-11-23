@@ -1,4 +1,4 @@
-From b7d2d241c26d661a1934c897bf70e9e6691255da Mon Sep 17 00:00:00 2001
+From 3c31fe46de8ef4852ca7eadc919fceb96f8fb593 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Thu, 15 Oct 2026 18:35:03 +0200
 Subject: [PATCH] printf: widen half arguments in software

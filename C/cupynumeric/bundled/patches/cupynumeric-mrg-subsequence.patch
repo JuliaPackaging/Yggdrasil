@@ -1,0 +1,26 @@
+diff --git a/src/cupynumeric/random/randutil/generator.cuh b/src/cupynumeric/random/randutil/generator.cuh
+--- a/src/cupynumeric/random/randutil/generator.cuh
++++ b/src/cupynumeric/random/randutil/generator.cuh
+@@ -20,6 +20,8 @@
+ 
+ #include "cupynumeric/cuda_help.h"
+ 
++#include <type_traits>
++
+ namespace randutilimpl {
+ static constexpr int blocksPerMultiProcessor = 2;    // TODO: refine => number of blocks per mp
+ static constexpr int blockDimX               = 256;  // TODO: refine ?
+@@ -37,6 +39,13 @@
+   unsigned baseOffset = __brev((unsigned)id);
+   uint64_t offset     = ((uint64_t)baseOffset) << 32;
+   // init the generator
++  if constexpr (std::is_same_v<gen_t, curandStateMRG32k3a_t>) {
++    // curand_init documents truncation of MRG32k3a subsequences to 51 bits,
++    // but affected cuRAND headers do not apply it. Realm processor IDs have
++    // high type bits, which otherwise index beyond the skip-ahead tables.
++    // Leave the full-width subsequences of other engines unchanged.
++    generatorID &= (uint64_t{1} << 51) - 1;
++  }
+   curand_init(seed, generatorID, offset, &gen);
+   // store back
+   gens[id] = gen;

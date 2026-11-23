@@ -1,4 +1,4 @@
-From 46058036d57036ff34d3a7224b67a3e507fc1350 Mon Sep 17 00:00:00 2001
+From 31e1251978ce090066d0b388721e12766e1075f9 Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Thu, 24 Sep 2026 09:07:51 +0200
 Subject: [PATCH] Don't force LLVM to register its signal handlers
@@ -97,10 +97,10 @@ index 702a5c5cf..d0cc19a9c 100644
    void pocl_llvm_release_context (cl_context ctx);
  
 diff --git a/lib/CL/pocl_llvm_utils.cc b/lib/CL/pocl_llvm_utils.cc
-index b8cb335f0..28da7ca8a 100644
+index ce4b7a306..89c4e14e1 100644
 --- a/lib/CL/pocl_llvm_utils.cc
 +++ b/lib/CL/pocl_llvm_utils.cc
-@@ -439,16 +439,6 @@ void cpu_setup_vector_widths(cl_device_id dev) {
+@@ -467,16 +467,6 @@ void cpu_setup_vector_widths(cl_device_id dev) {
    }
  }
  
@@ -130,7 +130,7 @@ index 87c162e85..a8ffa2eae 100644
  void pocl_ignore_sigfpe_for_thread (pocl_thread_t thr);
  #endif
 diff --git a/tests/regression/test_signal_handlers.c b/tests/regression/test_signal_handlers.c
-index 2b9018e67..c7d12b709 100644
+index d88899c55..4650a950b 100644
 --- a/tests/regression/test_signal_handlers.c
 +++ b/tests/regression/test_signal_handlers.c
 @@ -86,11 +86,13 @@ main ()
@@ -147,9 +147,9 @@ index 2b9018e67..c7d12b709 100644
 +  if (check_host_handlers ("device initialization") != EXIT_SUCCESS)
 +    return EXIT_FAILURE;
 +
-   const char *source = "#define VALUE 42\n"
-                        "__kernel void k (__global int *out) {\n"
-                        "  *out = VALUE;\n"
+   const char *source = "__kernel void k (__global int *out) {\n"
+                        "  *out = 42;\n"
+                        "}\n";
 -- 
 2.56.0
 

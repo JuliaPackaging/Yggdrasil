@@ -63,6 +63,8 @@ for (_, package_result) in meta.packagings
     group = get_group(project_path(first(collect_builds(package_result))))
     push!(group["packagings"], Dict(
         "name" => package_result.config.name,
+        "version" => string(package_result.config.version),
+        "julia_compat" => package_result.config.julia_compat,
         "dependencies" => package_deps,
     ))
 end

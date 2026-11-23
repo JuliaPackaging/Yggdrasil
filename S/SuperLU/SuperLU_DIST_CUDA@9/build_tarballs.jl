@@ -4,139 +4,105 @@ using BinaryBuilder, Pkg, BinaryBuilderBase
 using Base.BinaryPlatforms
 const YGGDRASIL_DIR = "../../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
+include(joinpath(YGGDRASIL_DIR, "C", "CUDA", "common.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
+include("../common.jl")
 
-# CUDA build of ../SuperLU_DIST@9 -- keep the two in step when updating SuperLU_DIST.
 name = "SuperLU_DIST_CUDA"
-version = v"9.3.1"
+version = superlu_dist_version
+# The renamed libraries and the CUDA_Runtime_jll bound need a new JLL version
+ygg_version = v"9.3.3"
 
-sources = [
-    GitSource("https://github.com/xiaoyeli/superlu_dist.git", "9f7c8196d8f692cbfc59d81b61a74ceb4b37789b"; tag="v$(version)"),
-    DirectorySource("./bundled"),
-]
+sources = superlu_dist_sources
 
-script = raw"""
-cd $WORKSPACE/srcdir/superlu_dist*
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
+script = superlu_dist_script(raw"""
+# own SONAMEs, so that dependents don't bind to SuperLU_DIST_jll's when both are loaded
+SUPERLU_SUFFIX=_cuda
+
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/findcudatoolkit.patch
 
 # nvcc writes to /tmp, which is a small tmpfs in the sandbox.
 export TMPDIR=${WORKSPACE}/tmpdir
 mkdir -v ${TMPDIR}
 
-# CUDA 13's cuBLASLt and cuSOLVER need a newer glibc than the sysroot's, which
-# only breaks linking the pdtest executables.
-EXE_LDFLAGS="-Wl,--allow-shlib-undefined"
+# BinaryBuilder's x86_64 host needs x86_64 CUDA tools to cross compile for aarch64.
+# nvvm is inside the nvcc archive before CUDA 13, and in its own archive after.
+if [[ "${target}" == aarch64-* ]]; then
+    export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:${LD_LIBRARY_PATH}"
+    export NVCC_PREPEND_FLAGS="-ccbin=${CXX}"
+    rm -rfv ${prefix}/cuda/bin ${prefix}/cuda/nvvm/bin ${prefix}/cuda/nvvm/lib64
+    cp -a ${WORKSPACE}/srcdir/cuda_nvcc-linux-x86_64-*-archive/bin ${prefix}/cuda/bin
+    cp -a ${WORKSPACE}/srcdir/*-linux-x86_64-*-archive/nvvm/{bin,lib64} ${prefix}/cuda/nvvm/
+fi
 
-build_superlu_dist()
-{
-    if [[ "${1}" == "Int64" ]]; then
-        INT=64
-        METIS_PATH="${libdir}/metis/metis_Int64_Real32/lib/libmetis_Int64_Real32.${dlext}"
-        PARMETIS_PATH="${libdir}/libparmetis_Int64_Real32.${dlext}"
-    else
-        INT=32
-        METIS_PATH="${libdir}/libmetis.${dlext}"
-        PARMETIS_PATH="${libdir}/libparmetis.${dlext}"
-    fi
-
-    cmake -B build-${INT} \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DBUILD_SHARED_LIBS=ON \
-        -DBUILD_STATIC_LIBS=OFF \
-        -DTPL_ENABLE_INTERNAL_BLASLIB=OFF \
-        -Denable_tests=ON \
-        -Denable_doc=OFF \
-        -Denable_single=ON \
-        -Denable_double=ON \
-        -Denable_complex16=ON \
-        -DTPL_BLAS_LIBRARIES="${libdir}/libblastrampoline.${dlext}" \
-        -DTPL_ENABLE_LAPACKLIB=ON \
-        -DTPL_LAPACK_LIBRARIES="${libdir}/libblastrampoline.${dlext}" \
-        -DTPL_ENABLE_PARMETISLIB=ON \
-        -DTPL_PARMETIS_INCLUDE_DIRS="${includedir}" \
-        -DTPL_PARMETIS_LIBRARIES="${PARMETIS_PATH};${METIS_PATH}" \
-        -DTPL_ENABLE_CUDALIB=ON \
-        -DCMAKE_CUDA_COMPILER=${prefix}/cuda/bin/nvcc \
-        -DCMAKE_CUDA_FLAGS="-L${prefix}/cuda/lib" \
-        -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCHS}" \
-        -DCMAKE_EXE_LINKER_FLAGS="${EXE_LDFLAGS}" \
-        -DCMAKE_C_FLAGS="-std=c99 -Wno-implicit-function-declaration -Wno-incompatible-pointer-types" \
-        -DXSDK_INDEX_SIZE=${INT} \
-        -DXSDK_ENABLE_Fortran=OFF \
-        -DSUPERLU_OUTPUT_NAME="superlu_dist_Int${INT}" \
-        -Denable_examples=OFF \
-        -Denable_python=OFF
-    cmake --build build-${INT} --parallel ${nproc}
-    cmake --install build-${INT}
-
-    install -Dvm 755 build-${INT}/TEST/pdtest "${bindir}/pdtest_${INT}"
-    install -vm 644 EXAMPLE/g20.rua "${includedir}"
-
-    # Both widths install into ${includedir}, so the second build overwrites
-    # the first's superlu_dist_config.h (XSDK_INDEX_SIZE). Keep a per-width
-    # copy right after each install for consumers such as PETSc.
-    mkdir -pv ${includedir}/superlu_dist_Int${INT}
-    cp -v ${includedir}/superlu*.h* ${includedir}/superlu_dist_Int${INT}/
-}
-build_superlu_dist Int32
-build_superlu_dist Int64
+EXTRA_CMAKE_ARGS+=(
+    -DTPL_ENABLE_CUDALIB=ON
+    -DCMAKE_CUDA_COMPILER=${prefix}/cuda/bin/nvcc
+    -DCMAKE_CUDA_FLAGS="-L${prefix}/cuda/lib"
+    -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCHS}"
+    # CUDA 13's cuBLASLt and cuSOLVER need a newer glibc than the sysroot's, which
+    # only breaks linking the pdtest executables.
+    -DCMAKE_EXE_LINKER_FLAGS="-Wl,--allow-shlib-undefined"
+)
+""") * raw"""
+# The swapped-in x86_64 tools would otherwise be packaged.
+if [[ "${target}" == aarch64-* ]]; then
+    rm -rfv ${prefix}/cuda
+fi
+# The x86_64 CUDA archives in srcdir stop auto_install_license from finding it.
+install_license License.txt
 """
 
-# aarch64 would need the host x86_64 nvcc swapped in, as A/AMGX/AMGX_MPI does.
 platforms = CUDA.supported_platforms(; min_version=v"12")
-filter!(p -> arch(p) == "x86_64", platforms)
+# An artifact also matches newer toolkits of its major, whose newer GPUs would have to JIT-compile
+# the PTX of its newest architecture. 12.8 adds sm_100, sm_101 and sm_120, and 12.9 adds sm_103 and
+# sm_121.
+filter!(p -> Base.thisminor(VersionNumber(p["cuda"])) in (v"12.0", v"12.8", v"12.9", v"13.0"), platforms)
 
 platforms, mpi_dependencies = MPI.augment_platforms(platforms)
 
-# Only MPItrampoline, which MPIPreferences can retarget at any system MPI at
-# runtime. Every ABI would multiply the CUDA matrix by four.
-filter!(p -> p["mpi"] == "mpitrampoline", platforms)
+# MPICH is the default without an MPI preference, and MPIABI's library can be replaced at
+# runtime. The default GPU 3D factorization passes device pointers to MPI_Bcast, so multi-rank
+# runs need a CUDA-aware MPI at runtime, or GPU3DVERSION=0.
+filter!(p -> p["mpi"] in ("mpiabi", "mpich"), platforms)
 
-augment_platform_block = """
-    using Base.BinaryPlatforms
-
-    module __CUDA
-        $(CUDA.augment)
-    end
-
-    $(MPI.augment)
-
-    function augment_platform!(platform::Platform)
-        augment_mpi!(platform)
-        __CUDA.augment_platform!(platform)
-    end
-"""
+augment_platform_block = CUDA.augment_with(MPI.augment, "augment_mpi!")
 
 products = [
     ExecutableProduct("pdtest_32", :pdtest_32),
     ExecutableProduct("pdtest_64", :pdtest_64),
 
-    LibraryProduct("libsuperlu_dist_Int32", :libsuperlu_dist_Int32),
-    LibraryProduct("libsuperlu_dist_Int64", :libsuperlu_dist_Int64),
+    LibraryProduct("libsuperlu_dist_cuda_Int32", :libsuperlu_dist_Int32),
+    LibraryProduct("libsuperlu_dist_cuda_Int64", :libsuperlu_dist_Int64),
 ]
 
 dependencies = AbstractDependency[
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"); compat="5.4.0"),
-    Dependency(PackageSpec(name="OpenBLAS32_jll", uuid="656ef2d0-ae68-5445-9ca0-591084a874a2"); compat="0.3.32"),
-    Dependency(PackageSpec(name="PARMETIS_jll", uuid="b247a4be-ddc1-5759-8008-7e02fe3dbdaa"); compat="4.0.9"),
-    Dependency("METIS_jll"; compat="5.1.4"),
+    superlu_dist_dependencies...,
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); compat="1.0.5"),
+    mpi_dependencies...,
+    CUDA.required_dependencies(platforms; static_sdk=true)...,
 ]
-append!(dependencies, mpi_dependencies)
 
 for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
-    platform_dependencies = [dependencies; CUDA.required_dependencies(platform; static_sdk=true)]
-    platform_script = "CUDA_ARCHS=\"$(join(CUDA.cuda_gpu_archs(platform), ";"))\"\n" * script
+    platform_sources = BinaryBuilder.AbstractSource[sources...]
+    if arch(platform) == "aarch64"
+        cuda_ver = VersionNumber(platform["cuda"])
+        components = ["cuda_nvcc"]
+        cuda_ver >= v"13" && push!(components, "libnvvm")
+        x86_platform = deepcopy(platform)
+        x86_platform["arch"] = "x86_64"
+        append!(platform_sources, get_sources("cuda", components;
+                                              version=CUDA.full_version(cuda_ver),
+                                              platform=x86_platform))
+    end
 
-    build_tarballs(ARGS, name, version, sources, platform_script, [platform],
-                   products, platform_dependencies; lazy_artifacts=true,
+    platform_script = "CUDA_ARCHS=\"$(CUDA.cuda_gpu_archs_cmake(platform))\"\n" * script
+
+    build_tarballs(ARGS, name, ygg_version, platform_sources, platform_script, [platform],
+                   products, dependencies; lazy_artifacts=true,
                    augment_platform_block, julia_compat="1.11",
                    dont_dlopen=true, preferred_gcc_version=v"8")
 end
