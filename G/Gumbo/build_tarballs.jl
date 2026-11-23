@@ -3,22 +3,38 @@
 using BinaryBuilder
 
 name = "Gumbo"
-version = v"0.10.2" # <-- This version number is a lie to build for experimental platforms
+version = v"0.13.2"
 
 # Collection of sources required to complete build
-#This is commit dated Jun 28, 2016 which is currently master as of Aug 5, 2020
-# v0.10.1 is the last release, so we keep that version number.
+# v0.13.2 is the last release, so we keep that version number.
 sources = [
-    GitSource("https://github.com/google/gumbo-parser.git",
-              "aa91b27b02c0c80c482e24348a457ed7c3c088e0"),
+    # Build from the tag in the active upstream
+    GitSource("https://codeberg.org/gumbo-parser/gumbo-parser.git",
+              "322c54c178590ba42b8b04e8c0e4840595a1f717"),
 
+    # Vendor Autoconf 2.72 only to run autoreconf
+    ArchiveSource("https://mirrors.kernel.org/gnu/autoconf/autoconf-2.72.tar.xz",
+                  "ba885c1319578d6c94d46e9b0dceb4014caafe2490e437a0dbca3f270a223f5a"),
 ]
 
 # Bash recipe for building across all platforms
+# Build system now demands Autoconf ≥2.72
 script = raw"""
-cd $WORKSPACE/srcdir/gumbo-parser/
+set -eux
+
+# Build Autoconf 2.72 for the host inside the container
+cd ${WORKSPACE}/srcdir/autoconf-2.72*
+./configure --prefix=/opt/autoconf272
+make -j${nproc}
+make install
+export PATH=/opt/autoconf272/bin:${PATH}
+
+# Regenerate and build gumbo
+cd ${WORKSPACE}/srcdir/gumbo-parser
+mkdir -p m4
 ./autogen.sh
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+update_configure_scripts
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --disable-dependency-tracking
 make -j${nproc}
 make install
 """
