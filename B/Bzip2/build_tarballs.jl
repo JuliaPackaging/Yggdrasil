@@ -25,8 +25,8 @@ make CC=${CC} CFLAGS="${CFLAGS}" -j${nproc} ${OBJS}
 # extension-less names, so build the programs and provide those names.
 if [[ "${target}" == *-mingw* ]]; then
     make CC=${CC} CFLAGS="${CFLAGS}" bzip2 bzip2recover
-    cp bzip2.exe bzip2
-    cp bzip2recover.exe bzip2recover
+    install -Dvm 755 bzip2.exe bzip2
+    install -Dvm 755 bzip2recover.exe bzip2recover
 fi
 make CC=${CC} CFLAGS="${CFLAGS}" PREFIX=${prefix} install
 
@@ -47,9 +47,10 @@ else
     ln -s "libbz2.so.${VERSION}" libbz2.so
 fi
 if [[ "${target}" == *-mingw* ]]; then
-    # Windows looks for DLLs in bin/, not lib/
+    # Windows looks for DLLs in bin/, not lib/.  Only the DLLs move: nothing here builds an
+    # import library, and a `*.dll*` glob would also pick up a `.dll.a` if one ever appeared.
     mkdir -p ${bindir}
-    mv -v libbz2*.${dlext}* ${bindir}/.
+    mv -v libbz2*.dll ${bindir}/.
 else
     mkdir -p ${libdir}
     mv -v libbz2*.${dlext}* ${libdir}/.
