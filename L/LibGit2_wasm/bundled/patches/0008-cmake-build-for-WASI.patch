@@ -1,0 +1,39 @@
+From afe00a70a32d19a3dbbbedd93ed0f6c43e751d6d Mon Sep 17 00:00:00 2001
+From: Panagiotis Georgakopoulos <8681967+pankgeorg@users.noreply.github.com>
+Date: Thu, 5 Nov 2026 21:36:56 +0000
+Subject: [PATCH 08/10] cmake: build for WASI
+
+Define NO_MMAP for `CMAKE_SYSTEM_NAME` WASI: WASI preview 1 has no `mmap`
+(wasi-libc offers only an emulation behind `_WASI_EMULATED_MMAN`), so
+packfiles and other mapped files are read into allocated memory, as on other
+platforms without mmap.
+
+With the preceding changes, libgit2 builds for wasm32-wasip1 with wasi-sdk's
+toolchain file and
+
+    cmake -DCMAKE_TOOLCHAIN_FILE=<wasi-sdk>/share/cmake/wasi-sdk-p1.cmake \
+          -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -DBUILD_CLI=OFF \
+          -DUSE_THREADS=OFF -DUSE_HTTPS=OFF -DUSE_SSH=OFF
+
+Network access needs a custom transport or stream, since WASI preview 1 has
+no sockets.
+---
+ src/CMakeLists.txt | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 73c46e2..fe128f0 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -154,6 +154,11 @@ if(AMIGA)
+ 	add_definitions(-DNO_ADDRINFO -DNO_READDIR_R -DNO_MMAP)
+ endif()
+ 
++if(CMAKE_SYSTEM_NAME STREQUAL "WASI")
++	# WASI preview 1 has no mmap (packs are read into memory instead)
++	add_definitions(-DNO_MMAP)
++endif()
++
+ # threads
+ 
+ if(USE_THREADS)
