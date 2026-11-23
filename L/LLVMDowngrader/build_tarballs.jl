@@ -73,6 +73,22 @@ if [[ "${target}" == *-linux-* || "${target}" == *-freebsd* ]]; then
 elif [[ "${target}" == *-apple-* ]]; then
     echo "exported symbols:"; nm -gU ${libdir}/libllvm_downgrade.${dlext}
 fi
+
+# On Windows, the multibyte C runtime functions must not be imported from a
+# dependency's DLL.
+# Zstd_jll builds before v1.5.7+2 re-exported mingw-w64's `mbrtowc` and
+# `wcrtomb`, the link resolved LLVM's references to them through
+# libzstd-1.dll, and the library stopped loading ("The specified procedure
+# could not be found") once Zstd_jll was rebuilt without those exports.
+if [[ "${target}" == *mingw* ]]; then
+    ${target}-objdump -p ${libdir}/libllvm_downgrade.${dlext} > imports.txt
+    awk '
+        /DLL Name:/ { dll = tolower($3); next }
+        dll ~ /^lib/ && /^[ \t]+[0-9a-f]+[ \t]/ &&
+        $NF ~ /^(mbrtowc|mbrlen|mbsrtowcs|mbtowc|wcrtomb|wcsrtombs|wctomb)$/ {
+            print "C runtime function " $NF " imported from " dll; bad = 1 }
+        END { exit bad }' imports.txt
+fi
 """
 
 # LLVM_full_jll 22+ is built against the macOS 11.0 SDK with an 11.0 deployment
