@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "dftd4"
-version = v"4.3.0"
+version = v"4.3.1"
 
 # Use the meson source distribution (note: we need the *.tar.xz, not the *.tar.gz,
 # which is the python sdist)
