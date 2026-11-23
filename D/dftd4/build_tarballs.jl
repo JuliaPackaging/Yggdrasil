@@ -9,7 +9,7 @@ version = v"4.3.1"
 # which is the python sdist)
 sources = [
     ArchiveSource("https://github.com/dftd4/dftd4/releases/download/v$(version)/dftd4-$(version).tar.xz",
-                  "e94c5d021c0a4b4aa9b5587e36fda2f398271dc2dc1abfbe097fdb04022bef35"),
+                  "32c0b498a7b07b1552e727333d9c83ab627d1bdf4ff46b7b8b31af9159fb2928"),
 ]
 
 script = raw"""
