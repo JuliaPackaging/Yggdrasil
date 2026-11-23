@@ -96,3 +96,5 @@ build_tarballs(;
     products,
     julia_compat = "1.6",
 )
+
+# Build trigger: 1
