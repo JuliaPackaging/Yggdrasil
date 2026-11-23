@@ -1,0 +1,72 @@
+Add a KIWI_USE_SYSTEM_DEPS option to build against installed Eigen, nlohmann_json, streamvbyte, cpuinfo and mimalloc instead of the third_party/ submodules.
+
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -15,6 +15,7 @@
+ option(KIWI_BUILD_TEST  "Build Test sets" ON)
+ option(KIWI_JAVA_BINDING  "Build Java binding" OFF)
+ option(KIWI_BUILD_STATIC  "Build static library" ON)
++option(KIWI_USE_SYSTEM_DEPS  "Use installed eigen, nlohmann_json, streamvbyte, cpuinfo and mimalloc instead of third_party/" OFF)
+ set(KIWI_CPU_ARCH "" CACHE STRING "Set architecture type for macOS")
+ 
+ if (NOT CMAKE_BUILD_TYPE)
+@@ -99,10 +100,14 @@
+ if(KIWI_USE_MIMALLOC)
+   message(STATUS "Use mimalloc allocators")
+   set ( ADDITIONAL_FLAGS "-DKIWI_USE_MIMALLOC" )
+-  include_directories( third_party/mimalloc/include )
+-  set ( CORE_SRCS "${CORE_SRCS}"
+-    third_party/mimalloc/src/static.c
+-  )
++  if(KIWI_USE_SYSTEM_DEPS)
++    find_library( MIMALLOC_LIBRARY NAMES mimalloc REQUIRED )
++  else()
++    include_directories( third_party/mimalloc/include )
++    set ( CORE_SRCS "${CORE_SRCS}"
++      third_party/mimalloc/src/static.c
++    )
++  endif()
+ endif()
+ 
+ 
+@@ -112,6 +117,15 @@
+ # Eigen: exclude the LGPL-licensed modules so that only MPL2 (and more
+ # permissive) Eigen code is compiled in. See NOTICE.
+ add_definitions( -DEIGEN_MPL2_ONLY )
++if(KIWI_USE_SYSTEM_DEPS)
++  find_path( EIGEN_INCLUDE_DIR Eigen/Dense PATH_SUFFIXES eigen3 REQUIRED )
++  find_path( JSON_INCLUDE_DIR nlohmann/json.hpp REQUIRED )
++  find_path( STREAMVBYTE_INCLUDE_DIR streamvbyte.h REQUIRED )
++  find_library( STREAMVBYTE_LIBRARY NAMES streamvbyte REQUIRED )
++  include_directories( ${EIGEN_INCLUDE_DIR} ${JSON_INCLUDE_DIR} ${STREAMVBYTE_INCLUDE_DIR} )
++  set ( SYSTEM_DEPS_LIBRARIES ${STREAMVBYTE_LIBRARY} ${MIMALLOC_LIBRARY} )
++  set ( STREAMVBYTE_OBJECTS "" )
++else()
+ include_directories( third_party/eigen )
+ include_directories( third_party/json/include )
+ include_directories( third_party/streamvbyte/include )
+@@ -119,7 +133,15 @@
+ set ( STREAMVBYTE_OBJECTS 
+   $<TARGET_OBJECTS:streamvbyte>
+ )
+-if(KIWI_USE_CPUINFO)
++endif()
++if(KIWI_USE_CPUINFO AND KIWI_USE_SYSTEM_DEPS)
++  message(STATUS "Use system cpuinfo")
++  find_path( CPUINFO_INCLUDE_DIR cpuinfo.h REQUIRED )
++  find_library( CPUINFO_LIBRARY NAMES cpuinfo REQUIRED )
++  include_directories( ${CPUINFO_INCLUDE_DIR} )
++  set ( SYSTEM_DEPS_LIBRARIES ${SYSTEM_DEPS_LIBRARIES} ${CPUINFO_LIBRARY} )
++  set ( ADDITIONAL_FLAGS ${ADDITIONAL_FLAGS} "-DKIWI_USE_CPUINFO" )
++elseif(KIWI_USE_CPUINFO)
+   message(STATUS "Use cpuinfo")
+   include_directories( third_party/cpuinfo/include )
+ 
+@@ -280,6 +302,7 @@
+ 
+   install(TARGETS ${PROJECT_NAME} PUBLIC_HEADER DESTINATION include/kiwi)
+   target_compile_options("${PROJECT_NAME}" PRIVATE "${ADDITIONAL_FLAGS}")
++  target_link_libraries("${PROJECT_NAME}" PRIVATE ${SYSTEM_DEPS_LIBRARIES})
+ endif()
+ 
+ #target_link_libraries("${PROJECT_NAME}_static" cpuinfo_internals)
