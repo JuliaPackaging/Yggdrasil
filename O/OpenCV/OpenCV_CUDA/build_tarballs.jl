@@ -3,6 +3,7 @@ using Base.BinaryPlatforms: arch
 
 name = "OpenCV_CUDA"
 
+# Version, sources, build script and products are shared with the other OpenCV recipe.
 include(joinpath(@__DIR__, "..", "common.jl"))
 include(joinpath(@__DIR__, "..", "..", "..", "C", "CUDA", "common.jl"))
 include(joinpath(@__DIR__, "..", "..", "..", "platforms", "cuda.jl"))
