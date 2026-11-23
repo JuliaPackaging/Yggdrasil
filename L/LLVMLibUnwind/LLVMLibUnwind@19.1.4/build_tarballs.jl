@@ -12,3 +12,5 @@ filter!(p -> arch(p) != "riscv64", platforms)
 # Build the tarballs
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                preferred_gcc_version=v"10", preferred_llvm_version=v"18", julia_compat="1.12")
+
+# Build trigger: 1
