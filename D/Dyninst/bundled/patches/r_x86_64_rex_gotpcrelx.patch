@@ -1,0 +1,14 @@
+--- a/symtabAPI/src/emitElfStatic-x86.C
++++ b/symtabAPI/src/emitElfStatic-x86.C
+@@ -121,7 +121,11 @@
+ 
+     return true;
+ }
+ 
++#if !defined(R_X86_64_REX_GOTPCRELX)
++#define R_X86_64_REX_GOTPCRELX 42
++#endif
++
+ bool emitElfStatic::archSpecificRelocation(Symtab *, Symtab *, char *targetData, relocationEntry &rel,
+        Offset dest, Offset relOffset, Offset globalOffset, LinkMap &lmap,
+        string &errMsg) 
