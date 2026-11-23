@@ -7,7 +7,7 @@ version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lkdvos/tensorprimitives-rs.git", "af738881b25be3c8c34f20c947f19a998b148230")
+    GitSource("https://github.com/lkdvos/tensorprimitives-rs.git", "af738881b25be3c8c34f20c947f19a998b148230"; tag="v$(version)")
 ]
 
 # Bash recipe for building across all platforms
