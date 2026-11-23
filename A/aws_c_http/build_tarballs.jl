@@ -4,6 +4,8 @@ using BinaryBuilder, Pkg
 
 name = "aws_c_http"
 version = v"1.1.1"
+# The SONAME contains major.minor, and minor releases may break the ABI.
+# Downstream recipes must restrict compat to one minor version, e.g. compat="~1.2.3".
 
 # Collection of sources required to complete build
 sources = [
@@ -63,8 +65,8 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("aws_c_compression_jll"; compat="1.0.0"),
-    Dependency("aws_c_io_jll"; compat="1.1.0"),
+    Dependency("aws_c_compression_jll"; compat="~1.0.0"),
+    Dependency("aws_c_io_jll"; compat="~1.1.0"),
     BuildDependency("aws_lc_jll"),
 ]
 

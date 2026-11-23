@@ -1,0 +1,27 @@
+diff --git a/src/cupynumeric/cudalibs.cu b/src/cupynumeric/cudalibs.cu
+--- a/src/cupynumeric/cudalibs.cu
++++ b/src/cupynumeric/cudalibs.cu
+@@ -239,6 +239,8 @@ cufftPlan* cufftPlanCache::get_cufft_plan(const cufftPlanParams& params, cudaStream_t
+     CHECK_CUFFT(cufftSetAutoAllocation(result->handle, 0 /*we'll do the allocation*/));
+     // this should always be the correct stream, as we have a cache per GPU-proc
+     CHECK_CUFFT(cufftSetStream(result->handle, stream));
++    cudaEvent_t plan_ready;
++    CUPYNUMERIC_CHECK_CUDA(cudaEventCreateWithFlags(&plan_ready, cudaEventDisableTiming));
+     CHECK_CUFFT(cufftMakePlanMany64(result->handle,
+                                     entry.params->rank,
+                                     entry.params->n,
+@@ -251,6 +253,14 @@ cufftPlan* cufftPlanCache::get_cufft_plan(const cufftPlanParams& params, cudaStream_t
+                                     type_,
+                                     entry.params->batch,
+                                     &result->workarea_size));
++    // cuFFT initializes device data with pageable H2D copies on the legacy
++    // stream. Those copies can outlive the host planning call. Nonblocking
++    // task streams do not implicitly wait for them, so order the first
++    // execution after initialization without a host or device-wide barrier.
++    CUPYNUMERIC_CHECK_CUDA(cudaEventRecord(plan_ready, cudaStreamLegacy));
++    CUPYNUMERIC_CHECK_CUDA(cudaStreamWaitEvent(stream, plan_ready, 0));
++    // CUDA retains the recorded event state until the pending wait completes.
++    CUPYNUMERIC_CHECK_CUDA(cudaEventDestroy(plan_ready));
+ 
+   }
+   // Otherwise, we return the cached plan and adjust the LRU count

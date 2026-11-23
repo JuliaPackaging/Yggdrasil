@@ -1,3 +1,6 @@
+Windows: put the version before the extension of PETSc's DLL name (libpetsc-3.25.dll), not after it.
+Upstream: none found.
+
 diff --git a/config/PETSc/options/sharedLibraries.py b/config/PETSc/options/sharedLibraries.py
 index a84083ee67..e9d814633d 100755
 --- a/config/PETSc/options/sharedLibraries.py

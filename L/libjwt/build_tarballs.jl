@@ -3,18 +3,26 @@
 using BinaryBuilder, Pkg
 
 name = "libjwt"
-version = v"1.15.3"
+version = v"3.6.3"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/benmcollins/libjwt.git", "e8af37ce2e7de2d3bbadaaf232dc6f6b0fd97f03")
+    GitSource("https://github.com/benmcollins/libjwt.git", "3a5f02b064f40042c19cc8796f10f2784fd16758")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/libjwt
-autoreconf -i
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target}
+mkdir build
+cd build
+if [[ ${target} == *mingw* ]]; then
+    export PKG_CONFIG_PATH="${prefix}/bin/pkgconfig:${PKG_CONFIG_PATH}"
+fi
+cmake .. \
+    -DCMAKE_INSTALL_PREFIX="${prefix}" \
+    -DCMAKE_TOOLCHAIN_FILE="${CMAKE_TARGET_TOOLCHAIN}" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON
 make -j${nproc}
 make install
 """
@@ -27,15 +35,18 @@ platforms = supported_platforms()
 # The products that we will ensure are always built
 products = [
     LibraryProduct("libjwt", :libjwt),
-    ExecutableProduct("jwtgen", :jwtgen),
-    ExecutableProduct("jwtauth", :jwtauth)
+    ExecutableProduct("jwt-generate", :jwt_generate),
+    ExecutableProduct("jwt-verify", :jwt_verify),
+    ExecutableProduct("jwk2key", :jwk2key),
+    ExecutableProduct("key2jwk", :key2jwk)
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.8")
+    Dependency(PackageSpec(name="OpenSSL_jll", uuid="458c3c95-2e84-50aa-8efc-19380b2a3a95"); compat="3.0.16")
     Dependency(PackageSpec(name="Jansson_jll", uuid="83cbd138-b029-500a-bd82-26ec0fbaa0df"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6",
+               preferred_gcc_version=v"5")

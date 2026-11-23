@@ -3,14 +3,14 @@
 using BinaryBuilder
 
 name = "FriBidi"
-version = v"1.0.17"
+version = v"1.0.18"
 # FriBidi_jll v1.0.17 was already used for a rebuild of upstream v1.0.16
-ygg_version = v"1.0.18"
+ygg_version = v"1.0.19"
 
 # Collection of sources required to build FriBidi
 sources = [
     GitSource("https://github.com/fribidi/fribidi.git",
-              "b93119f5fdc7ea47672cc304c1455ffa6dfe7536";
+              "15393e4937aa95bcf865d92143735746aeb654fa";
               tag="v$(version)"),
 ]
 

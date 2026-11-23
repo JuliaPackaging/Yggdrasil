@@ -3,31 +3,36 @@
 using BinaryBuilder, Pkg
 
 name = "LAGraph"
-version = v"1.0.2"
+version = v"1.2.2"
 
 sources = [
     GitSource(
         "https://github.com/GraphBLAS/LAGraph.git",
-        "7887f54875d5659e701809d623031fe0afd0aa0c",
+        "7543de1f310371c540c23ff5da82705aa4e94ea0";
+        tag = "v$(version)",
     ),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# Use CMake_jll instead of the older CMake bundled in the build image.
+apk del cmake
 cd ${WORKSPACE}/srcdir/LAGraph
 install_license LICENSE
-# x86 glibc builds throw "undefined reference to 'clock_gettime' and 'clock_settime'" errors if -lrt isn't set
+CMAKE_FLAGS=()
+# Older x86 glibc exposes clock_gettime through librt.
 if [[ "${target}" == *86*-linux-gnu ]]; then
-	atomic_patch -p1 ../patches/lrt-flag.patch
+    CMAKE_FLAGS+=(-DCMAKE_C_STANDARD_LIBRARIES=-lrt)
 fi
-cd build
-cmake -DCMAKE_INSTALL_PREFIX=${prefix} \
+cmake -S . -B build -DCMAKE_INSTALL_PREFIX=${prefix} \
       -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+      -DGraphBLAS_ROOT=${prefix} \
       -DGRAPHBLAS_INCLUDE_DIR=${includedir} \
-      -DCMAKE_BUILD_TYPE=Release ..
-cmake --build . --parallel ${nproc} --target all
-cmake --build . --target install
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_TESTING=OFF \
+      -DBUILD_STATIC_LIBS=OFF "${CMAKE_FLAGS[@]}"
+cmake --build build --parallel ${nproc}
+cmake --install build
 """
 
 # These are the platforms we will build for by default, unless further
@@ -36,17 +41,20 @@ platforms = supported_platforms()
 
 # The products that we will ensure are always built
 products = [
-    LibraryProduct("liblagraph", :liblagraph), 
+    LibraryProduct("liblagraph", :liblagraph),
     LibraryProduct("liblagraphx", :liblagraphx),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("CMake_jll"), # LAGraph requires CMake >= 3.23.
     Dependency(
         PackageSpec(
             name = "SSGraphBLAS_jll",
             uuid = "7ed9a814-9cab-54e9-8e9e-d9e95b4d61b1",
         );
+        # LAGraph requires GraphBLAS >= 10; this JLL is independent of SuiteSparse_jll.
+        compat = "10.3.1",
     ),
     # For OpenMP we use libomp from `LLVMOpenMP_jll` where we use LLVM as compiler (BSD
     # systems), and libgomp from `CompilerSupportLibraries_jll` everywhere else
@@ -55,10 +63,13 @@ dependencies = [
             name = "CompilerSupportLibraries_jll",
             uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae",
         );
+        compat = "1",
         platforms = filter(!Sys.isbsd, platforms),
     ),
     Dependency(
         PackageSpec(name = "LLVMOpenMP_jll", uuid = "1d63c593-3942-5779-bab2-d838dc0a180e");
+        # Newer Clang emits __kmpc_dispatch_deinit, which libomp 18 lacks.
+        compat = "19.1.7",
         platforms = filter(Sys.isbsd, platforms),
     ),
 ]
@@ -73,7 +84,7 @@ build_tarballs(
     platforms,
     products,
     dependencies;
-    julia_compat = "1.6",
+    julia_compat = "1.10",
     preferred_gcc_version = v"9",
 )
 

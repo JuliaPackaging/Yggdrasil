@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "LibArchive"
-version = v"3.8.10"
+version = v"3.8.11"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://www.libarchive.org/downloads/libarchive-$(version).tar.xz",
-                  "56cad765459d5ee25a3b761f90c47d99379d28297fbfb72d908880d6b875fb96"),
+                  "a3dc0872b1b39da34dc18ef1b944f0f11ffd37425d70ae04be679279f1cf43d2"),
 ]
 
 # Bash recipe for building across all platforms
@@ -48,11 +48,11 @@ dependencies = [
     Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("Libiconv_jll"),
-    Dependency("Lz4_jll"),
+    Dependency("Lz4_jll"; compat="1.10.1"),
     Dependency("OpenSSL_jll"; compat="3.0.16"),
-    Dependency("XZ_jll"),
-    Dependency("Zlib_jll"),
-    Dependency("Zstd_jll"),
+    Dependency("XZ_jll"; compat="5.8.4"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
+    Dependency("Zstd_jll"; compat="1.5.7"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

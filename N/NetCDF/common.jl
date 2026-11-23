@@ -116,7 +116,7 @@ function netcdf_plugin_dependencies(platform_dependencies; netcdf_runtime=false)
     netcdf = if netcdf_runtime
         Dependency("NetCDF_jll"; compat=string(netcdf_core_version))
     else
-        BuildDependency(PackageSpec(name="NetCDF_jll", version=netcdf_core_version))
+        BuildDependency(PackageSpec(name="NetCDF_jll", version=string(netcdf_core_version)))
     end
     deps = [
         netcdf,

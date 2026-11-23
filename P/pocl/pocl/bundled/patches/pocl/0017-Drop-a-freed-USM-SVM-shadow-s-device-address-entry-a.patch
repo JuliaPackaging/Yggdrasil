@@ -1,4 +1,4 @@
-From cb41d6c313d047aeb51a9d7da31854206dff32ec Mon Sep 17 00:00:00 2001
+From 1c72a09921622e3eefc78296e75b756ca2f373ae Mon Sep 17 00:00:00 2001
 From: Paulius Velesko <pvelesko@pglc.io>
 Date: Thu, 1 Oct 2026 09:40:02 +0300
 Subject: [PATCH] Drop a freed USM/SVM shadow's device-address entry at free
@@ -109,18 +109,18 @@ index 75fc5b2d3..dc833dca1 100644
        break;
  
 diff --git a/tests/regression/CMakeLists.txt b/tests/regression/CMakeLists.txt
-index 259a0a647..0eb3a588a 100644
+index 574c3a527..dc5c93634 100644
 --- a/tests/regression/CMakeLists.txt
 +++ b/tests/regression/CMakeLists.txt
-@@ -41,6 +41,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
-      test_indirect_ptrs
+@@ -43,6 +43,7 @@ set(C_PROGRAMS_TO_BUILD test_assign_loop_variable_to_privvar_makes_it_local
+      test_replicated_wi_subgroup_alloca
       test_usm_indirect_ptrs
       test_frexp_kernellib
 +     test_usm_free_realloc
  )
  if(UNIX)
    list(APPEND C_PROGRAMS_TO_BUILD test_signal_handlers)
-@@ -201,6 +202,8 @@ if(X86 AND KERNELLIB_HOST_DISTRO_VARIANTS)
+@@ -209,6 +210,8 @@ if(X86 AND KERNELLIB_HOST_DISTRO_VARIANTS)
    endforeach()
  endif()
  
@@ -226,5 +226,5 @@ index 000000000..e587ffa82
 +  return EXIT_SUCCESS;
 +}
 -- 
-2.55.0
+2.56.0
 

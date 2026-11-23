@@ -761,22 +761,19 @@ static int sandbox_main(const char * root_dir, const char * new_cd, int sandbox_
     _exit(1);
   }
 
-  // Let's perform normal init functions, handling signals from orphaned
-  // children, etc
-  sigset_t waitset;
-  sigemptyset(&waitset);
-  sigaddset(&waitset, SIGCHLD);
-  sigprocmask(SIG_BLOCK, &waitset, NULL);
+  // Let's perform normal init functions, reaping orphaned children until the
+  // main pid exits.  Don't wait for SIGCHLD first: if the main pid exits before
+  // SIGCHLD is blocked, that signal is discarded and we would wait forever.
   for (;;) {
-    int sig;
-    sigwait(&waitset, &sig);
-
-    pid_t reaped_pid;
-    while ((reaped_pid = waitpid(-1, &status, 0)) != -1) {
-      if (reaped_pid == main_pid) {
-        // If it was the main pid that exited, return as well.
-        return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
-      }
+    pid_t reaped_pid = waitpid(-1, &status, 0);
+    if (reaped_pid == -1) {
+      // ECHILD would mean we missed the exit of the main pid; don't wait forever.
+      check(errno == EINTR);
+      continue;
+    }
+    if (reaped_pid == main_pid) {
+      // If it was the main pid that exited, return as well.
+      return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
     }
   }
 }

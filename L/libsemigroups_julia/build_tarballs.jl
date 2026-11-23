@@ -7,12 +7,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "libsemigroups_julia"
-version = v"0.1.2"
+version = v"0.1.4"
 
 # Collection of sources required to build libsemigroups_julia
 sources = [
     GitSource("https://github.com/libsemigroups/Semigroups.jl.git",
-        "7936ddeb53e9e629048beead2c774d3383302835"),
+              "35190bb767ed06fbeb71ae3fced8ff19d62f448f"),
 ]
 
 # Bash recipe for building across all platforms
@@ -54,9 +54,9 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    BuildDependency(PackageSpec(; name="libjulia_jll", version="1.11.0")),
-    Dependency("libcxxwrap_julia_jll"; compat="~0.14.5"),
-    Dependency("libsemigroups_jll"; compat="=3.6.1"),
+    BuildDependency(PackageSpec(; name="libjulia_jll", version="1.11.4")),
+    Dependency("libcxxwrap_julia_jll"; compat="~0.14.12"),
+    Dependency("libsemigroups_jll"; compat="=3.6.2"),
     Dependency("CompilerSupportLibraries_jll"),
 ]
 

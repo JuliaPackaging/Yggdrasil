@@ -3,7 +3,7 @@ using BinaryBuilder
 # To distinguish between upstream changes and changes to the JLL, we use:
 #     version = 100 * upstream version + offset
 # See C/Coin-OR/coin-or-common.jl for more details.
-version = v"200.0.800"
+version = v"200.0.801" # Rebuilt 2026-11 (upstream 2.0.8) to drop the stale `Pkg` dependency
 
 # Collection of sources required to build ECOSBuilder
 sources = [

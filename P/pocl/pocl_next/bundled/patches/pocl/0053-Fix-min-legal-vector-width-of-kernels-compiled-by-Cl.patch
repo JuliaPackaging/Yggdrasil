@@ -1,0 +1,67 @@
+From 97d61e362a3fca4c1259ddd030bf84a5334620d7 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Thu, 19 Nov 2026 11:49:14 +0100
+Subject: [PATCH] Fix min-legal-vector-width of kernels compiled by Clang 23
+
+Since llvm/llvm-project#191090, Clang emits OpenCL C kernels for CPU
+targets with the C calling convention instead of SPIR_KERNEL, and gives
+them a min-legal-vector-width of 0 even when they pass 512-bit vectors to
+a callee. FixMinVecSize only looked at SPIR_KERNEL functions without the
+attribute, so it skipped all such kernels. When a kernel library function
+taking a 512-bit vector was then not inlined, the kernel and the callee
+legalized the argument differently (two 256-bit halves vs. one 512-bit
+vector) and the callee read garbage for the upper half, e.g. pown on
+half16/int16 on AVX-512 hosts with the Win64 ABI.
+
+Process every kernel, and only ever raise the width it already has.
+---
+ lib/llvmopencl/MinLegalVecSize.cc | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/lib/llvmopencl/MinLegalVecSize.cc b/lib/llvmopencl/MinLegalVecSize.cc
+index 994e24d3d..bec74ce24 100644
+--- a/lib/llvmopencl/MinLegalVecSize.cc
++++ b/lib/llvmopencl/MinLegalVecSize.cc
+@@ -172,7 +172,7 @@ static uint64_t getAndFixLargestVecSize(llvm::Function *F, unsigned Justify) {
+   return MinVecSize;
+ }
+ 
+-// find all kernels with SPIR_KERNEL CC and recursively fix their
++// find all kernels and recursively fix their
+ // "min-legal-vector-width" attributes to the correct value. If any
+ // called function has its "min-legal-vector-width" larger than
+ // the device's native vector width size, also set the AlwaysInline
+@@ -193,21 +193,21 @@ static bool fixMinVecSize(Module &M) {
+     if (F->hasName() && F->getName().starts_with("llvm."))
+       continue;
+ 
+-    // AttributeSet Attrs;
+-    if (pocl::isKernelToProcess(*F) &&
+-        (F->getCallingConv() == llvm::CallingConv::SPIR_KERNEL)) {
++    // Since Clang 23 (llvm/llvm-project#191090), OpenCL C kernels for CPU
++    // targets use the C calling convention instead of SPIR_KERNEL, and carry
++    // a min-legal-vector-width that ignores the vectors passed to their
++    // callees. Fix every kernel, raising whatever width it already has: a
++    // caller with a smaller width than its callee legalizes vector arguments
++    // differently than the callee does (e.g. two 256-bit halves instead of one
++    // 512-bit vector), which corrupts them.
++    if (pocl::isKernelToProcess(*F)) {
+ #ifdef DEBUG_VEC_SIZE
+       std::cerr << "processing kernel: " << F->getName().str() << "\n";
+ #endif
+-      llvm::Attribute Attr = F->getFnAttribute("min-legal-vector-width");
+-      if (Attr.isValid()) {
+-        continue;
+-      }
+-
+       getAndFixLargestVecSize(F, 0);
+ 
+ #ifdef DEBUG_VEC_SIZE
+-      Attr = F->getFnAttribute("min-legal-vector-width");
++      llvm::Attribute Attr = F->getFnAttribute("min-legal-vector-width");
+       uint64_t NewWidth = 0;
+       Attr.getValueAsString().getAsInteger(0, NewWidth);
+       std::cerr << "Set kernel attr min-legal-vector-width to : " << NewWidth
+-- 
+2.56.0
+

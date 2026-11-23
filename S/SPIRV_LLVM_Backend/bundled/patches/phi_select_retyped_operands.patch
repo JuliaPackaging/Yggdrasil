@@ -1,0 +1,173 @@
+From 5e8a5bc74e64947dc5dbd7dc280c940c60fe2da4 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Thu, 5 Nov 2026 19:12:34 +0100
+Subject: [PATCH] [SPIR-V] Revalidate PHI and select operands after retyping
+ them
+
+deduceOperandElementType validates the operands of a PHI or select
+against its deduced element type. When the PHI or select is itself an
+operand of another instruction and its element type is still a guess
+(e.g. the i8 fallback), deducing that other instruction can retype it
+through updateAssignType. propagateElemTypeRec then keeps its users
+valid, but its own operands were validated against the old type and are
+not revisited. Postprocessing catches up for instruction operands, but
+null constants have no use list and are never reconsidered, so a null
+incoming value keeps the old pointee type. The result is an OpPhi or
+OpSelect whose operands do not match its result type, which spirv-val
+rejects, and for selects an assertion in selectSelect.
+
+This became much easier to hit once LoopSimplify started running for
+non-shader targets (#187519): the PHIs it creates in new latch blocks
+can be visited after the PHIs they feed type information to.
+
+When this path retypes a type-validated PHI or select, revalidate its
+operands against the new type. The instructions are queued and handled
+by the outermost call, as revalidating one PHI can retype the next one
+in a chain.
+---
+ lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp      | 21 +++++
+ .../phi-select-retyped-null-operand.ll        | 86 +++++++++++++++++++
+ 2 files changed, 107 insertions(+)
+ create mode 100644 llvm/test/CodeGen/SPIRV/pointers/phi-select-retyped-null-operand.ll
+
+diff --git a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+index 6b1f2eb7b3cf..6d6c670dd34e 100644
+--- a/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
++++ b/lib/Target/SPIRV/SPIRVEmitIntrinsics.cpp
+@@ -225,6 +225,10 @@ class SPIRVEmitIntrinsics
+   // a register of Instructions that were visited by deduceOperandElementType()
+   // to validate operand types with an instruction
+   SmallPtrSet<Instruction *, 0> TypeValidated;
++  // Type-validated PHIs and selects whose element type changed since, to be
++  // revalidated by the outermost deduceOperandElementType() call.
++  SmallVector<Instruction *> RetypedToRevalidate;
++  bool RevalidatingRetyped = false;
+ 
+   // well known result types of builtins
+   enum WellKnownTypes { Event };
+@@ -1578,6 +1582,13 @@ void SPIRVEmitIntrinsics::deduceOperandElementType(
+         DenseSet<std::pair<Value *, Value *>> VisitedSubst{
+             std::make_pair(I, Op)};
+         propagateElemTypeRec(Op, KnownElemTy, PrevElemTy, VisitedSubst);
++        // A PHI or select validated its operands against its previous element
++        // type. Null constants have no use list and are not revisited by
++        // postprocessing, so validate the operands against the new type.
++        if (auto *OpI = dyn_cast<Instruction>(Op);
++            OpI && (isa<PHINode>(OpI) || isa<SelectInst>(OpI)) &&
++            TypeValidated.contains(OpI))
++          RetypedToRevalidate.push_back(OpI);
+       }
+     } else {
+       eraseTodoType(Op);
+@@ -1590,6 +1601,16 @@ void SPIRVEmitIntrinsics::deduceOperandElementType(
+     }
+   }
+   TypeValidated.insert(I);
++
++  // Revalidating one PHI can retype the next one in a chain. Use a worklist
++  // rather than recursion, as such chains can be long.
++  if (RevalidatingRetyped)
++    return;
++  RevalidatingRetyped = true;
++  while (!RetypedToRevalidate.empty())
++    deduceOperandElementType(RetypedToRevalidate.pop_back_val(), nullptr,
++                             nullptr, IsPostprocessing);
++  RevalidatingRetyped = false;
+ }
+ 
+ void SPIRVEmitIntrinsics::replaceMemInstrUses(Instruction *Old,
+diff --git a/test/CodeGen/SPIRV/pointers/phi-select-retyped-null-operand.ll b/test/CodeGen/SPIRV/pointers/phi-select-retyped-null-operand.ll
+new file mode 100644
+index 000000000000..57782938a50f
+--- /dev/null
++++ b/test/CodeGen/SPIRV/pointers/phi-select-retyped-null-operand.ll
+@@ -0,0 +1,86 @@
++; A PHI or select that is given a new element type after its operands were
++; validated must cast its null operands to the new type. %b is first typed as
++; i8 and only later, through %a.be, as float. The predecessor order of %header
++; decides the order in which LoopSimplify creates the blocks, and thereby the
++; order in which the PHIs are visited.
++
++; RUN: llc -O0 -mtriple=spirv64-unknown-unknown %s -o - | FileCheck %s
++; RUN: %if spirv-tools %{ llc -O0 -mtriple=spirv64-unknown-unknown %s -o - -filetype=obj | spirv-val %}
++
++; CHECK-DAG: %[[#Char:]] = OpTypeInt 8 0
++; CHECK-DAG: %[[#CharPtr:]] = OpTypePointer Function %[[#Char]]
++; CHECK-DAG: %[[#Float:]] = OpTypeFloat 32
++; CHECK-DAG: %[[#FloatPtr:]] = OpTypePointer Function %[[#Float]]
++; CHECK-DAG: %[[#Null:]] = OpConstantNull %[[#CharPtr]]
++
++; CHECK-LABEL: ; -- Begin function phi
++; CHECK: %[[#PhiNull1:]] = OpBitcast %[[#FloatPtr]] %[[#Null]]
++; CHECK: %[[#PhiNull2:]] = OpBitcast %[[#FloatPtr]] %[[#Null]]
++; CHECK: %[[#PhiNull3:]] = OpBitcast %[[#FloatPtr]] %[[#Null]]
++; CHECK: OpPhi %[[#FloatPtr]] %[[#PhiNull3]] %[[#]]
++; CHECK: OpPhi %[[#FloatPtr]] %[[#PhiNull1]] %[[#]]
++; CHECK: OpPhi %[[#FloatPtr]] %[[#PhiNull2]] %[[#]]
++
++; CHECK-LABEL: ; -- Begin function select
++; CHECK: %[[#SelNull1:]] = OpBitcast %[[#FloatPtr]] %[[#Null]]
++; CHECK: %[[#SelNull2:]] = OpBitcast %[[#FloatPtr]] %[[#Null]]
++; CHECK: %[[#SelNull3:]] = OpBitcast %[[#FloatPtr]] %[[#Null]]
++; CHECK: OpPhi %[[#FloatPtr]] %[[#SelNull3]] %[[#]]
++; CHECK: OpSelect %[[#FloatPtr]] %[[#]] %[[#SelNull1]] %[[#]]
++; CHECK: OpPhi %[[#FloatPtr]] %[[#SelNull2]] %[[#]]
++
++define spir_kernel void @phi(i1 %c, ptr %p) {
++entry:
++  br label %header
++
++header:
++  %a = phi ptr [ null, %entry ], [ null, %body ], [ %b, %latch ]
++  br i1 %c, label %cond, label %latch
++
++cond:
++  br i1 %c, label %latch, label %body
++
++body:
++  %v = load float, ptr %a, align 4
++  br i1 %c, label %exit, label %header
++
++latch:
++  %b = phi ptr [ null, %cond ], [ %p, %header ]
++  %dead = icmp eq i64 0, 0
++  br label %header
++
++exit:
++  store float %v, ptr addrspace(3) null
++  ret void
++
++  uselistorder label %header, { 1, 0, 2 }
++}
++
++define spir_kernel void @select(i1 %c, ptr %p) {
++entry:
++  br label %header
++
++header:
++  %a = phi ptr [ null, %entry ], [ %a.be, %header.backedge ]
++  br i1 %c, label %cond, label %latch
++
++cond:
++  br i1 %c, label %latch, label %body
++
++body:
++  %v = load float, ptr %a, align 4
++  br i1 %c, label %exit, label %header.backedge
++
++latch:
++  %b = select i1 %c, ptr null, ptr %p
++  %dead = icmp eq i64 0, 0
++  br label %header.backedge
++
++header.backedge:
++  %a.be = phi ptr [ null, %body ], [ %b, %latch ]
++  br label %header
++
++exit:
++  store float %v, ptr addrspace(3) null
++  ret void
++}
+-- 
+2.56.0
+

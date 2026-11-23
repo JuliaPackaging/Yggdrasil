@@ -1,0 +1,118 @@
+From 23218866434f90be8da37c26692ad162a9382b37 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Tue, 6 Oct 2026 16:52:05 +0200
+Subject: [PATCH] [SPIRV] Don't cache SyncScope IDs across LLVMContexts in
+ getMemScope
+
+getMemScope() kept the SyncScope IDs of "subgroup", "workgroup" and
+"device" in function-local statics, initialized from the context of the
+first call. SyncScope IDs are per LLVMContext and assigned in
+registration order, so a later context that registered these scopes in
+a different order got the wrong Scope operands: e.g. device-scope
+atomics were emitted with Subgroup scope and vice versa. This affects
+tools that use the back-end as a library and compile modules in fresh
+contexts.
+
+Look the IDs up in the given context on every call instead.
+---
+ lib/Target/SPIRV/SPIRVUtils.cpp         | 11 +++---
+ unittests/Target/SPIRV/SPIRVAPITest.cpp | 51 +++++++++++++++++++++++++
+ 2 files changed, 56 insertions(+), 6 deletions(-)
+
+diff --git a/lib/Target/SPIRV/SPIRVUtils.cpp b/lib/Target/SPIRV/SPIRVUtils.cpp
+index c6f53609a2b3..36fa933404e1 100644
+--- a/lib/Target/SPIRV/SPIRVUtils.cpp
++++ b/lib/Target/SPIRV/SPIRVUtils.cpp
+@@ -439,12 +439,11 @@ SPIRV::Scope::Scope getMemScope(LLVMContext &Ctx, SyncScope::ID Id) {
+   // We don't need aliases for Invocation and CrossDevice, as we already have
+   // them covered by "singlethread" and "" strings respectively (see
+   // implementation of LLVMContext::LLVMContext()).
+-  static const llvm::SyncScope::ID SubGroup =
+-      Ctx.getOrInsertSyncScopeID("subgroup");
+-  static const llvm::SyncScope::ID WorkGroup =
+-      Ctx.getOrInsertSyncScopeID("workgroup");
+-  static const llvm::SyncScope::ID Device =
+-      Ctx.getOrInsertSyncScopeID("device");
++  // SyncScope IDs are assigned per LLVMContext, in registration order, so they
++  // must not be cached across calls.
++  const llvm::SyncScope::ID SubGroup = Ctx.getOrInsertSyncScopeID("subgroup");
++  const llvm::SyncScope::ID WorkGroup = Ctx.getOrInsertSyncScopeID("workgroup");
++  const llvm::SyncScope::ID Device = Ctx.getOrInsertSyncScopeID("device");
+ 
+   if (Id == llvm::SyncScope::SingleThread)
+     return SPIRV::Scope::Invocation;
+diff --git a/unittests/Target/SPIRV/SPIRVAPITest.cpp b/unittests/Target/SPIRV/SPIRVAPITest.cpp
+index 321c092bc751..da4c9cbac578 100644
+--- a/unittests/Target/SPIRV/SPIRVAPITest.cpp
++++ b/unittests/Target/SPIRV/SPIRVAPITest.cpp
+@@ -12,9 +12,11 @@
+ //
+ //===----------------------------------------------------------------------===//
+ 
++#include "llvm/ADT/DenseMap.h"
+ #include "llvm/AsmParser/Parser.h"
+ #include "llvm/BinaryFormat/Magic.h"
+ #include "llvm/IR/Module.h"
++#include "llvm/Support/Endian.h"
+ #include "llvm/Support/SourceMgr.h"
+ #include "llvm/TargetParser/Triple.h"
+ #include "gtest/gtest.h"
+@@ -152,6 +154,55 @@ TEST_F(SPIRVAPITest, checkTranslateUnknownExtensionByArg) {
+   EXPECT_EQ(Error, "Unknown SPIR-V extension: SPV_XYZ_my_unknown_extension");
+ }
+ 
++// Returns the Scope operand of every OpAtomicIAdd in a SPIR-V binary, in order.
++static std::vector<uint32_t> getAtomicIAddScopes(StringRef Binary) {
++  constexpr uint32_t OpConstant = 43, OpAtomicIAdd = 234;
++  size_t NumWords = Binary.size() / 4;
++  auto Word = [&](size_t I) {
++    return support::endian::read32le(Binary.data() + 4 * I);
++  };
++  DenseMap<uint32_t, uint32_t> Constants;
++  std::vector<uint32_t> Scopes;
++  // Skip the 5-word header.
++  for (size_t I = 5; I < NumWords;) {
++    uint32_t Opcode = Word(I) & 0xffff, WordCount = Word(I) >> 16;
++    if (WordCount == 0 || I + WordCount > NumWords)
++      return {};
++    // OpConstant <type> <result> <value>
++    if (Opcode == OpConstant && WordCount == 4)
++      Constants[Word(I + 2)] = Word(I + 3);
++    // OpAtomicIAdd <type> <result> <pointer> <scope> <semantics> <value>
++    if (Opcode == OpAtomicIAdd)
++      Scopes.push_back(Constants.lookup(Word(I + 4)));
++    I += WordCount;
++  }
++  return Scopes;
++}
++
++// SyncScope IDs are per LLVMContext and depend on the order in which scopes are
++// registered. Translating modules from contexts that registered the same scopes
++// in a different order must still produce the right Scope operands.
++TEST_F(SPIRVAPITest, checkSyncScopesAcrossContexts) {
++  constexpr uint32_t Device = 1, Workgroup = 2, Subgroup = 3;
++  auto Translate = [&](ArrayRef<StringRef> Scopes) {
++    std::string Assembly =
++        "define spir_kernel void @k(ptr addrspace(1) %p) {\n";
++    for (StringRef Scope : Scopes)
++      Assembly += ("  atomicrmw add ptr addrspace(1) %p, i32 1 syncscope(\"" +
++                   Scope + "\") monotonic\n")
++                      .str();
++    Assembly += "  ret void\n}\n";
++    std::string Result, Error;
++    EXPECT_TRUE(toSpirv(Assembly, Result, Error, {}, CodeGenOptLevel::None,
++                        Triple("spirv64-unknown-unknown")));
++    return getAtomicIAddScopes(Result);
++  };
++  EXPECT_THAT(Translate({"device", "workgroup", "subgroup"}),
++              testing::ElementsAre(Device, Workgroup, Subgroup));
++  EXPECT_THAT(Translate({"subgroup", "workgroup", "device"}),
++              testing::ElementsAre(Subgroup, Workgroup, Device));
++}
++
+ #if !defined(NDEBUG) && GTEST_HAS_DEATH_TEST
+ TEST_F(SPIRVAPITest, checkTranslateExtensionError) {
+   std::string Result, Error;
+-- 
+2.55.0
+

@@ -9,6 +9,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Lavapipe"
 version = v"26.2.2"
+ygg_version = v"26.2.4"  # New JLL version: device memory in a memfd on glibc (0006).
 
 # Lavapipe is Mesa's software Vulkan driver: the `swrast` Vulkan driver, i.e. the Vulkan
 # frontend of the llvmpipe gallium driver, which JITs shaders with LLVM. Mesa's meson
@@ -65,7 +66,8 @@ python3 -c "import mako, yaml; from packaging.version import Version; print('mak
 
 cd ${WORKSPACE}/srcdir/mesa-*
 
-for patch in ${WORKSPACE}/srcdir/patches/000[1-4]-*.patch; do
+# 0005 is macOS-only and applied below.
+for patch in ${WORKSPACE}/srcdir/patches/000[1-4]-*.patch ${WORKSPACE}/srcdir/patches/0006-*.patch; do
     atomic_patch -p1 ${patch}
 done
 
@@ -176,7 +178,7 @@ ninja -C build install
 icd_dir=${prefix}/share/vulkan/icd.d
 mv ${icd_dir}/lvp_icd.*.json ${icd_dir}/lvp_icd.json
 if [[ "${target}" == *-mingw* ]]; then
-    lib_path=../../../bin/vulkan_lvp.dll
+    lib_path='..\..\..\bin\vulkan_lvp.dll'
 else
     lib_path=../../../lib/libvulkan_lvp.${dlext}
 fi
@@ -279,10 +281,10 @@ append!(dependencies, [
 # x86_64-apple-darwin cannot have GCC 15: that shard's ld64 needs a libdispatch.so that
 # ships in no shard. Hence two builds over disjoint platform sets.
 if any(should_build_platform.(triplet.(windows_platforms)))
-    build_tarballs(ARGS, name, version, sources, script, windows_platforms, products, dependencies;
-                   julia_compat="1.6", preferred_gcc_version=v"15", init_block)
+    build_tarballs(ARGS, name, ygg_version, sources, script, windows_platforms, products, dependencies;
+                   julia_compat="1.10", preferred_gcc_version=v"15", init_block)
 end
 if any(should_build_platform.(triplet.(other_platforms)))
-    build_tarballs(ARGS, name, version, sources, script, other_platforms, products, dependencies;
-                   julia_compat="1.6", preferred_gcc_version=v"12", init_block)
+    build_tarballs(ARGS, name, ygg_version, sources, script, other_platforms, products, dependencies;
+                   julia_compat="1.10", preferred_gcc_version=v"12", init_block)
 end

@@ -1,10 +1,10 @@
 using BinaryBuilder
 
 name = "OpenJPH"
-version = v"0.32.0"
+version = v"0.33.0"
 
 sources = [
-    GitSource("https://github.com/aous72/OpenJPH", "23c422895ce6c3a156935222e4715ee0b7be952c"),
+    GitSource("https://github.com/aous72/OpenJPH", "345a8bcd1c7a3908e3870797057277660a412073"; tag="$(version)"),
     DirectorySource("bundled"),
 ]
 
