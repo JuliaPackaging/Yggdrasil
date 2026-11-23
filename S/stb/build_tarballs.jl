@@ -8,7 +8,7 @@ using BinaryBuilder
 name = "stb"
 # stb doesn't ever do releases, so the best we can do is stick to a specific git
 # revision...
-version = v"0.0.20261219"
+version = v"0.0.20261119"
 sources = [
     GitSource("https://github.com/nothings/stb.git",
                   "6b5799bae8a1fe3792691ef4b72ae26434c3e799")
