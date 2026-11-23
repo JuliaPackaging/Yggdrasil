@@ -30,4 +30,4 @@ products = Product[]
 # Dependencies that must be installed before this package can be built.
 dependencies = []
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10")
