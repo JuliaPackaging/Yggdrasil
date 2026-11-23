@@ -1,17 +1,20 @@
 # MuPDF calls getentropy(3), which glibc only has from 2.25, while Yggdrasil's oldest glibc target is
-# 2.17, and musl's headers in the build sysroot do not have it at all. On Linux it is therefore taken
+# 2.12, and musl's headers in the build sysroot do not have it at all. On Linux it is therefore taken
 # from upstream's own fallback, seeded from the clock, wherever it is missing. macOS and the BSDs keep
-# their native getentropy; they are not touched here.
+# their native getentropy; they are not touched here. __GLIBC_PREREQ is only tested once __GLIBC__ is
+# known to be defined, because GCC 4.8 evaluates an #elif expression even after an earlier branch won.
 # No upstream report: this is a build setting, not a bug.
 --- a/source/fitz/random.c
 +++ b/source/fitz/random.c
-@@ -1,3 +1,16 @@
+@@ -1,3 +1,18 @@
 +#if defined(__linux__)
 +#include <stddef.h>
 +#include <features.h>
-+#if !defined(__GLIBC__)
++#if defined(__GLIBC__)
++#if !__GLIBC_PREREQ(2, 25)
 +#define MUPDF_NEEDS_GETENTROPY_FALLBACK
-+#elif !__GLIBC_PREREQ(2, 25)
++#endif
++#else
 +#define MUPDF_NEEDS_GETENTROPY_FALLBACK
 +#endif
 +#if defined(MUPDF_NEEDS_GETENTROPY_FALLBACK)

@@ -31,25 +31,15 @@ make -j${nproc} build=release HAVE_X11=no HAVE_GLUT=no HAVE_LIBCRYPTO=no HAVE_LI
 install -Dvm 755 build/release/mutool ${bindir}/mutool${exeext}
 
 install_license COPYING
-install_license thirdparty/brotli/LICENSE
-install_license thirdparty/cmark-gfm/COPYING
-install_license thirdparty/curl/COPYING
-install_license thirdparty/extract/COPYING
-install_license thirdparty/freeglut/COPYING
-install_license thirdparty/freetype/LICENSE.TXT
-install_license thirdparty/gumbo-parser/COPYING
-install_license thirdparty/harfbuzz/COPYING
-install_license thirdparty/jbig2dec/COPYING
-install_license thirdparty/lcms2/LICENSE
-# IJG's terms are the README's letters section, as other recipes here take them.
-install -Dvm 644 thirdparty/libjpeg/README ${prefix}/share/licenses/MuPDF/libjpeg-README
-install_license thirdparty/leptonica/leptonica-license.txt
-install_license thirdparty/mujs/COPYING
-install_license thirdparty/openjpeg/LICENSE
-install_license thirdparty/tesseract/LICENSE
-install_license thirdparty/zint/LICENSE
-install_license thirdparty/zlib/LICENSE
-install_license thirdparty/zxing-cpp/LICENSE
+# The bundled projects' license files share names (COPYING, LICENSE), so each is installed under its
+# project's name rather than over the previous one. IJG's terms are the libjpeg README's letters
+# section, as other recipes here take them.
+for f in brotli/LICENSE cmark-gfm/COPYING curl/COPYING extract/COPYING freeglut/COPYING \
+         freetype/LICENSE.TXT gumbo-parser/COPYING harfbuzz/COPYING jbig2dec/COPYING lcms2/LICENSE \
+         leptonica/leptonica-license.txt libjpeg/README mujs/COPYING openjpeg/LICENSE \
+         tesseract/LICENSE zint/LICENSE zlib/LICENSE zxing-cpp/LICENSE; do
+    install -Dvm 644 thirdparty/${f} ${prefix}/share/licenses/MuPDF/${f%%/*}-${f##*/}
+done
 """
 
 platforms = supported_platforms()
@@ -60,5 +50,7 @@ products = [
 
 dependencies = Dependency[]
 
+# The bundled cmark-gfm uses C99 for-loop declarations, which the default GCC 4.8 rejects in its gnu90
+# mode ("'for' loop initial declarations are only allowed in C99 mode"); GCC 5 defaults to gnu11.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6")
+               julia_compat="1.6", preferred_gcc_version=v"5")
