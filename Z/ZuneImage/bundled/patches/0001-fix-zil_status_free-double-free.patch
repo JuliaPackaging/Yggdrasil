@@ -1,0 +1,19 @@
+zune-capi: fix double free in zil_status_free
+
+`ZStatus` owns its `message` buffer and `impl Drop for ZStatus` frees it, so
+freeing `message` manually before `status.drop_in_place()` frees the same
+pointer twice and every `zil_status_free` call aborts the process.  Dropping
+the status is enough: `zil_status_new` always installs a live allocation in
+`message`, and the `*status = ZStatus::new(..)` error assignments elsewhere
+replace an already initialised status, so each message is freed exactly once.
+
+--- a/crates/zune-capi/src/errno.rs
++++ b/crates/zune-capi/src/errno.rs
+@@ -160,7 +160,6 @@
+ #[no_mangle]
+ pub extern "C" fn zil_status_free(status: *mut ZStatus) {
+     if !status.is_null() {
+-        unsafe { zil_free((*status).message.cast()) }
+         // free object
+         unsafe { status.drop_in_place() }
+ 
