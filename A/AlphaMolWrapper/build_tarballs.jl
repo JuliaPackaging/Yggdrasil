@@ -14,8 +14,10 @@ mkdir build && cd build
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
     -DJulia_PREFIX=${prefix}
-VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
+VERBOSE=ON cmake --build . --target install -- -j${nproc}
+install_license ../LICENSE.md
 """
 include("../../L/libjulia/common.jl")
 julia_compat = libjulia_julia_compat(julia_versions)
@@ -26,9 +28,9 @@ products = [
 ]
 
 dependencies = [
-    BuildDependency("libjulia_jll"),
+    BuildDependency(PackageSpec(; name="libjulia_jll", version="1.11.6")),
     Dependency("libcxxwrap_julia_jll"; compat="0.14.8"),
-    Dependency("GMP_jll"),
+    Dependency("GMP_jll"; compat="6.2.1"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
