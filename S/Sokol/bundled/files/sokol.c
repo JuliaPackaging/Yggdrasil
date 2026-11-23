@@ -1,0 +1,24 @@
+#define SOKOL_NO_ENTRY
+#define SOKOL_IMPL
+#if defined(_MSC_VER)
+#define SOKOL_D3D11
+#define SOKOL_LOG(str) OutputDebugStringA(str)
+#elif defined(__APPLE__) && defined(__arm64__)
+// NOTE: on macOS, sokol.c is compiled explicitly as ObjC 
+#include <TargetConditionals.h>
+#define SOKOL_METAL
+#elif defined(__APPLE__) && defined(__x86_64__)
+#include <TargetConditionals.h>
+#define SOKOL_GLCORE
+#else
+#define SOKOL_GLCORE
+#endif
+#define SOKOL_WIN32_FORCE_MAIN
+#include "sokol_audio.h"
+#include "sokol_app.h"
+#include "sokol_gfx.h"
+#include "sokol_time.h"
+#include "sokol_glue.h"
+#include "sokol_fetch.h"
+#include "sokol_log.h"
+#include "sokol_args.h"
