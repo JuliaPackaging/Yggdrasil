@@ -3,13 +3,13 @@
 using BinaryBuilder, Pkg
 
 name = "aws_c_iot"
-version = v"1.0.0"
+version = v"1.0.1"
 # The SONAME contains major.minor, and minor releases may break the ABI.
 # Downstream recipes must restrict compat to one minor version, e.g. compat="~1.2.3".
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/awslabs/aws-c-iot.git", "6a63b7e26f872938c08db6904c5f124250e493e5"),
+    GitSource("https://github.com/awslabs/aws-c-iot.git", "8f82a350cfe6babd1767a3c12ef3c0f958f07c8d"),
 ]
 
 # Bash recipe for building across all platforms
