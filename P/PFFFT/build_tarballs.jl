@@ -5,10 +5,8 @@ using BinaryBuilder, Pkg
 name = "PFFFT"
 version = v"1.3.1"
 
-# PFFFT: a fast FFT for real and complex data of power-of-two (and 2^a·3^b·5^c) lengths, SIMD on
-# SSE, NEON and AltiVec, single and double precision, BSD-style licence (FFTPACK's).
 sources = [
-    GitSource("https://github.com/marton78/pffft.git", "fbe9c2b96530ce274f12e008336a8202e15b859b"),
+    GitSource("https://github.com/marton78/pffft.git", "fbe9c2b96530ce274f12e008336a8202e15b859b"; tag="v$(version)"),
 ]
 
 script = raw"""
@@ -22,20 +20,11 @@ cmake -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
-    -DPFFFT_USE_TYPE_FLOAT=ON \
-    -DPFFFT_USE_TYPE_DOUBLE=ON \
-    -DPFFFT_USE_SIMD=ON \
     -DPFFFT_BUILD_TESTS=OFF \
     -DPFFFT_BUILD_BENCHMARKS=OFF \
-    -DPFFFT_BUILD_EXAMPLES=OFF \
-    -DPFFFT_USE_FFTPACK=OFF \
-    -DPFFFT_USE_BENCH_GREEN=OFF \
-    -DPFFFT_USE_BENCH_KISS=OFF \
-    -DPFFFT_USE_BENCH_POCKET=OFF \
-    -DINSTALL_PFFFT=ON \
-    -DINSTALL_PFDSP=OFF \
-    -DINSTALL_PFFASTCONV=OFF
-# Only the FFT library: the DSP library beside it is C++ that musl's older GCC does not compile
+    -DPFFFT_BUILD_EXAMPLES=OFF
+# Only libpffft is shipped. The C++ PFDSP library, built by default, fails on x86 musl,
+# where GCC 4.8.5's mm_malloc.h clashes with musl's posix_memalign
 cmake --build build --parallel ${nproc} --target PFFFT
 cmake --install build
 # The install rule has no RUNTIME destination, so on Windows the DLL itself is not installed
@@ -52,7 +41,6 @@ products = [
     LibraryProduct("libpffft", :libpffft),
 ]
 
-dependencies = Dependency[
-]
+dependencies = Dependency[]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat = "1.6")
