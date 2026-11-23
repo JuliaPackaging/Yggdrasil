@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "tensorprimitives_tapp"
-version = v"0.1.0"
+version = v"0.1.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/lkdvos/tensorprimitives-rs.git", "ca916fae1947efa526cf7177bf06018c042fd8a6")
+    GitSource("https://github.com/lkdvos/tensorprimitives-rs.git", "af738881b25be3c8c34f20c947f19a998b148230")
 ]
 
 # Bash recipe for building across all platforms
