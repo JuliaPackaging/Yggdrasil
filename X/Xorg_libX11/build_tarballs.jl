@@ -37,5 +37,12 @@ dependencies = [
     Dependency("Xorg_xtrans_jll"),
 ]
 
+# The locale data path is compiled in as `${prefix}/share/X11/locale`, which doesn't
+# exist outside the build environment. Without it XSupportsLocale() fails and no input
+# method can be opened.
+init_block = raw"""
+ENV["XLOCALEDIR"] = get(ENV, "XLOCALEDIR", joinpath(artifact_dir, "share", "X11", "locale"))
+"""
+
 # Build the tarballs.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", init_block)
