@@ -4,29 +4,17 @@ using BinaryBuilder, Pkg
 
 name = "MiniZinc"
 
-version = v"2.10.1"
+version = v"2.11.0"
 
 sources = [
     GitSource(
         "https://github.com/MiniZinc/libminizinc.git",
-        "c3448c48e7f05f13805616cfd1b9e94972eef58c",
+        "aac81d56847356090a4d915576e8719d196a1395",
     ),
-    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 cd $WORKSPACE/srcdir/libminizinc
-
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fixes.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/01-file_utils-use-_WIN32-guards.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/02-file_utils-cxx11-lambda.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/03-process-qualify-std-thread.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/04-FILE_PATH-libstdcxx-wchar.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/05-mingw-municode-wmain.patch
-atomic_patch -p1 ${WORKSPACE}/srcdir/patches/06-highs-plugin-libhighs-dll.patch
-
-# Patch for MinGW toolchain
-find .. -type f -exec sed -i 's/Windows.h/windows.h/g' {} +
 
 CMAKE_FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
@@ -61,7 +49,7 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     # Use an exact version for HiGHS. @odow has observed segfaults with
     # HiGHS_jll v1.5.3 when libminizinc compiled with v1.5.1.
-    Dependency("HiGHS_jll"; compat="=1.15.1"),
+    Dependency("HiGHS_jll"; compat="=1.16.0"),
 ]
 
 build_tarballs(
