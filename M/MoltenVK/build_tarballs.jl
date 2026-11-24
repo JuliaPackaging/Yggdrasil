@@ -4,9 +4,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "MoltenVK"
-# 1.4.2 raised the minimum to macOS 12; the script checks that the deployment target below
-# matches upstream's
-version = v"1.4.1"
+version = v"1.4.2"
 
 # CPM_DOWNLOAD_VERSION in MoltenVK's cmake/recipes/CPM.cmake
 cpm_version = v"0.40.8"
@@ -19,15 +17,15 @@ cpm_version = v"0.40.8"
 # files, and `cpm_version` from CPM_DOWNLOAD_VERSION in its cmake/recipes/CPM.cmake.
 sources = [
     GitSource("https://github.com/KhronosGroup/MoltenVK.git",
-              "db445ff2042d9ce348c439ad8451112f354b8d2a"; tag="v$(version)"),
+              "db66022459ffb663aa2b50f6b018bc2e124f5edf"; tag="v$(version)"),
     GitSource("https://github.com/KhronosGroup/SPIRV-Cross.git",
-              "adec7acbf41a988713cdb85f93f26c8ca5ea863e"),
+              "6c09849fe88c48eaed08413aa022aaa136a3a057"),
     GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git",
-              "b824a462d4256d720bebb40e78b9eb8f78bbb305"),
+              "29981f65241605e08b0ede4cfeb999fe3b723c6a"),
     GitSource("https://github.com/KhronosGroup/SPIRV-Tools.git",
-              "262bdab48146c937467f826699a40da0fdfc0f1a"),
+              "0d6fd73ca73830ccab5fa1f00ed5ed40124e2c55"),
     GitSource("https://github.com/KhronosGroup/Vulkan-Headers.git",
-              "6aefb8eb95c8e170d0805fd0f2d02832ec1e099a"),
+              "e3b1eec08173d6b825cd3ac88c885a63b621504a"),
     GitSource("https://github.com/USCiLab/cereal.git",
               "a56bad8bbb770ee266e930c95d37fff2a5be7fea"),
     FileSource("https://github.com/cpm-cmake/CPM.cmake/releases/download/v$(cpm_version)/CPM.cmake",
@@ -81,8 +79,8 @@ done
 """
 
 # MoltenVK features depend on the SDK it is built with (MVK_XCODE_* macros), so use the newest
-# one available. The deployment target is the oldest macOS that MoltenVK 1.4.1 supports.
-sources, script = require_macos_sdk("15.0", sources, script; deployment_target="11.0")
+# one available. The deployment target is the oldest macOS that this MoltenVK supports.
+sources, script = require_macos_sdk("15.0", sources, script; deployment_target="12.0")
 
 # MoltenVK implements Vulkan on top of Apple's Metal
 platforms = filter!(Sys.isapple, supported_platforms())
