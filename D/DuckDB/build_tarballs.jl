@@ -9,7 +9,7 @@ version = v"2.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/duckdb/duckdb.git", "8d78114e90a53823803660bf821f6073ac87da8c"),
+    GitSource("https://github.com/duckdb/duckdb.git", "8d78114e90a53823803660bf821f6073ac87da8c"; tag="v$(version)"),
 ]
 
 # Bash recipe for building across all platforms
@@ -49,7 +49,8 @@ cmake -B build \
       -DBUILD_UNITTESTS=FALSE \
       -DBUILD_SHELL=TRUE \
       -DDUCKDB_EXPLICIT_PLATFORM=${DUCKDB_TARGET}
-# Cap parallel jobs: nproc (16) g++ jobs at -O3 exceed the agent's 16 GiB memory limit (OOM in build 35531)
+# DuckDB compiles are memory-heavy at -O3; cap parallelism to keep peak RSS
+# within the build workers' memory limit.
 cmake --build build --parallel $(( nproc > 8 ? 8 : nproc ))
 cmake --install build
 
