@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "Blosc2"
 
-version = v"3.7.0"
+version = v"3.8.0"
 # We add a version offset because:
 # - Blosc2 2.15 is not ABI-compatible with Blosc2 2.14
 #   (see the release notes <https://github.com/Blosc/c-blosc2/releases/tag/v2.15.0>)
@@ -19,6 +19,7 @@ version = v"3.7.0"
 #   (the shared library SOVERSION was increased)
 # - Blosc2 3.6 is ABI-compatible with Blosc2 3.5
 # - Blosc2 3.7 is ABI-compatible with Blosc2 3.5
+# - Blosc2 3.8 is ABI-compatible with Blosc2 3.5
 version_offset = v"2.0.0"
 ygg_version = VersionNumber(version.major * 100 + version_offset.major,
                             version.minor * 100 + version_offset.minor,
@@ -26,7 +27,7 @@ ygg_version = VersionNumber(version.major * 100 + version_offset.major,
 
 # Collection of sources required to build Blosc2
 sources = [
-    GitSource("https://github.com/Blosc/c-blosc2.git", "94bf8868a9f2e83ade349a79b9640079bff9b5db"; tag="v$(version)"),
+    GitSource("https://github.com/Blosc/c-blosc2.git", "f38adbc9aeec6368198964bd90e824b6eb32fd45"; tag="v$(version)"),
     DirectorySource("bundled"),
 ]
 
@@ -40,9 +41,8 @@ cd $WORKSPACE/srcdir/c-blosc2
 # integers).
 atomic_patch -p1 ../patches/_xsetbv.patch
 
-# On ARM64, `shuffle.c` calls the fused SHUFFLE+BYTEDELTA kernels in
-# `bytedelta.c`, which is only compiled with `BUILD_PLUGINS=ON`.
-atomic_patch -p1 ../patches/bytedelta-without-plugins.patch
+# Before C23 (GCC 11), a label cannot be followed by a declaration.
+atomic_patch -p1 ../patches/blosclz-label.patch
 
 # Clang on Apple does not (yet?) properly support `__builtin_cpu_supports`.
 # The symbol `__cpu_model` is not provided by any standard library.
