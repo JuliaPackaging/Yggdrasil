@@ -6,19 +6,32 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "TensorRT"
-version = v"10.13.0"
+version = v"10.13.3"
 
 cuda_versions = [
     v"11",
     v"12",
+    v"13",
 ]
 
-# Cf. https://docs.nvidia.com/deeplearning/tensorrt/archives/tensorrt-1050/support-matrix/index.html
+# Cf. https://docs.nvidia.com/deeplearning/tensorrt/10.x.x/getting-started/support-matrix.html
 cudnn_versions = Dict(
-    Platform("aarch64", "linux"; cuda_platform="jetson") => v"8.9.5", # Documentation says v"8.9.6", but v"8.9.5" is the most recent version available
-    Platform("aarch64", "linux"; cuda_platform="sbsa") => v"8.9.7",
-    Platform("x86_64", "linux") => v"8.9.7",
-    Platform("x86_64", "windows") => v"8.9.7",
+    v"11" => Dict(
+        Platform("x86_64", "linux") => v"8.9.7",
+        Platform("x86_64", "windows") => v"8.9.7",
+    ),
+    v"12" => Dict(
+        Platform("aarch64", "linux"; cuda_platform="jetson") => v"8.9.5", # Documentation says v"8.9.6", but v"8.9.5" is the most recent version available
+        Platform("aarch64", "linux"; cuda_platform="sbsa") => v"8.9.7",
+        Platform("x86_64", "linux") => v"8.9.7",
+        Platform("x86_64", "windows") => v"8.9.7",
+    ),
+    # CUDNN_jll 8 has no CUDA 13 builds
+    v"13" => Dict(
+        Platform("aarch64", "linux") => v"9.13.0",
+        Platform("x86_64", "linux") => v"9.13.0",
+        Platform("x86_64", "windows") => v"9.13.0",
+    ),
 )
 
 script = raw"""
@@ -32,6 +45,10 @@ if [[ "$target" == x86_64-w64-mingw32 ]]; then
 fi
 mv -v bin/* $bindir
 mv -v include/* $includedir
+if [[ "$bb_full_target" == x86_64-linux-gnu*cuda+13* ]]; then
+    # Otherwise the tarball exceeds GitHub's 2 GiB limit for release assets
+    rm -v lib/libnvinfer_builder_resource_win.so.*
+fi
 mv -v lib/*.${dlext}* $libdir
 if [[ "$target" == *-linux-gnu ]]; then
     mv -v lib/stubs $libdir
@@ -61,9 +78,10 @@ for cuda_version in cuda_versions
     for (platform, sources) in platforms_and_sources
         augmented_platform = deepcopy(platform)
         augmented_platform["cuda"] = CUDA.platform(cuda_version)
+        augmented_platform = only(expand_cxxstring_abis(augmented_platform; skip=!Sys.islinux))
         should_build_platform(triplet(augmented_platform)) || continue
 
-        cudnn_version = cudnn_versions[platform]
+        cudnn_version = cudnn_versions[cuda_version][platform]
         dependencies = [Dependency("CUDNN_jll", cudnn_version; compat="8, 9")]
 
         push!(builds, (; dependencies, platforms=[augmented_platform], sources))
