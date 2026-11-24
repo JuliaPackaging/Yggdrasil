@@ -5,7 +5,7 @@ version = v"0.1.0"
 
 # Vollständige Git-URL und aktueller Commit-Hash von jacobwilliams/lusol
 sources = [
-    GitSource("https://github.com", "2d95174d44ec9bf9dabbbd07652c84c11fe56d71")
+    GitSource("https://github.com/jacobwilliams/lusol.git", "2d95174d44ec9bf9dabbbd07652c84c11fe56d71")
 ]
 
 script = raw"""
