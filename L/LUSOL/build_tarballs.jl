@@ -28,7 +28,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e4508f6-f734-5ecc-8b77-b358cf370619"))
+    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"))
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
