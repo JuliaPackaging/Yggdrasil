@@ -19,7 +19,7 @@ if [[ "${target}" == *-w64-mingw32* ]]; then
 else
     BLAS_FLAGS="-L${libdir} -lblastrampoline"
 fi
-gfortran -O3 -fPIC -shared src/lusol_precision.F90 src/lusol.f90 src/lusol_ez.f90 -o ${libdir}/liblusol.${dlext} -L${libdir} -lblastrampoline
+gfortran -O3 -fPIC -shared src/lusol_precision.F90 src/lusol.f90 src/lusol_ez.f90 -o ${libdir}/liblusol.${dlext} ${BLAS_FLAGS}
 
 
 # Lizenzdatei installieren (Pflicht für Yggdrasil)
