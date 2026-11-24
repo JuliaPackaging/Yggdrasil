@@ -13,7 +13,21 @@ sources = [
 # Bash recipe for building across all platforms
 script = raw"""
 cd prima
-cmake -S . -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release
+
+# PRIMA passes nested (internal) procedures as actual arguments, which gfortran implements
+# with trampolines on the stack by default. This marks the libraries as requiring an
+# executable stack (`GNU_STACK RWE`), and glibc >= 2.41 refuses to `dlopen` such libraries
+# ("cannot enable executable stack as shared object requires: Invalid argument").
+# GCC >= 14 can allocate the trampolines on the heap instead, so the stack stays
+# non-executable. The required runtime support in libgcc_s is only available on
+# x86_64 and aarch64 Linux.
+FFLAGS=()
+if [[ "${target}" == x86_64-linux-gnu* || "${target}" == aarch64-linux-gnu* ]] && [[ "${bb_full_target}" == *libgfortran5* ]]; then
+    FFLAGS+=(-ftrampoline-impl=heap)
+fi
+
+cmake -S . -B build -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_Fortran_FLAGS="${FFLAGS[*]}"
 cmake --build build --target install
 """
 
@@ -35,4 +49,8 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+# GCC 14 is needed for `-ftrampoline-impl=heap`. The resulting libraries need
+# `__gcc_nested_func_ptr_{created,deleted}@GCC_14.0.0` from libgcc_s, which is only
+# shipped with Julia >= 1.12 (via CompilerSupportLibraries_jll).
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+               julia_compat="1.12", preferred_gcc_version=v"14")
