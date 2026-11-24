@@ -1,0 +1,40 @@
+commit 274602f82ed23f9898c545d91224f5b704774b3d
+Author: Elliot Saba <staticfloat@gmail.com>
+Date:   Tue Apr 1 14:36:57 2025 +0000
+
+    [PATCH] Increase fallback min macOS version for libgcc to 10.8
+    
+    `-mmacosx-version-min=10.5` seems to cause problems with ld64 from cctools
+    (https://github.com/JuliaPackaging/Yggdrasil/pull/10132#issuecomment-2569925646),
+    and in any case in Julia/BinaryBuilder we support macOS 10.12 at
+    minimum.
+    
+    This fixes the error:
+    ```
+    x86_64-apple-darwin-ld: ../../../../ld64/src/ld/ld.hpp:826: ld::Fixup::Fixup(uint32_t, Cluster, Kind, const Atom *): Assertion `targetAtom != __null'  failed.
+    ```
+
+diff --git a/libgcc/config.host b/libgcc/config.host
+index ae4c91dee35..f57241cb7a2 100644
+--- a/libgcc/config.host
++++ b/libgcc/config.host
+@@ -246,7 +246,7 @@ case ${host} in
+       tmake_file="t-darwin-min-8 t-darwin-libgccs1 $tmake_file"
+       ;;
+     *-*-darwin9* | *-*-darwin1[0-7]*)
+-      tmake_file="t-darwin-min-5 t-darwin-libgccs1 $tmake_file"
++      tmake_file="t-darwin-min-8 t-darwin-libgccs1 $tmake_file"
+       ;;
+     *-*-darwin[4-8]*)
+       tmake_file="t-darwin-min-1 t-darwin-libgccs1 $tmake_file"
+@@ -254,8 +254,8 @@ case ${host} in
+     *)
+       # Fall back to configuring for the oldest system known to work with
+       # all archs and the current sources.
+-      tmake_file="t-darwin-min-5 t-darwin-libgccs1 $tmake_file"
+-      echo "Warning: libgcc configured to support macOS 10.5" 1>&2
++      tmake_file="t-darwin-min-8 t-darwin-libgccs1 $tmake_file"
++      echo "Warning: libgcc configured to support macOS 10.8" 1>&2
+       ;;
+   esac
+   # We are not using libtool to build the libs here, so we need to replicate

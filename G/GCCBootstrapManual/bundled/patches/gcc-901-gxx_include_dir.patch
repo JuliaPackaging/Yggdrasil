@@ -1,0 +1,21 @@
+commit 481620a498d1e214001a43a83c91d930b1f37ccc
+Author: Elliot Saba <staticfloat@gmail.com>
+Date:   Fri Jul 12 08:58:23 2024 +0000
+
+    Force cross compile mode when `$cross_compiling` is set to `yes`
+    
+    This fixes a mismatch between g++ and libstdc++
+
+diff --git a/gcc/configure b/gcc/configure
+index 9e4c8693966..b001c5440eb 100755
+--- a/gcc/configure
++++ b/gcc/configure
+@@ -3667,7 +3667,7 @@ if test x${gcc_gxx_include_dir} = x; then
+     gcc_gxx_include_dir='${libsubdir}/include/c++'
+   else
+     libstdcxx_incdir='include/c++/$(version)'
+-    if test x$host != x$target; then
++    if test "$cross_compiling" = "yes" || test x$host != x$target; then
+        libstdcxx_incdir="$target_alias/$libstdcxx_incdir"
+     fi
+     gcc_gxx_include_dir="\$(libsubdir)/\$(libsubdir_to_prefix)$libstdcxx_incdir"
