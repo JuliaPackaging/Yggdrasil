@@ -1,0 +1,12 @@
+sdpa_tool.cpp includes <sys/times.h>, which mingw lacks, and uses nothing from it.
+
+--- a/sdpa_tool.cpp
++++ b/sdpa_tool.cpp
+@@ -24,7 +24,6 @@
+ -----------------------------------------*/
+ 
+ #include <sdpa_tool.h>
+-#include <sys/times.h>
+ #include <sys/time.h>
+ #include <time.h>
+ 

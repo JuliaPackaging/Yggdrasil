@@ -12,8 +12,7 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/sdpa-gmp
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/full-precision-output.patch
-# mingw lacks sys/times.h; sdpa_tool.cpp includes it but uses nothing from it.
-sed -i '/#include <sys\/times.h>/d' sdpa_tool.cpp
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/no-sys-times.patch
 sed -i -e 's/-march[^ ]*//g' Makefile.am
 autoreconf -fi
 
