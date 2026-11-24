@@ -32,30 +32,25 @@ for prog in bzip2 bzip2recover; do
 done
 make CC=${CC} CFLAGS="${CFLAGS}" PREFIX=${prefix} install
 
-# Build and install the dynamic library, with its symlinks.  BinaryBuilder2's ${libdir} is
-# ${prefix}/lib on Windows too, but DLLs have to be in ${bindir} there to be found.
-if [[ "${target}" == *-mingw* ]]; then
-    dlldir=${bindir}
-else
-    dlldir=${libdir}
-fi
+# Build and install the dynamic library, with its symlinks.
 if [[ "${target}" == *-darwin* ]]; then
     cc -shared -current_version "${VERSION}" -compatibility_version 1.0 -o "libbz2.${VERSION}.dylib" ${OBJS}
     install_name_tool -id libbz2.1.0.dylib "libbz2.${VERSION}.dylib"
-    install -Dvm 755 "libbz2.${VERSION}.dylib" ${dlldir}/"libbz2.${VERSION}.dylib"
-    ln -sv libbz2.${VERSION}.dylib ${dlldir}/libbz2.1.0.dylib
-    ln -sv libbz2.${VERSION}.dylib ${dlldir}/libbz2.1.dylib
-    ln -sv libbz2.${VERSION}.dylib ${dlldir}/libbz2.dylib
+    install -Dvm 755 "libbz2.${VERSION}.dylib" ${libdir}/"libbz2.${VERSION}.dylib"
+    ln -sv libbz2.${VERSION}.dylib ${libdir}/libbz2.1.0.dylib
+    ln -sv libbz2.${VERSION}.dylib ${libdir}/libbz2.1.dylib
+    ln -sv libbz2.${VERSION}.dylib ${libdir}/libbz2.dylib
 elif [[ "${target}" == *-mingw* ]]; then
+    # BinaryBuilder2's ${libdir} is ${prefix}/lib on Windows too, but DLLs must be in ${bindir}
     cc -shared -o libbz2-1.dll ${OBJS}
-    install -Dvm 755 libbz2-1.dll ${dlldir}/libbz2-1.dll
-    ln -sv libbz2-1.dll ${dlldir}/libbz2.dll
+    install -Dvm 755 libbz2-1.dll ${bindir}/libbz2-1.dll
+    ln -sv libbz2-1.dll ${bindir}/libbz2.dll
 else
     cc -shared -Wl,-soname -Wl,libbz2.so.1.0 -o "libbz2.so.${VERSION}" ${OBJS}
-    install -Dvm 755 "libbz2.so.${VERSION}" ${dlldir}/"libbz2.so.${VERSION}"
-    ln -sv "libbz2.so.${VERSION}" ${dlldir}/libbz2.so.1.0
-    ln -sv "libbz2.so.${VERSION}" ${dlldir}/libbz2.so.1
-    ln -sv "libbz2.so.${VERSION}" ${dlldir}/libbz2.so
+    install -Dvm 755 "libbz2.so.${VERSION}" ${libdir}/"libbz2.so.${VERSION}"
+    ln -sv "libbz2.so.${VERSION}" ${libdir}/libbz2.so.1.0
+    ln -sv "libbz2.so.${VERSION}" ${libdir}/libbz2.so.1
+    ln -sv "libbz2.so.${VERSION}" ${libdir}/libbz2.so
 fi
 
 install_license LICENSE
