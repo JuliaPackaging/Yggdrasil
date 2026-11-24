@@ -12,6 +12,8 @@ sources = [
 script = raw"""
 cd ${WORKSPACE}/srcdir/sdpa-gmp
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/full-precision-output.patch
+# mingw lacks sys/times.h; sdpa_tool.cpp includes it but uses nothing from it.
+sed -i '/#include <sys\/times.h>/d' sdpa_tool.cpp
 sed -i -e 's/-march[^ ]*//g' Makefile.am
 autoreconf -fi
 
@@ -39,8 +41,6 @@ install_license LICENSE.MPLAPACK
 
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
-# mingw lacks sys/times.h, which sdpa_tool.cpp includes.
-filter!(!Sys.iswindows, platforms)
 # MPLAPACK's mplapackint is int64_t, which is long long on 32-bit targets; gmpxx cannot convert it to mpf_class.
 filter!(p -> nbits(p) == 64, platforms)
 
