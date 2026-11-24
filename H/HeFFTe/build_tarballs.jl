@@ -72,8 +72,8 @@ filter!(p -> Base.thisminor(VersionNumber(p["cuda"])) in (v"12.0", v"13.0"), cud
 filter!(p -> arch(p) == "x86_64", cuda_platforms)
 cuda_platforms = expand_cxxstring_abis(cuda_platforms)
 cudampi_platforms, cudampi_dependencies = MPI.augment_platforms(cuda_platforms)
-# Limit the number of CUDA builds to the MPI ABIs most users need.
-filter!(p -> p["mpi"] in ("mpiabi", "mpich"), cudampi_platforms)
+# Limit the number of CUDA builds; MPItrampoline stays because earlier versions shipped it.
+filter!(p -> p["mpi"] in ("mpiabi", "mpich", "mpitrampoline"), cudampi_platforms)
 
 all_platforms = [mpi_platforms; cudampi_platforms]
 for platform in all_platforms
