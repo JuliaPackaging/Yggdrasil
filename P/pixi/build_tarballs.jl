@@ -7,7 +7,7 @@ gitsha = "98cc736a9ba6e7e15f19abd59ff45ba805f712bd"
 # Collection of sources required to build pixi
 sources = [
     # the tarballs do not include the license, so we get the repo too
-    GitSource("https://github.com/prefix-dev/pixi.git", gitsha, unpack_target="repo"),
+    GitSource("https://github.com/prefix-dev/pixi.git", gitsha; tag="v$(version)", unpack_target="repo"),
     # pre-build tarballs, which only contain the executable
     FileSource(
         "https://github.com/prefix-dev/pixi/releases/download/v$version/pixi-aarch64-apple-darwin.tar.gz",
