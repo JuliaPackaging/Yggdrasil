@@ -28,7 +28,7 @@ autoreconf -fi
 
 # The bundled SPOOLES passes NULL as an int, an error in clang. Its makefiles ignore CFLAGS.
 make -j${nproc} CC="${CC} -Wno-int-conversion"
-install -Dvm 755 sdpa_gmp${exeext} ${bindir}/sdpa_gmp${exeext}
+make install
 
 install_license COPYING
 install_license external/spooles/work/internal/spooles.*.html
