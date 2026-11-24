@@ -13,6 +13,7 @@ script = raw"""
 cd ${WORKSPACE}/srcdir/sdpa-gmp
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/full-precision-output.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/no-sys-times.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/binary-mode-data-file.patch
 sed -i -e 's/-march[^ ]*//g' Makefile.am
 autoreconf -fi
 
