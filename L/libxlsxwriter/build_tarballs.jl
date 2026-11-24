@@ -7,7 +7,7 @@ version = v"1.2.5"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/jmcnamara/libxlsxwriter.git", "282500e0b792d2f8d26d21e75c077ee9a102db60")
+    GitSource("https://github.com/jmcnamara/libxlsxwriter.git", "282500e0b792d2f8d26d21e75c077ee9a102db60"; tag="v$(version)")
 ]
 
 # Bash recipe for building across all platforms
