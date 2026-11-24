@@ -5,13 +5,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "OpenEXR"
-version = v"3.5.4"
+version = v"3.5.5"
 # Note: Different minor versions of `OpenEXR_jll` are not ABI compatible.
 # All downstream packages know this and use explicit compat bounds.
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AcademySoftwareFoundation/openexr.git", "86687e5f34e3a164820c5e280259550e3ca87c92";
+    GitSource("https://github.com/AcademySoftwareFoundation/openexr.git", "486e238dd28ba6fed22528005b05f9f15bef0cc0";
               tag="v$(version)"),
     DirectorySource("bundled"),
 ]
