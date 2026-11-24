@@ -90,6 +90,7 @@ agent() = Dict(
 # peaks of concurrent jobs rarely coincide (host memory stayed near half the sum of their peaks).
 # Reserving the peak kept jobs queued on agents with hundreds of GiB free.
 const LARGE_MEMORY_PROJECTS = [
+    "A/AMDGPU_LLVM_Backend",
     "C/cupynumeric",
     "E/Enzyme",
     "L/LLVM",
