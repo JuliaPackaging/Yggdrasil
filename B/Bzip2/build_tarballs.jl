@@ -90,7 +90,8 @@ products = [
 
 build_tarballs(;
     src_name = name,
-    src_version = ygg_version,
+    src_version = version,
+    version_series = ygg_version,
     sources,
     script,
     platforms,
