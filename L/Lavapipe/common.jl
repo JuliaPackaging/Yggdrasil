@@ -1,15 +1,13 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
+# Shared by Lavapipe and Lavapipe_headless. CI only rebuilds a recipe whose own directory
+# changed, so a change here needs a change in both build_tarballs.jl files.
 using BinaryBuilder, Pkg
 using Base.BinaryPlatforms
 
-const YGGDRASIL_DIR = "../.."
+const YGGDRASIL_DIR = joinpath(@__DIR__, "..", "..")
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
-name = "Lavapipe"
 version = v"26.2.2"
-ygg_version = v"26.2.4"  # New JLL version: device memory in a memfd on glibc (0006).
 
 # Lavapipe is Mesa's software Vulkan driver: the `swrast` Vulkan driver, i.e. the Vulkan
 # frontend of the llvmpipe gallium driver, which JITs shaders with LLVM. Mesa's meson
@@ -40,7 +38,7 @@ sources = [
                   "94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79"),
     ArchiveSource("https://files.pythonhosted.org/packages/05/8e/961c0007c59b8dd7729d542c61a4d537767a59645b82a0b521206e1e25c2/pyyaml-6.0.3.tar.gz",
                   "d76623373421df22fb4cf8817020cbb7ef15c725b9d5e45f17e189bfc384190f"),
-    DirectorySource("./bundled"),
+    DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
 # Bash recipe for building across all platforms
@@ -143,6 +141,8 @@ MESA_FLAGS=(
     -D egl=disabled
     -D gbm=disabled
     -D xmlconfig=disabled
+    # Only xmlconfig would link expat, so make sure meson does not look for it.
+    -D expat=disabled
     -D spirv-tools=disabled
     -D gallium-va=disabled
     -D video-codecs=[]
@@ -151,11 +151,17 @@ MESA_FLAGS=(
 # Window-system integration. Without it Mesa builds a headless-only ICD, and then the
 # Vulkan loader does not advertise VK_KHR_surface at all (it only offers its own
 # VK_EXT_headless_surface), which is enough to make ordinary Vulkan applications fail at
-# vkCreateInstance. So give every platform the WSI that Mesa supports there.
+# vkCreateInstance. Lavapipe_headless is that ICD on purpose, for offscreen rendering
+# without the X11 libraries; Lavapipe gives every platform the WSI Mesa supports there.
 if [[ "${target}" == *-mingw* ]]; then
+    # Lavapipe_headless too: Mesa builds either this WSI or the headless one
+    # (src/vulkan/wsi/meson.build), and the headless one includes the Linux/BSD DRM uapi
+    # headers, so it does not compile for Windows. This one needs only system DLLs.
     MESA_FLAGS+=(-D platforms=windows)
 elif [[ "${target}" == *-apple-* ]]; then
     # Mesa has no macOS WSI; offscreen rendering and VK_EXT_headless_surface only.
+    MESA_FLAGS+=(-D platforms=[])
+elif [[ "${HEADLESS}" == true ]]; then
     MESA_FLAGS+=(-D platforms=[])
 else
     MESA_FLAGS+=(-D platforms=x11)
@@ -229,20 +235,6 @@ products = [
     FileProduct("share/vulkan/icd.d/lvp_icd.json", :lvp_icd),
 ]
 
-# Register the driver with the Vulkan loader. There is no loader-side driver list to push to
-# the way the OpenCL driver JLLs use `OpenCL_jll.drivers`, so this goes through the loader's
-# own discovery mechanism: VK_ADD_DRIVER_FILES *adds* to the drivers it finds, unlike
-# VK_DRIVER_FILES, so a real GPU stays enumerable alongside this one. The loader reads it at
-# vkCreateInstance, so setting it in __init__ is early enough.
-init_block = raw"""
-let sep = Sys.iswindows() ? ';' : ':',
-    found = split(get(ENV, "VK_ADD_DRIVER_FILES", ""), sep; keepempty=false)
-    if !(lvp_icd in found)
-        ENV["VK_ADD_DRIVER_FILES"] = join(vcat(found, lvp_icd), sep)
-    end
-end
-"""
-
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # LLVM twice: the target build to link against, and the host build for an executable
@@ -254,37 +246,37 @@ dependencies = [
     BuildDependency(PackageSpec(name="DirectX_Headers_jll", version=v"1.619.5+0");
                     platforms=windows_platforms),
     Dependency("Zlib_jll"; compat="1.2.12"),
-    Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("Zstd_jll"; compat="1.5.7"), # the LLVM 22 build has LLVM_ENABLE_ZSTD=ON
     Dependency("CompilerSupportLibraries_jll"; compat="1.0.5"),
 ]
 
 # Where the DRI platform is DRM, Mesa's Vulkan runtime wants libdrm as soon as any Vulkan
-# driver is enabled (`with_dri2`), even though lavapipe never touches a GPU; the X11 WSI
-# adds the xcb stack on top. macOS and Windows use neither.
-x11_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
-append!(dependencies, [
-    Dependency("libdrm_jll"; compat="2.4.134", platforms=x11_platforms),
-    Dependency("Xorg_libX11_jll"; compat="1.8.12", platforms=x11_platforms),
-    Dependency("Xorg_libxcb_jll"; compat="1.17.1", platforms=x11_platforms),
-    Dependency("Xorg_libxshmfence_jll"; compat="1.3.3", platforms=x11_platforms),
-    Dependency("Xorg_libXext_jll"; compat="1.3.8", platforms=x11_platforms),
-    Dependency("Xorg_libXrandr_jll"; compat="1.5.6", platforms=x11_platforms),
-    Dependency("Xorg_xorgproto_jll"; compat="2024.1.1", platforms=x11_platforms),
-])
+# driver is enabled (`with_dri2`), even though lavapipe never touches a GPU, and with or
+# without a WSI. macOS and Windows have no DRM.
+drm_platforms = filter(p -> Sys.islinux(p) || Sys.isfreebsd(p), platforms)
+push!(dependencies, Dependency("libdrm_jll"; compat="2.4.134", platforms=drm_platforms))
 
-# Windows needs binutils >= 2.45, i.e. GCC 15: older `ld` emits a 32-bit HIGHLOW base
-# relocation for the SECREL32 fixup of a thread_local in a `.tls$<name>` comdat section --
-# how clang, and so LLVM_full_jll, lays out LLVM's thread_locals. It lands in the
-# displacement of the instruction reading the variable, so any load away from the preferred
-# base corrupts it and the first thread_local read faults inside vkCreateDevice.
-# x86_64-apple-darwin cannot have GCC 15: that shard's ld64 needs a libdispatch.so that
-# ships in no shard. Hence two builds over disjoint platform sets.
-if any(should_build_platform.(triplet.(windows_platforms)))
-    build_tarballs(ARGS, name, ygg_version, sources, script, windows_platforms, products, dependencies;
-                   julia_compat="1.10", preferred_gcc_version=v"15", init_block)
-end
-if any(should_build_platform.(triplet.(other_platforms)))
-    build_tarballs(ARGS, name, ygg_version, sources, script, other_platforms, products, dependencies;
-                   julia_compat="1.10", preferred_gcc_version=v"12", init_block)
+# `headless` builds the ICD without window-system integration (except on Windows); see
+# the script.
+function build_lavapipe(ARGS, name, jll_version, extra_dependencies; headless::Bool,
+                        init_block::String="")
+    variant_script = "HEADLESS=$(headless)\n" * script
+    variant_dependencies = vcat(dependencies, extra_dependencies)
+    # Windows needs binutils >= 2.45, i.e. GCC 15: older `ld` emits a 32-bit HIGHLOW base
+    # relocation for the SECREL32 fixup of a thread_local in a `.tls$<name>` comdat section --
+    # how clang, and so LLVM_full_jll, lays out LLVM's thread_locals. It lands in the
+    # displacement of the instruction reading the variable, so any load away from the preferred
+    # base corrupts it and the first thread_local read faults inside vkCreateDevice.
+    # x86_64-apple-darwin cannot have GCC 15: that shard's ld64 needs a libdispatch.so that
+    # ships in no shard. Hence two builds over disjoint platform sets.
+    if any(should_build_platform.(triplet.(windows_platforms)))
+        build_tarballs(ARGS, name, jll_version, sources, variant_script, windows_platforms,
+                       products, variant_dependencies;
+                       julia_compat="1.10", preferred_gcc_version=v"15", init_block)
+    end
+    if any(should_build_platform.(triplet.(other_platforms)))
+        build_tarballs(ARGS, name, jll_version, sources, variant_script, other_platforms,
+                       products, variant_dependencies;
+                       julia_compat="1.10", preferred_gcc_version=v"12", init_block)
+    end
 end
