@@ -30,7 +30,6 @@ sources = [
               "a56bad8bbb770ee266e930c95d37fff2a5be7fea"),
     FileSource("https://github.com/cpm-cmake/CPM.cmake/releases/download/v$(cpm_version)/CPM.cmake",
                "78ba32abdf798bc616bab7c73aac32a17bbd7b06ad9e26a6add69de8f3ae4791"),
-    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -47,8 +46,6 @@ if [[ "${mvk_target}" != "${MACOSX_DEPLOYMENT_TARGET}" ]]; then
     echo "MoltenVK targets macOS ${mvk_target}, but we build for ${MACOSX_DEPLOYMENT_TARGET}" >&2
     exit 1
 fi
-
-atomic_patch -p1 ../patches/relative-icd-library-path.patch
 
 # MoltenVK's CMake downloads CPM and, through it, the dependencies; give it the sources above
 install -Dvm 644 ../CPM.cmake ../cpm-cache/cpm/CPM_${cpm_version}.cmake
@@ -71,10 +68,26 @@ cmake -B build -G Ninja \
     ${CMAKE_FLAGS[@]}
 ninja -C build -j${nproc} install
 
+# Same approach as L/Lavapipe for relocatable ICD manifest.
+# The generated ICD manifest hardcodes the build-time library path. The Vulkan loader
+# resolves a *relative* `library_path` against the directory of the manifest itself, which
+# is what makes an artifact relocatable.
+python3 - ${prefix}/etc/vulkan/icd.d/MoltenVK_icd.json ../../../lib/libMoltenVK.${dlext} <<'PYTHON'
+import json, sys
+manifest, lib = sys.argv[1], sys.argv[2]
+with open(manifest) as f:
+    icd = json.load(f)
+icd["ICD"]["library_path"] = lib
+with open(manifest, "w") as f:
+    json.dump(icd, f, indent=4)
+PYTHON
+cat ${prefix}/etc/vulkan/icd.d/MoltenVK_icd.json
+
 install_license LICENSE
+# install_license installs into share/licenses/${SRC_NAME}; give each dependency its own
+# subdirectory, since several name their license file LICENSE
 for dep in ${deps[@]}; do
-    mkdir -pv ${prefix}/share/licenses/${SRC_NAME}/${dep}
-    cp -rv ../${dep}/LICENSE* ${prefix}/share/licenses/${SRC_NAME}/${dep}/
+    SRC_NAME=${SRC_NAME}/${dep} install_license $(find ../${dep}/LICENSE* -type f)
 done
 """
 
