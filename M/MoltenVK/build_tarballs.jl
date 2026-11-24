@@ -62,6 +62,9 @@ CMAKE_FLAGS+=(-DFETCHCONTENT_FULLY_DISCONNECTED=ON)
 for dep in ${deps[@]}; do
     CMAKE_FLAGS+=(-DCPM_${dep}_SOURCE=${WORKSPACE}/srcdir/${dep})
 done
+# Log errors only by default, like the Vulkan SDK's MoltenVK rather than upstream's verbose "info";
+# users can still raise it at run time with the MVK_CONFIG_LOG_LEVEL environment variable
+CMAKE_FLAGS+=(-DMVK_CONFIG_LOG_LEVEL=error)
 
 cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
