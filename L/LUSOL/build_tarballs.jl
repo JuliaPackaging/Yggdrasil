@@ -14,6 +14,11 @@ cd $WORKSPACE/srcdir/lusol
 mkdir -p ${libdir}
 
 # Kompiliere alle Fortran-90-Dateien aus src/
+if [[ "${target}" == *-w64-mingw32* ]]; then
+    BLAS_FLAGS="-L${bindir} -lblastrampoline-5"
+else
+    BLAS_FLAGS="-L${libdir} -lblastrampoline"
+fi
 gfortran -O3 -fPIC -shared src/lusol_precision.F90 src/lusol.f90 src/lusol_ez.f90 -o ${libdir}/liblusol.${dlext} -L${libdir} -lblastrampoline
 
 
