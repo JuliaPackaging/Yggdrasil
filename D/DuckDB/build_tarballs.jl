@@ -49,7 +49,8 @@ cmake -B build \
       -DBUILD_UNITTESTS=FALSE \
       -DBUILD_SHELL=TRUE \
       -DDUCKDB_EXPLICIT_PLATFORM=${DUCKDB_TARGET}
-cmake --build build --parallel ${nproc}
+# Cap parallel jobs: nproc (16) g++ jobs at -O3 exceed the agent's 16 GiB memory limit (OOM in build 35531)
+cmake --build build --parallel $(( nproc > 8 ? 8 : nproc ))
 cmake --install build
 
 if [[ "${target}" == *-mingw32 ]]; then
