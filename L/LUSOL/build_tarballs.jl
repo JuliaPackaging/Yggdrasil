@@ -14,7 +14,8 @@ cd $WORKSPACE/srcdir/lusol
 mkdir -p ${libdir}
 
 # Kompiliere alle Fortran-90-Dateien aus src/
-gfortran -O3 -fPIC -shared src/lusol_precision.f90 src/lusol.f90 src/lusol_ez.f90 -o ${libdir}/liblusol.${dlext} -L${libdir} -lblastrampoline
+gfortran -O3 -fPIC -shared src/lusol_precision.F90 src/lusol.f90 src/lusol_ez.f90 -o ${libdir}/liblusol.${dlext} -L${libdir} -lblastrampoline
+
 
 # Lizenzdatei installieren (Pflicht für Yggdrasil)
 install_license LICENSE.md
