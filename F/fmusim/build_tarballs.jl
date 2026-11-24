@@ -23,6 +23,7 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fmi-rs-use-shared-deps.patch
 
 cd ${WORKSPACE}/srcdir/fmusim
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/test-fixtures-dev-dependency.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cargo-lock-local-fmi-rs.patch
 
 export CFLAGS="-I${includedir}/libxml2"
 # On Windows the import libraries are in ${prefix}/lib, not ${libdir}.
@@ -32,7 +33,7 @@ if [[ "${target}" == *-mingw* ]]; then
     ${CC} -c ${WORKSPACE}/srcdir/invoke_watson.c -o ${WORKSPACE}/srcdir/invoke_watson.o
     export RUSTFLAGS="${RUSTFLAGS} -C link-arg=${WORKSPACE}/srcdir/invoke_watson.o"
 fi
-cargo build --release --config "patch.crates-io.fmi-rs.path='${WORKSPACE}/srcdir/fmi-rs/fmi-rs'"
+cargo build --release --locked --config "patch.crates-io.fmi-rs.path='${WORKSPACE}/srcdir/fmi-rs/fmi-rs'"
 
 install -Dvm 755 "target/${rust_target}/release/fmusim${exeext}" "${bindir}/fmusim${exeext}"
 install_license LICENSE
