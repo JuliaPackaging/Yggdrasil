@@ -82,13 +82,17 @@ fi
 cd nccl
 make -j ${nproc} src.build CUDA_HOME=${CUDA_HOME} PREFIX=${prefix}
 
-# Device-API LLVM bitcode, one file per SM that NCCL compiles SASS for.
+# Device-API LLVM bitcode for the SMs of NCCL's default NVCC_GENCODE (makefiles/common.mk).
 # `ir.llvm_ir` builds a single `BITCODE_LIB_ARCH` into a fixed path, hence the loop and `ir.clean`.
-sms=$(make -s -f makefiles/common.mk --eval 'print-gencode: ; @echo $(NVCC_GENCODE)' print-gencode CUDA_HOME=${CUDA_HOME} \
-      | grep -o 'code=sm_[0-9a-z]*' | cut -d= -f2 | sort -u)
+case "${bb_full_target}" in
+    *-cuda+12.[0-7]*) sms="60 61 70 80 90" ;;
+    *-cuda+12.*)      sms="60 61 70 80 90 100 120" ;;
+    *-cuda+13.[0-3]*) sms="75 80 90 100 110 120" ;;
+    *-cuda+13.*)      sms="75 80 90 100 107 110 120" ;;
+esac
 for sm in ${sms}; do
-    make -j ${nproc} ir.llvm_ir CUDA_HOME=${CUDA_HOME} BITCODE_LIB_ARCH=${sm}
-    install -Dvm 644 build/lib/libnccl_device.bc "${libdir}/libnccl_device.${sm}.bc"
+    make -j ${nproc} ir.llvm_ir CUDA_HOME=${CUDA_HOME} BITCODE_LIB_ARCH=sm_${sm}
+    install -Dvm 644 build/lib/libnccl_device.bc "${libdir}/libnccl_device.sm_${sm}.bc"
     make ir.clean
 done
 install -Dvm 644 bindings/ir/nccl_device_wrapper.h "${includedir}/nccl_device_wrapper.h"
