@@ -13,21 +13,8 @@ cd $WORKSPACE/srcdir/lusol
 
 mkdir -p ${libdir}
 
-## compile alle Fortran-90-files from src/
-#if [[ "${target}" == *-w64-mingw32* ]]; then
-#    BLAS_FLAGS="-L${bindir} -lblastrampoline-5"
-#else
-#    BLAS_FLAGS="-L${libdir} -lblastrampoline"
-#fi
-#${FC} -O3 -fPIC -shared src/lusol_precision.F90 src/lusol.f90 src/lusol_ez.f90 -o ${libdir}/liblusol.${dlext} ${BLAS_FLAGS}
-
 ${FC} -O3 -fPIC -shared src/lusol_precision.F90 src/lusol.f90 src/lusol_ez.f90 -o ${libdir}/liblusol.${dlext}
 
-install_license LICENSE.md
-"""
-
-
-# install licence file
 install_license LICENSE.md
 """
 
