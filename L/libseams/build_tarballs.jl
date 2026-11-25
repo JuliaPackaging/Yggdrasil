@@ -27,6 +27,10 @@ if [[ "${rust_target}" == x86_64-unknown-linux-gnu ]]; then
     # The cross sysroot uses zlib-compressed ELF sections.
     export RUSTFLAGS="${RUSTFLAGS:+${RUSTFLAGS} }-Clinker-features=-lld"
 fi
+if [[ "${rust_target}" == *-linux-musl ]]; then
+    # Readcon ships shared libraries, so link musl dynamically.
+    export RUSTFLAGS="${RUSTFLAGS:+${RUSTFLAGS} }-Ctarget-feature=-crt-static"
+fi
 export CMAKE_BUILD_PARALLEL_LEVEL=2
 if [[ "${target}" == *apple* ]]; then
     export LIBOMP_PREFIX="${prefix}"
