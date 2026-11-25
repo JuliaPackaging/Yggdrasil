@@ -67,6 +67,12 @@ atomic_patch -p1 ../loop-merge-switch-header.patch
 # OpSMulExtended with a sign check on the high half, as the SPIR-V back-end
 # does since llvm/llvm-project#240309.
 atomic_patch -p1 ../signed-with-overflow.patch
+# Backport of https://github.com/KhronosGroup/SPIRV-LLVM-Translator/pull/4196
+# ("Clamp memory access alignments to 2^31"; still open upstream): an access
+# alignment of 2^32, which InferAlignment gives to accesses of null, was
+# truncated to an invalid `Aligned 0`. Julia emits such accesses in dead code
+# that unboxes a union value (JuliaGPU/OpenCL.jl#631).
+atomic_patch -p1 ../clamp-access-alignment.patch
 install_license LICENSE.TXT
 
 CMAKE_FLAGS=()
