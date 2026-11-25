@@ -23,13 +23,13 @@ sed -i 's/sys\\stat\.h/sys\/stat\.h/g' bzip2.c
 CFLAGS="-Wall -Winline -O2 -g -D_FILE_OFFSET_BITS=64 -fPIC"
 OBJS="blocksort.o huffman.o crctable.o randtable.o compress.o decompress.o bzlib.o"
 make CC=${CC} CFLAGS="${CFLAGS}" -j${nproc} ${OBJS}
-make CC=${CC} CFLAGS="${CFLAGS}" bzip2 bzip2recover
-# `make install` copies the programs by their extension-less names, but on mingw the linker
-# writes bzip2.exe and bzip2recover.exe; `${exeext}` is empty elsewhere, so this is a no-op
-# there.
-for prog in bzip2 bzip2recover; do
-    [[ "${prog}${exeext}" == "${prog}" ]] || install -vm 755 ${prog}${exeext} ${prog}
-done
+# The Makefile is broken on Windows: `make install` copies `bzip2` and `bzip2recover`, but there the
+# linker writes `bzip2.exe` and `bzip2recover.exe`.  Build the programs and give them the plain names.
+if [[ "${target}" == *-mingw* ]]; then
+    make CC=${CC} CFLAGS="${CFLAGS}" bzip2 bzip2recover
+    install -vm 755 bzip2.exe bzip2
+    install -vm 755 bzip2recover.exe bzip2recover
+fi
 make CC=${CC} CFLAGS="${CFLAGS}" PREFIX=${prefix} install
 
 # Build and install the dynamic library, with its symlinks.
