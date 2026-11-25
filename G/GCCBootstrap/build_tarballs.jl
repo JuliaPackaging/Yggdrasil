@@ -151,4 +151,13 @@ build_tarballs(;
     host_dependencies,
     host_toolchains = [HostToolsToolchain()],
     target_toolchains = [],
+    audit_config = AuditConfig(;
+        # The toolchain's host tools link against the system's libc, so they must not get
+        # RPATHs pointing at the target libc we ship in the sysroot (on x86_64-linux-gnu,
+        # the host's dynamic loader would load the sysroot's libc.so.6 and crash).
+        rpaths_consistent = false,
+        # The host tools are built against the rootfs's glibc, so they need a newer glibc
+        # than the targets' minimum (2.17).
+        check_runtime_requirements = false,
+    ),
 )
