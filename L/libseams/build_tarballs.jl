@@ -21,8 +21,10 @@ cd ${WORKSPACE}/srcdir/seams-core-*
 atomic_patch -p1 ${WORKSPACE}/srcdir/seams-overlays/patches/cargo-cross-artifacts.patch
 export CARGO_NET_OFFLINE=true
 export CARGO_BUILD_TARGET="${rust_target}"
-# LMDB and other C dependencies of Rust crates use the target compiler.
-export "CC_${rust_target//-/_}=${target}-cc"
+# The C dependencies of Rust crates use the target compiler and archiver.
+cargo_target_env=${rust_target//-/_}
+export "CC_${cargo_target_env}=${target}-cc"
+export "AR_${cargo_target_env}=${target}-ar"
 if [[ "${rust_target}" == x86_64-unknown-linux-gnu ]]; then
     # The cross sysroot uses zlib-compressed ELF sections.
     export RUSTFLAGS="${RUSTFLAGS:+${RUSTFLAGS} }-Clinker-features=-lld"
