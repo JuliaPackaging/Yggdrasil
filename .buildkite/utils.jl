@@ -96,6 +96,7 @@ const LARGE_MEMORY_PROJECTS = [
     "L/LLVM",
     "L/LLVMGPU",
     "L/libcxxwrap_julia",
+    "L/libigc",
     "L/libpolymake_julia",
     "O/ONNXRuntime/ONNXRuntime_CUDA",
     "O/OpenCV/OpenCV",
