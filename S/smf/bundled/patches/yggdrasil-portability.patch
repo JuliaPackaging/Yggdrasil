@@ -1,0 +1,70 @@
+diff --git a/solver/src/parallel/thread_plan.cpp b/solver/src/parallel/thread_plan.cpp
+--- a/solver/src/parallel/thread_plan.cpp
++++ b/solver/src/parallel/thread_plan.cpp
+@@ -111,7 +111,11 @@ HostTopology probe_host_topology() {
+           t.core_cpus.push_back(std::move(cpus));
+           // EfficiencyClass: the same (0) on every core of a non-hybrid
+           // CPU; on a hybrid one (Alder Lake and later) higher on P-cores.
++#if defined(__MINGW32__)
++          t.core_class.push_back(0);
++#else
+           t.core_class.push_back(static_cast<int>(rec->Processor.EfficiencyClass));
++#endif
+         }
+         if (rec->Size == 0) break;
+         off += rec->Size;
+diff --git a/solver/src/phase_trace.cpp b/solver/src/phase_trace.cpp
+--- a/solver/src/phase_trace.cpp
++++ b/solver/src/phase_trace.cpp
+@@ -19,7 +19,7 @@ thread_local int t_top_front = 0;
+ 
+ int phase_trace_level() noexcept {
+   static const int level = [] {
+-#ifdef _WIN32
++#ifdef _MSC_VER
+     char *e = nullptr;
+     std::size_t len = 0;
+     if (_dupenv_s(&e, &len, "SMF_BENCH_PHASE_TRACE") != 0 || e == nullptr) return 0;
+diff --git a/solver/src/solve_forward.cpp b/solver/src/solve_forward.cpp
+--- a/solver/src/solve_forward.cpp
++++ b/solver/src/solve_forward.cpp
+@@ -10,7 +10,9 @@
+ #include "smf/workspace.hpp"
+ #include <algorithm>
+ #include <atomic>
++#include <bit>
+ #include <cstddef>
++#include <cstdint>
+ #include <type_traits>
+ #include <span>
+ #include <vector>
+@@ -92,7 +94,17 @@ struct SplitUpdate {
+ struct AtomicUpdate {
+   double *x;
+   void operator()(Int r, double v) const {
++#if defined(__cpp_lib_atomic_ref) && __cpp_lib_atomic_ref >= 201806L
+     std::atomic_ref<double>(x[r]).fetch_sub(v, std::memory_order_relaxed);
++#else
++    auto *p = reinterpret_cast<std::uint64_t *>(&x[r]);
++    std::uint64_t expected = __atomic_load_n(p, __ATOMIC_RELAXED);
++    for (;;) {
++      const std::uint64_t desired = std::bit_cast<std::uint64_t>(std::bit_cast<double>(expected) - v);
++      if (__atomic_compare_exchange_n(p, &expected, desired, true, __ATOMIC_RELAXED, __ATOMIC_RELAXED))
++        break;
++    }
++#endif
+   }
+ };
+ 
+diff --git a/solver/src/vm_reserve.cpp b/solver/src/vm_reserve.cpp
+--- a/solver/src/vm_reserve.cpp
++++ b/solver/src/vm_reserve.cpp
+@@ -20,7 +20,7 @@ namespace smf {
+ namespace {
+ std::atomic<long long> g_decommit_bytes{0};
+ bool fail_reserve_hook() noexcept {
+-#ifdef _WIN32
++#ifdef _MSC_VER
+   char *e = nullptr;
+   std::size_t len = 0;
+   if (_dupenv_s(&e, &len, "SMF_TEST_STORE_FAIL_RESERVE") != 0 || e == nullptr) return false;

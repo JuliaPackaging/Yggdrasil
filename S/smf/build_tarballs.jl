@@ -9,11 +9,12 @@ sources = [
               "31348d9da6dfcc854703fcfd1434f32a798712fb"),
     FileSource("https://github.com/joseluisq/MacOSX-SDKs/releases/download/15.0/MacOSX15.0.sdk.tar.xz",
                "9df0293776fdc8a2060281faef929bf2fe1874c1f9368993e7a4ef87b1207f98"),
+    DirectorySource("./bundled"),
 ]
 
 script = raw"""
 if [[ "${target}" == *-apple-darwin* ]]; then
-    # Use MacOSX15.0.sdk for full C++20 libc++ support (std::bit_cast, std::span, std::atomic_ref).
+    # Use MacOSX15.0.sdk for C++20 libc++ support (std::bit_cast, std::span).
     tar -xf "${WORKSPACE}/srcdir/MacOSX15.0.sdk.tar.xz" -C "${WORKSPACE}/srcdir"
     apple_sdk_root="${WORKSPACE}/srcdir/MacOSX15.0.sdk"
     sed -i "s!/opt/${target}/${target}/sys-root!${apple_sdk_root}!" "${CMAKE_TARGET_TOOLCHAIN}"
@@ -22,11 +23,7 @@ if [[ "${target}" == *-apple-darwin* ]]; then
 fi
 
 cd $WORKSPACE/srcdir/opt_solver
-
-if [[ "${target}" == *-mingw* ]]; then
-    # Older MinGW-w64 winnt.h lacks PROCESSOR_RELATIONSHIP::EfficiencyClass.
-    sed -i 's/rec->Processor.EfficiencyClass/0/' solver/src/parallel/thread_plan.cpp
-fi
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/yggdrasil-portability.patch"
 
 # Let BinaryBuilder's compiler wrappers select the target microarchitecture
 # (do not force x86-64-v3 on generic x86_64 platforms).
