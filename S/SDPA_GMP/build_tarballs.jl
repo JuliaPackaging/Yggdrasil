@@ -49,12 +49,13 @@ products = [
 ]
 
 dependencies = [
-    # The bound admits 0.5.0, which Julia 1.6 ships. 1.3.0 is the oldest release with artifacts
-    # for both libgfortran3 (the GCC this builds with) and riscv64.
-    Dependency("CompilerSupportLibraries_jll", v"1.3.0"; compat="0.5.0, 1"),
+    # Julia 1.10.0 ships 1.0.5. 1.3.0 is the oldest release with artifacts for both libgfortran3
+    # (the GCC this builds with) and riscv64.
+    Dependency("CompilerSupportLibraries_jll", v"1.3.0"; compat="1.0.5"),
     Dependency("GMP_jll"; compat="6.2.1"),
 ]
 
 # GCC 6 is the oldest whose default C++ standard provides <chrono>, which sdpa_tool.cpp includes.
+# SDPAFamily.jl, the package that uses this JLL, requires Julia 1.10.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"6")
+               julia_compat="1.10", preferred_gcc_version=v"6")
