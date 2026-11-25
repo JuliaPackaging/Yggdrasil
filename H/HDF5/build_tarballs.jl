@@ -7,13 +7,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
-version = v"2.2.0"
-ygg_version = v"2.2.4"
+version = v"2.3.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/HDFGroup/hdf5/releases/download/$(version)/hdf5-$(version).tar.gz",
-                  "1a1ab8209b35586fbc1aa279ba76d102130b95badcb20ca329587219112d8c16"),
+                  "cd462ef0578927ae75f9e010a806b0dd28f19152db2abf6919cb94f9d5b9b8b0"),
     DirectorySource("bundled"),
 ]
 
@@ -327,8 +326,8 @@ dependencies = [
     Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("aws_c_s3_jll"; compat="~1.3.1"),
     Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
-    Dependency("libaec_jll"; compat="1.1.4"), # This is the successor of szlib
-    Dependency("mpif_jll"; compat="1.0.0", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
+    Dependency("libaec_jll"; compat="1.1.8"), # This is the successor of szlib
+    Dependency("mpif_jll"; compat="1.0.1", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
 ]
 append!(dependencies, platform_dependencies)
 
@@ -337,5 +336,5 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, clang_use_lld=false, julia_compat="1.10", preferred_gcc_version=v"12")
