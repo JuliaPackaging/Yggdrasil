@@ -39,6 +39,15 @@ function project_path(build_result::BuildResult)
     return relpath(build_script_path, YGGDRASIL_BASE)
 end
 
+# Human-readable platform of a build, used in CI step labels.  This is the platform of the
+# default target spec; builds that also target other platforms (e.g. cross-compilers, whose
+# default spec is the host the compiler runs on) append those targets, e.g.
+# `x86_64-linux-gnu => aarch64-linux-musl`.
+function platform_label(config::BuildConfig)
+    default_spec = BinaryBuilder2.get_default_target_spec(config)
+    extra_specs = filter(ts -> isdisjoint(ts.flags, (:default, :native)), config.target_specs)
+    return join([triplet(ts.platform.target) for ts in [default_spec; extra_specs]], " => ")
+end
 
 # Next, iterate over `PackageResult` objects; each `PackageResult` will become a registration job,
 # and the `BuildConfig`'s from each `PackageResult` will become a build job.  Note that we
@@ -56,7 +65,7 @@ for (_, package_result) in meta.packagings
             "name" => build_result.config.src_name,
             "script" => build_result.config.build_script_path,
             "build_hash" => spec_hash(build_result.config),
-            "platform" => triplet(BinaryBuilder2.get_default_target_spec(build_result.config).platform.target),
+            "platform" => platform_label(build_result.config),
             "dependencies" => package_deps,
         ))
     end
