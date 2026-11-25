@@ -2,14 +2,13 @@
 using BinaryBuilder, Pkg
 
 name = "smf"
-version = v"0.2.0"
+version = v"0.2.1"
 
 sources = [
     GitSource("https://github.com/danlil240/opt_solver.git",
-              "31348d9da6dfcc854703fcfd1434f32a798712fb"),
+              "8ffa88d29b6ef82cd613ca3c2486e113f98da895"),
     FileSource("https://github.com/joseluisq/MacOSX-SDKs/releases/download/15.0/MacOSX15.0.sdk.tar.xz",
                "9df0293776fdc8a2060281faef929bf2fe1874c1f9368993e7a4ef87b1207f98"),
-    DirectorySource("./bundled"),
 ]
 
 script = raw"""
@@ -23,22 +22,20 @@ if [[ "${target}" == *-apple-darwin* ]]; then
 fi
 
 cd $WORKSPACE/srcdir/opt_solver
-atomic_patch -p1 "${WORKSPACE}/srcdir/patches/yggdrasil-portability.patch"
 
 # Let BinaryBuilder's compiler wrappers select the target microarchitecture
 # (do not force x86-64-v3 on generic x86_64 platforms).
-# -D_GNU_SOURCE exposes siginfo_t in glibc 2.17 <signal.h> under METIS's -std=c99.
 cmake -S solver -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_C_FLAGS="-D_GNU_SOURCE" \
     -DSMF_USE_MKL=OFF \
     -DSMF_USE_SUITESPARSE_AMD=ON \
     -DSMF_USE_METIS=ON \
     -DSMF_VENDORED_METIS=ON \
     -DSMF_BUILD_C_API=ON \
     -DSMF_BUILD_MA97_PLUGIN=ON \
+    -DSMF_INSTALL_STATIC_LIBS=OFF \
     -DSMF_BUILD_TESTS=OFF \
     -DSMF_BUILD_BENCHMARKS=OFF \
     -DBLAS_LIBRARIES="-L${libdir} -lopenblas" \
