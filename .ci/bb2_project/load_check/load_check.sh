@@ -31,7 +31,7 @@ rm -rf "${DEPOT}/registries/General/.git"
 
 mapfile -t JLLS < "${DEPOT}/jlls.txt"
 for JLL in "${CHECK_JLLS[@]}"; do
-    if ! printf '%s\n' "${JLLS[@]}" | grep -qxF "${JLL}"; then
+    if ! printf '%s\n' "${JLLS[@]}" | grep -xF "${JLL}" > /dev/null; then
         echo "${JLL} is not in the depot, which holds: ${JLLS[*]}" >&2
         exit 1
     fi
