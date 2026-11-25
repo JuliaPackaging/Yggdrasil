@@ -1,0 +1,339 @@
+Print the solution, final objective values, gap and errors with all digits of dd_real (dd_real::to_string) instead of only the leading double.
+
+--- a/sdpa_struct.h
++++ b/sdpa_struct.h
+@@ -20,7 +20,7 @@
+ ------------------------------------------------------------- */
+ 
+ // printing presicion of such as vector
+-#define P_FORMAT "%+18.12e"
++#define P_FORMAT "%s"
+ 
+ #ifndef __sdpa_struct_h__
+ #define __sdpa_struct_h__
+@@ -29,6 +29,9 @@
+ 
+ namespace sdpa {
+ 
++// All digits of a, for printing with P_FORMAT.
++inline std::string dd_str(const dd_real &a) { return a.to_string(dd_real::_ndigits, 0, std::ios_base::scientific, true); }
++
+ class Vector {
+   public:
+     int nDim;
+--- a/sdpa_struct.cpp
++++ b/sdpa_struct.cpp
+@@ -98,10 +98,10 @@
+     }
+     fprintf(fpout, "{");
+     for (int j = 0; j < nDim - 1; ++j) {
+-        fprintf(fpout, P_FORMAT ",", ele[j].x[0]);
++        fprintf(fpout, P_FORMAT ",", dd_str(ele[j]).c_str());
+     }
+     if (nDim > 0) {
+-        fprintf(fpout, P_FORMAT "}\n", ele[nDim - 1].x[0]);
++        fprintf(fpout, P_FORMAT "}\n", dd_str(ele[nDim - 1]).c_str());
+     } else {
+         fprintf(fpout, "  }\n");
+     }
+@@ -114,11 +114,11 @@
+     fprintf(fpout, "{");
+     for (int j = 0; j < nDim - 1; ++j) {
+         dd_real mtmp = ele[j] * scalar;
+-        fprintf(fpout, P_FORMAT ",", mtmp.x[0]);
++        fprintf(fpout, P_FORMAT ",", dd_str(mtmp).c_str());
+     }
+     if (nDim > 0) {
+         dd_real mtmp = ele[nDim - 1] * scalar;
+-        fprintf(fpout, P_FORMAT "}\n", mtmp.x[0]);
++        fprintf(fpout, P_FORMAT "}\n", dd_str(mtmp).c_str());
+     } else {
+         fprintf(fpout, "  }\n");
+     }
+@@ -363,7 +363,7 @@
+             int i = row_index[index];
+             int j = column_index[index];
+             dd_real value = sp_ele[index];
+-            fprintf(fpout, "val[%d,%d] = " P_FORMAT "\n", i, j, value.x[0]);
++            fprintf(fpout, "val[%d,%d] = " P_FORMAT "\n", i, j, dd_str(value).c_str());
+         }
+         fprintf(fpout, "}\n");
+         break;
+@@ -377,17 +377,17 @@
+             }
+             fprintf(fpout, "{");
+             for (int j = 0; j < nCol - 1; ++j) {
+-                fprintf(fpout, P_FORMAT ",", de_ele[i + nCol * j].x[0]);
++                fprintf(fpout, P_FORMAT ",", dd_str(de_ele[i + nCol * j]).c_str());
+             }
+-            fprintf(fpout, P_FORMAT " },\n", de_ele[i + nCol * (nCol - 1)].x[0]);
++            fprintf(fpout, P_FORMAT " },\n", dd_str(de_ele[i + nCol * (nCol - 1)]).c_str());
+         }
+         if (nRow > 1) {
+             fprintf(fpout, "  {");
+         }
+         for (int j = 0; j < nCol - 1; ++j) {
+-            fprintf(fpout, P_FORMAT ",", de_ele[(nRow - 1) + nCol * j].x[0]);
++            fprintf(fpout, P_FORMAT ",", dd_str(de_ele[(nRow - 1) + nCol * j]).c_str());
+         }
+-        fprintf(fpout, P_FORMAT " }", de_ele[(nRow - 1) + nCol * (nCol - 1)].x[0]);
++        fprintf(fpout, P_FORMAT " }", dd_str(de_ele[(nRow - 1) + nCol * (nCol - 1)]).c_str());
+         if (nRow > 1) {
+             fprintf(fpout, "   }\n");
+         } else {
+@@ -688,17 +688,17 @@
+             }
+             fprintf(fpout, "{");
+             for (int j = 0; j < nCol - 1; ++j) {
+-                fprintf(fpout, P_FORMAT ",", de_ele[i + nCol * j].x[0]);
++                fprintf(fpout, P_FORMAT ",", dd_str(de_ele[i + nCol * j]).c_str());
+             }
+-            fprintf(fpout, P_FORMAT " },\n", de_ele[i + nCol * (nCol - 1)].x[0]);
++            fprintf(fpout, P_FORMAT " },\n", dd_str(de_ele[i + nCol * (nCol - 1)]).c_str());
+         }
+         if (nRow > 1) {
+             fprintf(fpout, "  {");
+         }
+         for (int j = 0; j < nCol - 1; ++j) {
+-            fprintf(fpout, P_FORMAT ",", de_ele[(nRow - 1) + nCol * j].x[0]);
++            fprintf(fpout, P_FORMAT ",", dd_str(de_ele[(nRow - 1) + nCol * j]).c_str());
+         }
+-        fprintf(fpout, P_FORMAT " }", de_ele[(nRow - 1) + nCol * (nCol - 1)].x[0]);
++        fprintf(fpout, P_FORMAT " }", dd_str(de_ele[(nRow - 1) + nCol * (nCol - 1)]).c_str());
+         if (nRow > 1) {
+             fprintf(fpout, "   }\n");
+         } else {
+@@ -1638,9 +1638,9 @@
+ void printvec(int N, dd_real *A) {
+     printf(" [ ");
+     for (int i = 0; i < N - 1; i++) {
+-        printf(P_FORMAT "; ", A[i].x[0]);
++        printf(P_FORMAT "; ", dd_str(A[i]).c_str());
+     }
+-    printf(P_FORMAT " ] ", A[N - 1].x[0]);
++    printf(P_FORMAT " ] ", dd_str(A[N - 1]).c_str());
+ }
+ 
+ // print vector as matlab compat format.
+@@ -1648,10 +1648,10 @@
+     int ix = 0;
+     printf(" [ ");
+     for (int i = 0; i < N - 1; i++) {
+-        printf(P_FORMAT "; ", A[ix].x[0]);
++        printf(P_FORMAT "; ", dd_str(A[ix]).c_str());
+         ix = ix + inc;
+     }
+-    printf(P_FORMAT " ] ", A[ix].x[0]);
++    printf(P_FORMAT " ] ", dd_str(A[ix]).c_str());
+ }
+ 
+ // print matrix as matlab compat format.
+@@ -1662,7 +1662,7 @@
+         printf("[ ");
+         for (int j = 0; j < M; j++) {
+             mtmp = A[i + j * LDA];
+-            printf(P_FORMAT, mtmp.x[0]);
++            printf(P_FORMAT, dd_str(mtmp).c_str());
+             if (j < M - 1)
+                 printf(", ");
+         }
+@@ -1682,7 +1682,7 @@
+         printf("[ ");
+         for (int j = 0; j < N; j++) {
+             mtmp = A[i + j * LDA];
+-            printf(P_FORMAT, mtmp.x[0]);
++            printf(P_FORMAT, dd_str(mtmp).c_str());
+             if (j < N - 1)
+                 printf(", ");
+         }
+@@ -1703,13 +1703,13 @@
+         printf(" [ ");
+         for (int j = 0; j < N; j++) {
+             if (i == j) {
+-                printf(P_FORMAT, p[i].x[0]);
++                printf(P_FORMAT, dd_str(p[i]).c_str());
+             }
+             if (abs(i - j) == 1) {
+-                printf(P_FORMAT, q[(i < j ? i : j)].x[0]);
++                printf(P_FORMAT, dd_str(q[(i < j ? i : j)]).c_str());
+             }
+             if (abs(i - j) > 1) {
+-                printf(P_FORMAT, zero.x[0]);
++                printf(P_FORMAT, dd_str(zero).c_str());
+             }
+             if (j < N - 1)
+                 printf(", ");
+--- a/sdpa_io.cpp
++++ b/sdpa_io.cpp
+@@ -921,25 +921,25 @@
+         fprintf(Display, "\n");
+         phase.display(Display);
+         fprintf(Display, "   Iteration = %d\n", pIteration);
+-        fprintf(Display, "          mu = %4.16e\n", mu.current.x[0]);
+-        fprintf(Display, "relative gap = %4.16e\n", relgap.x[0]);
+-        fprintf(Display, "         gap = %4.16e\n", gap.x[0]);
+-        fprintf(Display, "      digits = %4.16e\n", digits.x[0]);
++        fprintf(Display, "          mu = %s\n", dd_str(mu.current).c_str());
++        fprintf(Display, "relative gap = %s\n", dd_str(relgap).c_str());
++        fprintf(Display, "         gap = %s\n", dd_str(gap).c_str());
++        fprintf(Display, "      digits = %s\n", dd_str(digits).c_str());
+ 
+ #if REVERSE_PRIMAL_DUAL
+         dd_real mtmp1 = -solveInfo.objValDual;
+         dd_real mtmp2 = -solveInfo.objValPrimal;
+-        fprintf(Display, "objValPrimal = %10.16e\n", mtmp1.x[0]);
+-        fprintf(Display, "objValDual   = %10.16e\n", mtmp2.x[0]);
+-        fprintf(Display, "p.feas.error = %10.16e\n", currentRes.normDualMat.x[0]);
+-        fprintf(Display, "d.feas.error = %10.16e\n", currentRes.normPrimalVec.x[0]);
+-        fprintf(Display, "relative eps = %10.16e\n", Rlamch_dd("E").x[0]);
++        fprintf(Display, "objValPrimal = %s\n", dd_str(mtmp1).c_str());
++        fprintf(Display, "objValDual   = %s\n", dd_str(mtmp2).c_str());
++        fprintf(Display, "p.feas.error = %s\n", dd_str(currentRes.normDualMat).c_str());
++        fprintf(Display, "d.feas.error = %s\n", dd_str(currentRes.normPrimalVec).c_str());
++        fprintf(Display, "relative eps = %s\n", dd_str(Rlamch_dd("E")).c_str());
+ #else
+-        fprintf(Display, "objValPrimal = %10.16e\n", solveInfo.objValPrimal.x[0]);
+-        fprintf(Display, "objValDual   = %10.16e\n", solveInfo.objValDual.x[0]);
+-        fprintf(Display, "p.feas.error = %10.16e\n", currentRes.normPrimalVec.x[0]);
+-        fprintf(Display, "d.feas.error = %10.16e\n", currentRes.normDualMat.x[0]);
+-        fprintf(Display, "relative eps = %10.16e\n", dlamchE().x[0]);
++        fprintf(Display, "objValPrimal = %s\n", dd_str(solveInfo.objValPrimal).c_str());
++        fprintf(Display, "objValDual   = %s\n", dd_str(solveInfo.objValDual).c_str());
++        fprintf(Display, "p.feas.error = %s\n", dd_str(currentRes.normPrimalVec).c_str());
++        fprintf(Display, "d.feas.error = %s\n", dd_str(currentRes.normDualMat).c_str());
++        fprintf(Display, "relative eps = %s\n", dd_str(dlamchE()).c_str());
+ #endif
+         if (printTime == true) {
+             fprintf(Display, "total time   = %.3f\n", cputime);
+@@ -960,25 +960,25 @@
+         fprintf(fpout, "\n");
+         phase.display(fpout);
+         fprintf(fpout, "   Iteration = %d\n", pIteration);
+-        fprintf(fpout, "          mu = %4.16e\n", mu.current.x[0]);
+-        fprintf(fpout, "relative gap = %4.16e\n", relgap.x[0]);
+-        fprintf(fpout, "         gap = %4.16e\n", gap.x[0]);
+-        fprintf(fpout, "      digits = %4.16e\n", digits.x[0]);
++        fprintf(fpout, "          mu = %s\n", dd_str(mu.current).c_str());
++        fprintf(fpout, "relative gap = %s\n", dd_str(relgap).c_str());
++        fprintf(fpout, "         gap = %s\n", dd_str(gap).c_str());
++        fprintf(fpout, "      digits = %s\n", dd_str(digits).c_str());
+ 
+ #if REVERSE_PRIMAL_DUAL
+         dd_real mtmp1 = -solveInfo.objValDual;
+         dd_real mtmp2 = -solveInfo.objValPrimal;
+-        fprintf(fpout, "objValPrimal = %10.16e\n", mtmp1.x[0]);
+-        fprintf(fpout, "objValDual   = %10.16e\n", mtmp2.x[0]);
+-        fprintf(fpout, "p.feas.error = %10.16e\n", currentRes.normDualMat.x[0]);
+-        fprintf(fpout, "d.feas.error = %10.16e\n", currentRes.normPrimalVec.x[0]);
+-        fprintf(fpout, "relative eps = %10.16e\n", Rlamch_dd("E").x[0]);
++        fprintf(fpout, "objValPrimal = %s\n", dd_str(mtmp1).c_str());
++        fprintf(fpout, "objValDual   = %s\n", dd_str(mtmp2).c_str());
++        fprintf(fpout, "p.feas.error = %s\n", dd_str(currentRes.normDualMat).c_str());
++        fprintf(fpout, "d.feas.error = %s\n", dd_str(currentRes.normPrimalVec).c_str());
++        fprintf(fpout, "relative eps = %s\n", dd_str(Rlamch_dd("E")).c_str());
+ #else
+-        fprintf(fpout, "objValPrimal = %10.16e\n", solveInfo.objValPrimal.x[0]);
+-        fprintf(fpout, "objValDual   = %10.16e\n", solveInfo.objValDual.x[0]);
+-        fprintf(fpout, "p.feas.error = %10.16e\n", currentRes.normPrimalVec.x[0]);
+-        fprintf(fpout, "d.feas.error = %10.16e\n", currentRes.normDualMat.x[0]);
+-        fprintf(fpout, "relative eps = %10.16e\n", Rlamch_dd("E").x[0]);
++        fprintf(fpout, "objValPrimal = %s\n", dd_str(solveInfo.objValPrimal).c_str());
++        fprintf(fpout, "objValDual   = %s\n", dd_str(solveInfo.objValDual).c_str());
++        fprintf(fpout, "p.feas.error = %s\n", dd_str(currentRes.normPrimalVec).c_str());
++        fprintf(fpout, "d.feas.error = %s\n", dd_str(currentRes.normDualMat).c_str());
++        fprintf(fpout, "relative eps = %s\n", dd_str(Rlamch_dd("E")).c_str());
+ #endif
+         fprintf(fpout, "total time   = %.3f\n", cputime);
+ #if DIMACS_PRINT
+@@ -1103,10 +1103,10 @@
+         fprintf(Display, "\n");
+         phase.display(Display);
+         fprintf(Display, "   Iteration = %d\n", pIteration);
+-        fprintf(Display, "          mu = %4.16e\n", mu.current.x[0]);
+-        fprintf(Display, "relative gap = %4.16e\n", relgap.x[0]);
+-        fprintf(Display, "         gap = %4.16e\n", gap.x[0]);
+-        fprintf(Display, "      digits = %4.16e\n", digits.x[0]);
++        fprintf(Display, "          mu = %s\n", dd_str(mu.current).c_str());
++        fprintf(Display, "relative gap = %s\n", dd_str(relgap).c_str());
++        fprintf(Display, "         gap = %s\n", dd_str(gap).c_str());
++        fprintf(Display, "      digits = %s\n", dd_str(digits).c_str());
+ 
+ #if REVERSE_PRIMAL_DUAL
+         dd_real mtmp1 = -solveInfo.objValDual;
+@@ -1116,15 +1116,15 @@
+         cout << mtmp1 << endl;
+         fprintf(Display, "objValDual   = ");
+         cout << mtmp2 << endl;
+-        fprintf(Display, "p.feas.error = %10.16e\n", currentRes.normDualMat.x[0]);
+-        fprintf(Display, "d.feas.error = %10.16e\n", currentRes.normPrimalVec.x[0]);
+-        fprintf(Display, "relative eps = %10.16e\n", Rlamch_dd("E").x[0]);
++        fprintf(Display, "p.feas.error = %s\n", dd_str(currentRes.normDualMat).c_str());
++        fprintf(Display, "d.feas.error = %s\n", dd_str(currentRes.normPrimalVec).c_str());
++        fprintf(Display, "relative eps = %s\n", dd_str(Rlamch_dd("E")).c_str());
+ #else
+-        fprintf(Display, "objValPrimal = %10.16e\n", solveInfo.objValPrimal.x[0]);
+-        fprintf(Display, "objValDual   = %10.16e\n", solveInfo.objValDual.x[0]);
+-        fprintf(Display, "p.feas.error = %10.16e\n", currentRes.normPrimalVec.x[0]);
+-        fprintf(Display, "d.feas.error = %10.16e\n", currentRes.normDualMat.x[0]);
+-        fprintf(Display, "relative eps = %10.16e\n", Rlamch_dd("E").x[0]);
++        fprintf(Display, "objValPrimal = %s\n", dd_str(solveInfo.objValPrimal).c_str());
++        fprintf(Display, "objValDual   = %s\n", dd_str(solveInfo.objValDual).c_str());
++        fprintf(Display, "p.feas.error = %s\n", dd_str(currentRes.normPrimalVec).c_str());
++        fprintf(Display, "d.feas.error = %s\n", dd_str(currentRes.normDualMat).c_str());
++        fprintf(Display, "relative eps = %s\n", dd_str(Rlamch_dd("E")).c_str());
+ #endif
+         if (printTime == true) {
+             fprintf(Display, "total time   = %.3f\n", cputime);
+@@ -1145,25 +1145,25 @@
+         fprintf(fpout, "\n");
+         phase.display(fpout);
+         fprintf(fpout, "   Iteration = %d\n", pIteration);
+-        fprintf(fpout, "          mu = %4.16e\n", mu.current.x[0]);
+-        fprintf(fpout, "relative gap = %4.16e\n", relgap.x[0]);
+-        fprintf(fpout, "         gap = %4.16e\n", gap.x[0]);
+-        fprintf(fpout, "      digits = %4.16e\n", digits.x[0]);
++        fprintf(fpout, "          mu = %s\n", dd_str(mu.current).c_str());
++        fprintf(fpout, "relative gap = %s\n", dd_str(relgap).c_str());
++        fprintf(fpout, "         gap = %s\n", dd_str(gap).c_str());
++        fprintf(fpout, "      digits = %s\n", dd_str(digits).c_str());
+ 
+ #if REVERSE_PRIMAL_DUAL
+         dd_real mtmp1 = -solveInfo.objValDual;
+         dd_real mtmp2 = -solveInfo.objValPrimal;
+-        fprintf(fpout, "objValPrimal = %10.16e\n", mtmp1.x[0]);
+-        fprintf(fpout, "objValDual   = %10.16e\n", mtmp2.x[0]);
+-        fprintf(fpout, "p.feas.error = %10.16e\n", currentRes.normDualMat.x[0]);
+-        fprintf(fpout, "d.feas.error = %10.16e\n", currentRes.normPrimalVec.x[0]);
+-        fprintf(fpout, "relative eps = %10.16e\n", Rlamch_dd("E").x[0]);
++        fprintf(fpout, "objValPrimal = %s\n", dd_str(mtmp1).c_str());
++        fprintf(fpout, "objValDual   = %s\n", dd_str(mtmp2).c_str());
++        fprintf(fpout, "p.feas.error = %s\n", dd_str(currentRes.normDualMat).c_str());
++        fprintf(fpout, "d.feas.error = %s\n", dd_str(currentRes.normPrimalVec).c_str());
++        fprintf(fpout, "relative eps = %s\n", dd_str(Rlamch_dd("E")).c_str());
+ #else
+-        fprintf(fpout, "objValPrimal = %10.16e\n", solveInfo.objValPrimal.x[0]);
+-        fprintf(fpout, "objValDual   = %10.16e\n", solveInfo.objValDual.x[0]);
+-        fprintf(fpout, "p.feas.error = %10.16e\n", currentRes.normPrimalVec.x[0]);
+-        fprintf(fpout, "d.feas.error = %10.16e\n", currentRes.normDualMat.x[0]);
+-        fprintf(fpout, "relative eps = %10.16e\n", Rlamch_dd("E").x[0]);
++        fprintf(fpout, "objValPrimal = %s\n", dd_str(solveInfo.objValPrimal).c_str());
++        fprintf(fpout, "objValDual   = %s\n", dd_str(solveInfo.objValDual).c_str());
++        fprintf(fpout, "p.feas.error = %s\n", dd_str(currentRes.normPrimalVec).c_str());
++        fprintf(fpout, "d.feas.error = %s\n", dd_str(currentRes.normDualMat).c_str());
++        fprintf(fpout, "relative eps = %s\n", dd_str(Rlamch_dd("E")).c_str());
+ #endif
+         fprintf(fpout, "total time   = %.3f\n", cputime);
+ #if DIMACS_PRINT
+@@ -1219,10 +1219,10 @@
+         } else if (blockType[i] == 3) {
+             fprintf(fpout, "{");
+             for (int l = 0; l < blockStruct[i] - 1; ++l) {
+-                fprintf(fpout, P_FORMAT ",", aMat.LP_block[blockNumber[i] + l].x[0]);
++                fprintf(fpout, P_FORMAT ",", dd_str(aMat.LP_block[blockNumber[i] + l]).c_str());
+             }
+             if (blockStruct[i] > 0) {
+-                fprintf(fpout, P_FORMAT "}\n", aMat.LP_block[blockNumber[i] + blockStruct[i] - 1].x[0]);
++                fprintf(fpout, P_FORMAT "}\n", dd_str(aMat.LP_block[blockNumber[i] + blockStruct[i] - 1]).c_str());
+             } else {
+                 fprintf(fpout, "  }\n");
+             }

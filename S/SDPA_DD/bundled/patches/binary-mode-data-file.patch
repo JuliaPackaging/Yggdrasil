@@ -1,0 +1,13 @@
+Open the data file in binary mode: in text mode, msvcrt's ftell miscounts files with LF line endings, so the fseek back to the matrix section lands at the wrong offset.
+
+--- a/sdpa_main.cpp
++++ b/sdpa_main.cpp
+@@ -66,7 +66,7 @@
+     }
+     // param.display(Display);
+ 
+-    if ((fpData = fopen(dataFile, "r")) == NULL) {
++    if ((fpData = fopen(dataFile, "rb")) == NULL) {
+         rError("Cannot open data file " << dataFile);
+     }
+     char titleAndComment[LengthOfBuffer];
