@@ -5,11 +5,11 @@ using BinaryBuilder, Pkg
 include("../../platforms/macos_sdks.jl")
 
 name = "DuckDB"
-version = v"2.0.0"
+version = v"2.0.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/duckdb/duckdb.git", "d54cbbe3df17e8e5ce68312f483b4155836112aa"),
+    GitSource("https://github.com/duckdb/duckdb.git", "8d78114e90a53823803660bf821f6073ac87da8c"; tag="v$(version)"),
 ]
 
 # Bash recipe for building across all platforms
@@ -49,7 +49,9 @@ cmake -B build \
       -DBUILD_UNITTESTS=FALSE \
       -DBUILD_SHELL=TRUE \
       -DDUCKDB_EXPLICIT_PLATFORM=${DUCKDB_TARGET}
-cmake --build build --parallel ${nproc}
+# DuckDB compiles are memory-heavy at -O3; cap parallelism to keep peak RSS
+# within the build workers' memory limit.
+cmake --build build --parallel $(( nproc > 8 ? 8 : nproc ))
 cmake --install build
 
 if [[ "${target}" == *-mingw32 ]]; then
