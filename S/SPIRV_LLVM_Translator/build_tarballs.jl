@@ -158,8 +158,11 @@ if [[ "${target}" == *mingw* ]]; then
     # LLVM.
     LINKER=${target}-clang++
     COMMON_FLAGS+=(-pthread)
+    # Take the multibyte C runtime functions from mingw-w64's libmsvcrt, which
+    # implements them statically, before libzstd-1.dll, which also exports
+    # them (see the check below).
     LINK_FLAGS=(-Wl,--exclude-all-symbols -Wl,--gc-sections
-        ${SYSTEM_LIBS[@]} -lole32 -luuid -lpsapi -lshell32 -ladvapi32 -lws2_32 -lntdll)
+        -lmsvcrt ${SYSTEM_LIBS[@]} -lole32 -luuid -lpsapi -lshell32 -ladvapi32 -lws2_32 -lntdll)
 elif [[ "${target}" == *-apple-* ]]; then
     LINKER=${CXX}
     printf '_%s\n' ${API} > libllvm_spirv.exports
