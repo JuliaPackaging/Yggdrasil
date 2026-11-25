@@ -102,12 +102,16 @@ if [[ ${target} == *-w64-* ]]; then
     # HDF5 calls `find_package(MPI COMPONENTS Fortran)` several times (in `fortran/` and
     # `hl/fortran/`). Set FindMPI's input variables (`LIB_NAMES` and `COMPILER_INCLUDE_DIRS`)
     # so that it skips autodetection and gives the same result each time.
+    # Use a library name other than `msmpi`: `MPI_msmpi_LIBRARY` is shared with the C
+    # detection, and C must link against the import library, not the DLL. On i686 the C
+    # bindings are `__stdcall` (e.g. `_MPI_File_close@4`), and linking against the DLL
+    # directly leaves some of them unresolved.
     cmake_options+=(
         -DMPI_GUESS_LIBRARY_NAME=MSMPI
         -DMPI_C_LIBRARIES=msmpi64
         -DMPI_CXX_LIBRARIES=msmpi64
-        -DMPI_Fortran_LIB_NAMES=msmpi
-        -DMPI_msmpi_LIBRARY=${libdir}/msmpi.${dlext}
+        -DMPI_Fortran_LIB_NAMES=msmpi_fortran
+        -DMPI_msmpi_fortran_LIBRARY=${libdir}/msmpi.${dlext}
         -DMPI_Fortran_COMPILER_INCLUDE_DIRS=${includedir}
         -DCMAKE_Fortran_FLAGS=-fallow-invalid-boz
     )
