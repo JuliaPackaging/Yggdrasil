@@ -119,6 +119,12 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/smul_overflow_flag.patch
 # sorted, so a dedicated exit or preheader it inserts could precede its
 # dominator, and spirv-val rejected the module (JuliaGPU/KernelAbstractions.jl#894).
 atomic_patch -p1 $WORKSPACE/srcdir/patches/resort_blocks_after_loopsimplify.patch
+# Backport of https://github.com/llvm/llvm-project/pull/245982 ("[SPIR-V] Clamp
+# memory access alignments to 2^31"; open upstream): an access alignment of
+# 2^32, which InferAlignment gives to accesses of null, was truncated to an
+# invalid `Aligned 0`. Julia emits such accesses in dead code that unboxes a
+# union value (JuliaGPU/OpenCL.jl#631).
+atomic_patch -p1 $WORKSPACE/srcdir/patches/clamp_access_alignment.patch
 
 install_license LICENSE.TXT
 
