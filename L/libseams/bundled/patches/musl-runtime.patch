@@ -59,8 +59,11 @@
    install_rpath: _lib_origin,
 --- /dev/null
 +++ b/src/yoda-rust.map
-@@ -0,0 +1,4 @@
+@@ -0,0 +1,7 @@
 +/* Rust implementation symbols are private to the shared library. */
 +{
-+  local: _R*;
++  local:
++    _R*;
++    /* Prebuilt Rust standard libraries also use legacy hash suffixes. */
++    _ZN*17h????????????????E;
 +};
