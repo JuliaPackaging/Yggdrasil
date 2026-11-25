@@ -27,7 +27,6 @@ products = [
 ]
 
 dependencies = [
-    # Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"))
     Dependency("CompilerSupportLibraries_jll"; compat="1.0.5"),
 ]
 
