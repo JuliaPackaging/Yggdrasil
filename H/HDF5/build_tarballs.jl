@@ -99,12 +99,16 @@ fi
 if [[ ${target} == *-w64-* ]]; then
     # MS-MPI: its Fortran wrapper library cannot be linked with gfortran, but msmpi.dll
     # exports the gfortran-mangled entry points; mpif.h needs -fallow-invalid-boz.
+    # HDF5 calls `find_package(MPI COMPONENTS Fortran)` several times (in `fortran/` and
+    # `hl/fortran/`). Set FindMPI's input variables (`LIB_NAMES` and `COMPILER_INCLUDE_DIRS`)
+    # so that it skips autodetection and gives the same result each time.
     cmake_options+=(
         -DMPI_GUESS_LIBRARY_NAME=MSMPI
         -DMPI_C_LIBRARIES=msmpi64
         -DMPI_CXX_LIBRARIES=msmpi64
-        -DMPI_Fortran_LIBRARIES=${libdir}/msmpi.${dlext}
-        -DMPI_Fortran_INCLUDE_DIRS=${includedir}
+        -DMPI_Fortran_LIB_NAMES=msmpi
+        -DMPI_msmpi_LIBRARY=${libdir}/msmpi.${dlext}
+        -DMPI_Fortran_COMPILER_INCLUDE_DIRS=${includedir}
         -DCMAKE_Fortran_FLAGS=-fallow-invalid-boz
     )
 fi
@@ -328,6 +332,13 @@ dependencies = [
     Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
     Dependency("libaec_jll"; compat="1.1.8"), # This is the successor of szlib
     Dependency("mpif_jll"; compat="1.0.1", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
+    # MPICH requires Hwloc, which requires XML2. XML2_jll 2.15.5 (built with BinaryBuilder2)
+    # references musl 1.2 time64 symbols (`__stat_time64` etc.) on 32-bit musl, which our musl
+    # sysroot lacks, so linking against libmpi fails. Build against the previous XML2 instead.
+    # This will work at run time if the system has at least musl 1.2, otherwise it will fail with
+    # an error message (i.e. it will not fail silently).
+    BuildDependency(PackageSpec(; name="XML2_jll", version=v"2.15.4+0");
+                    platforms=filter(p -> Sys.islinux(p) && libc(p) == "musl" && nbits(p) == 32, platforms)),
 ]
 append!(dependencies, platform_dependencies)
 
