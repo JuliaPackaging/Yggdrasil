@@ -38,6 +38,10 @@ CT_RM_RF_PREFIX_DIR=n
 CT_FORBID_DOWNLOAD=y
 CT_LOCAL_TARBALLS_DIR="${WORKSPACE}/srcdir"
 
+# Apply crosstool-ng's bundled patches, then ours from patches/<package>/<version>
+CT_PATCH_BUNDLED_LOCAL=y
+CT_LOCAL_PATCH_DIR="${WORKSPACE}/srcdir/patches"
+
 # We always want to build g++
 CT_CC_LANG_CXX=y
 
