@@ -19,7 +19,6 @@ install_license LICENSE.md
 """
 
 platforms = supported_platforms()
-filter!(p -> nbits(p) == 64, platforms) # only 64-bit platforms!
 platforms = expand_gfortran_versions(platforms)
 
 products = [
