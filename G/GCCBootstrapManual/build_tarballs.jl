@@ -133,6 +133,13 @@ rm -f ${prefix}/${target}/lib*/*.la
 rm -rf ${prefix}/share/man
 
 install_license ${WORKSPACE}/srcdir/gcc-*/COPYING*
+
+for proj in mpfr mpc isl gmp; do
+    for f in ${WORKSPACE}/srcdir/gcc-*/${proj}/COPYING* ${WORKSPACE}/srcdir/gcc-*/${proj}/COPYRIGHT*; do
+        [[ -f "${f}" ]] || continue
+        install -Dvm 644 "${f}" "${prefix}/share/licenses/GCCBootstrapManual/${proj}-$(basename "${f}")"
+    done
+done
 """
 
 host_platforms = [
