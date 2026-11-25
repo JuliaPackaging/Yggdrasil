@@ -1,0 +1,196 @@
+--- a/subprojects/linkcell/scripts/copy-cargo-artifacts.py
++++ b/subprojects/linkcell/scripts/copy-cargo-artifacts.py
+@@ -8,7 +8,6 @@
+ import re
+ import shutil
+ import subprocess
+-import sys
+ from pathlib import Path
+ 
+ 
+@@ -53,16 +52,17 @@
+     # Pixi's cargo is a real binary, not the rustup proxy, and it is ahead
+     # of rustup on PATH. rustup run nightly still leaves that rustc first,
+     # so the nightly compiler has to be named by its own path.
+-    command = [args.cargo]
++    cargo = os.path.abspath(args.cargo) if os.path.dirname(args.cargo) else args.cargo
++    command = [cargo]
+     if os.environ.get("LINKCELL_CARGO_VERBOSE") == "1":
+         command.append("-vv")
+     command += [
+         "rustc",
+         "--lib",
+         "--manifest-path",
+-        str(args.source / "Cargo.toml"),
++        str(args.source.absolute() / "Cargo.toml"),
+         "--target-dir",
+-        str(args.target),
++        str(args.target.absolute()),
+         "--features",
+         "capi",
+     ]
+@@ -74,12 +74,15 @@
+         command.append("--release")
+ 
+     rustc = ["--crate-type=cdylib", "--crate-type=staticlib"]
+-    if sys.platform.startswith("linux"):
++    if args.shared.endswith(".so"):
+         rustc.append(f"-Clink-arg=-Wl,-soname,{args.shared}")
+-    elif sys.platform == "darwin":
++    elif args.shared.endswith(".dylib"):
+         rustc.append(f"-Clink-arg=-Wl,-install_name,@rpath/{args.shared}")
+     command.extend(["--", *rustc])
+     env = os.environ.copy()
++    build_target = env.get("CARGO_BUILD_TARGET")
++    if build_target and build_target.endswith(".json"):
++        env["CARGO_BUILD_TARGET"] = os.path.abspath(build_target)
+     # Unset keeps the historical default inside build.rs. Meson always
+     # passes the flag so a use_openmp=false build does not emit the region.
+     env["LINKCELL_OPENMP"] = "1" if args.openmp == "true" else "0"
+@@ -108,11 +111,16 @@
+         flags = env.get("RUSTFLAGS", "")
+         if "-Zsanitizer=thread" not in flags:
+             env["RUSTFLAGS"] = (flags + " " + extra).strip()
+-    subprocess.check_call(command, env=env)
++    subprocess.check_call(command, cwd=args.source, env=env)
+ 
+-    built = args.target / args.profile
+     if tsan:
+-        built = args.target / "x86_64-unknown-linux-gnu" / args.profile
++        build_target = "x86_64-unknown-linux-gnu"
++    built = args.target
++    if build_target:
++        if build_target.endswith(".json"):
++            build_target = Path(build_target).stem
++        built /= build_target
++    built /= args.profile
+     shutil.copy2(built / args.shared, args.out_shared)
+     shutil.copy2(built / args.static, args.out_static)
+     if args.implib is not None:
+--- a/subprojects/minimage/meson.build
++++ b/subprojects/minimage/meson.build
+@@ -33,16 +33,20 @@
+ 
+ # Native Rust and C objects use the consumer's linker and libc.
+ rustc_prog = find_program('rustc', required: true)
+-_rust_host = ''
+-foreach line : run_command(rustc_prog, '-vV', check: true).stdout().split('\n')
+-  if line.startswith('host: ')
+-    _rust_host = line.substring(6).strip()
+-  endif
+-endforeach
+-if _rust_host == ''
++_rust_target = run_command(
++  py, '-c', 'import os; print(os.environ.get("CARGO_BUILD_TARGET", ""))', check: true,
++).stdout().strip()
++if _rust_target == ''
++  foreach line : run_command(rustc_prog, '-vV', check: true).stdout().split('\n')
++    if line.startswith('host: ')
++      _rust_target = line.substring(6).strip()
++    endif
++  endforeach
++endif
++if _rust_target == ''
+   error('rustc did not report its host target')
+ endif
+-_rust_linker_key = 'CARGO_TARGET_' + _rust_host.to_upper().replace('-', '_') + '_LINKER'
++_rust_linker_key = 'CARGO_TARGET_' + _rust_target.to_upper().replace('-', '_') + '_LINKER'
+ _cargo_env = {_rust_linker_key: cc.cmd_array()[-1]}
+ _rust_sources = run_command(
+   py, '-c',
+@@ -65,17 +69,17 @@
+   output: [cargo_shared, cargo_static],
+   command: [
+     py, '-c',
+-    'import shutil, subprocess, sys; from pathlib import Path; ' +
++    'import os, shutil, subprocess, sys; from pathlib import Path; ' +
+     'cargo, src, target, profile, shared, archive, out_s, out_a = sys.argv[1:9]; ' +
+     'cmd = [cargo, "rustc", "--lib", "--manifest-path", str(Path(src) / "Cargo.toml"), ' +
+     '"--target-dir", target, "--features", "capi"]; ' +
+     'Path(src, "Cargo.lock").is_file() and cmd.append("--locked"); ' +
+     'profile == "release" and cmd.append("--release"); ' +
+     'rustc = ["--crate-type=cdylib", "--crate-type=staticlib"]; ' +
+-    'sys.platform.startswith("linux") and rustc.append("-Clink-arg=-Wl,-soname," + shared); ' +
+-    'sys.platform == "darwin" and rustc.append("-Clink-arg=-Wl,-install_name," + chr(64) + "rpath/" + shared); ' +
+-    'cmd.extend(["--"] + rustc); subprocess.check_call(cmd); ' +
+-    'built = Path(target) / profile; ' +
++    'shared.endswith(".so") and rustc.append("-Clink-arg=-Wl,-soname," + shared); ' +
++    'shared.endswith(".dylib") and rustc.append("-Clink-arg=-Wl,-install_name," + chr(64) + "rpath/" + shared); ' +
++    'cmd.extend(["--"] + rustc); subprocess.check_call(cmd, cwd=src); ' +
++    'built = Path(target) / os.environ.get("CARGO_BUILD_TARGET", "") / profile; ' +
+     'shutil.copy2(built / shared, out_s); shutil.copy2(built / archive, out_a)',
+     cargo_prog.full_path(),
+     _msproot,
+--- a/subprojects/readcon-core/scripts/meson_cargo_build.py
++++ b/subprojects/readcon-core/scripts/meson_cargo_build.py
+@@ -87,9 +87,9 @@
+         cmd.extend(["--features", features.strip()])
+     env = os.environ.copy()
+     rustc_extra: list[str] = []
+-    if sys.platform.startswith("linux"):
++    if shared_name.endswith(".so"):
+         rustc_extra.append(f"-Clink-arg=-Wl,-soname,{shared_name}")
+-    elif sys.platform == "darwin":
++    elif shared_name.endswith(".dylib"):
+         rustc_extra.append(f"-Clink-arg=-Wl,-install_name,@rpath/{shared_name}")
+     # One crate-type per rustc invocation. MSVC cdylib+staticlib in one
+     # call can omit readcon_core.lib while still writing the DLL.
+@@ -104,7 +104,7 @@
+             cargo_profile = "RELEASE" if profile == "release" else "DEV"
+             crate_env[f"CARGO_PROFILE_{cargo_profile}_LTO"] = "off"
+         subprocess.check_call(crate_cmd, cwd=src_root, env=crate_env)
+-        built = Path(target_dir) / profile
++        built = Path(target_dir) / os.environ.get("CARGO_BUILD_TARGET", "") / profile
+         if crate_type == "cdylib":
+             _copy_artifact(built, shared_name, out_shared, _SHARED_ALIASES)
+         else:
+--- a/subprojects/readcon-db/scripts/meson_cargo_build.py
++++ b/subprojects/readcon-db/scripts/meson_cargo_build.py
+@@ -51,14 +51,14 @@
+     if features.strip():
+         cmd.extend(["--features", features.strip()])
+     rustc_args = ["--crate-type=cdylib", "--crate-type=staticlib"]
+-    if sys.platform.startswith("linux"):
++    if shared_name.endswith(".so"):
+         rustc_args.append(f"-Clink-arg=-Wl,-soname,{shared_name}")
+-    elif sys.platform == "darwin":
++    elif shared_name.endswith(".dylib"):
+         rustc_args.append(f"-Clink-arg=-Wl,-install_name,@rpath/{shared_name}")
+     cmd.extend(["--", *rustc_args])
+     env = os.environ.copy()
+     subprocess.check_call(cmd, cwd=src_root, env=env)
+-    built = Path(target_dir) / profile
++    built = Path(target_dir) / os.environ.get("CARGO_BUILD_TARGET", "") / profile
+     shutil.copy2(built / shared_name, out_shared)
+     shutil.copy2(built / static_name, out_static)
+     return 0
+--- a/subprojects/linkcell/build.rs
++++ b/subprojects/linkcell/build.rs
+@@ -85,7 +85,9 @@
+     build
+         .file("src/knn_region.c")
+         .flag("-pthread")
+-        .opt_level(2)
++        .no_default_flags(true)
++        .flag("-O2")
++        .flag("-fPIC")
+         .warnings(true)
+         .extra_warnings(true);
+     if let Some(prefix) = &macos_libomp {
+@@ -96,14 +98,9 @@
+     } else {
+         build.flag("-fopenmp");
+     }
+-    // The region coordinates threads and does no arithmetic worth
+-    // vectorising. Pin the x86_64 baseline so no host-specific ISA reaches
+-    // a path that is not runtime-dispatched.
++    // BinaryBuilder's compiler wrapper selects the portable target ISA.
+     if target_is("CARGO_CFG_TARGET_ARCH", "x86_64") {
+-        build
+-            .flag("-march=x86-64")
+-            .flag("-mtune=generic")
+-            .flag("-fno-tree-vectorize");
++        build.flag("-fno-tree-vectorize");
+     }
+     if let Err(err) = build.try_compile("knnregion") {
+         if required {
