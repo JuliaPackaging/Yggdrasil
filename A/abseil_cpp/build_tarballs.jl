@@ -2,30 +2,54 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-const YGGDRASIL_DIR = "../.."
-include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
-
 name = "abseil_cpp"
-version = v"20250814.1"
+version = v"20240116.2"
+# 20240116.2+0 was registered with older JLLWrappers, Artifacts and Libdl compat bounds, so a rebuild needs a new version
+ygg_version = v"20240116.2.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/abseil/abseil-cpp", "d38452e1ee03523a208362186fd42248ff2609f6"),
+    GitSource("https://github.com/abseil/abseil-cpp", "d7aaad83b488fd62bd51c81ecf16cd938532cc0a"; tag="$(version.major).$(version.minor)"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/abseil-cpp
 
-# abseil requires C++17, and its ABI depends on the standard used (see the
-# auto-detected options in absl/base/options.h), so propagate cxx_std_17 to
-# consumers via the installed CMake config.
+# ABSL_RANDOM_HWAES_*_FLAGS are used to set ABSL_RANDOM_RANDEN_COPTS,
+# which is used when compiling absl/random/internal/randen_hwaes.cc
+
+# Allow setting "-march=armv8-a+crypto"
+find $(dirname $(which $CC)) -type f \
+    | xargs grep --files-with-matches 'BinaryBuilder: Cannot force an architecture via -march' \
+    | xargs -n1 sed -i -E 's/^if \[\[ (" \$\{ARGS\[@\]\} " == \*"-march="\*) \]\]; then/if [[\n    \1\n    \&\& ! " \${ARGS[@]} " == *"-march=armv8-a+crypto"*\n]]; then/'
+
+# Do not attempt to set ABSL_RANDOM_HWAES_ARM32_FLAGS (Neon) for armv6l
+if [[ "$bb_full_target" == armv6l-* ]]; then
+    atomic_patch -p1 ../patches/arm-neon-cmake.patch
+fi
+
+# For some reason, the ABSL_RANDOM_HWAES_X64_FLAGS are applied for aarch64-apple-darwin,
+# and the ABSL_RANDOM_HWAES_ARM64_FLAGS are applied for x86_64-apple-darwin
+if [[ "$target" == aarch64-apple-darwin* ]]; then
+    atomic_patch -p1 ../patches/x86_64-aes-cmake.patch
+elif [[ "$target" == x86_64-apple-darwin* ]]; then
+    atomic_patch -p1 ../patches/aarch64-crypto-cmake.patch
+fi
+
+if [[ "${target}" == *-apple-* ]] || [[ "${target}" == *-freebsd* ]]; then
+    # Keep the symbol names of 20240116.2+0, which was built with Clang 17 or older: newer Clang
+    # mangles templates such as LogMessage::operator<< differently, and dependents link to the old names
+    export CXXFLAGS="-fclang-abi-compat=17"
+fi
+
 cmake -B build -G Ninja \
-    -DABSL_PROPAGATE_CXX_STD=ON \
+    -DABSL_PROPAGATE_CXX_STD=OFF \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_TESTING=OFF \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_CXX_STANDARD=17 \
+    -DCMAKE_CXX_STANDARD=14 \
     -DCMAKE_FIND_ROOT_PATH=${prefix} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
@@ -34,10 +58,6 @@ cmake --install build
 install_license LICENSE
 """
 
-# In C++17 mode abseil uses std::variant/std::optional/std::any, which need a
-# newer libc++ and deployment target than the default Intel macOS shard provides
-sources, script = require_macos_sdk("10.14", sources, script)
-
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
@@ -45,6 +65,9 @@ platforms = expand_cxxstring_abis(platforms)
 
 # The products that we will ensure are always built
 products = [
+    LibraryProduct("libabsl_bad_any_cast_impl", :libabsl_bad_any_cast_impl),
+    LibraryProduct("libabsl_bad_optional_access", :libabsl_bad_optional_access),
+    LibraryProduct("libabsl_bad_variant_access", :libabsl_bad_variant_access),
     LibraryProduct("libabsl_base", :libabsl_base),
     LibraryProduct("libabsl_city", :libabsl_city),
     LibraryProduct("libabsl_civil_time", :libabsl_civil_time),
@@ -59,9 +82,7 @@ products = [
     LibraryProduct("libabsl_crc_cpu_detect", :libabsl_crc_cpu_detect),
     LibraryProduct("libabsl_crc_internal", :libabsl_crc_internal),
     LibraryProduct("libabsl_debugging_internal", :libabsl_debugging_internal),
-    LibraryProduct("libabsl_decode_rust_punycode", :libabsl_decode_rust_punycode),
     LibraryProduct("libabsl_demangle_internal", :libabsl_demangle_internal),
-    LibraryProduct("libabsl_demangle_rust", :libabsl_demangle_rust),
     LibraryProduct("libabsl_die_if_null", :libabsl_die_if_null),
     LibraryProduct("libabsl_examine_stack", :libabsl_examine_stack),
     LibraryProduct("libabsl_exponential_biased", :libabsl_exponential_biased),
@@ -79,7 +100,6 @@ products = [
     LibraryProduct("libabsl_flags_usage_internal", :libabsl_flags_usage_internal),
     LibraryProduct("libabsl_graphcycles_internal", :libabsl_graphcycles_internal),
     LibraryProduct("libabsl_hash", :libabsl_hash),
-    LibraryProduct("libabsl_hashtable_profiler", :libabsl_hashtable_profiler),
     LibraryProduct("libabsl_hashtablez_sampler", :libabsl_hashtablez_sampler),
     LibraryProduct("libabsl_int128", :libabsl_int128),
     LibraryProduct("libabsl_kernel_timeout_internal", :libabsl_kernel_timeout_internal),
@@ -97,17 +117,15 @@ products = [
     LibraryProduct("libabsl_log_internal_message", :libabsl_log_internal_message),
     LibraryProduct("libabsl_log_internal_nullguard", :libabsl_log_internal_nullguard),
     LibraryProduct("libabsl_log_internal_proto", :libabsl_log_internal_proto),
-    LibraryProduct("libabsl_log_internal_structured_proto", :libabsl_log_internal_structured_proto),
     LibraryProduct("libabsl_log_severity", :libabsl_log_severity),
     LibraryProduct("libabsl_log_sink", :libabsl_log_sink),
+    LibraryProduct("libabsl_low_level_hash", :libabsl_low_level_hash),
     LibraryProduct("libabsl_malloc_internal", :libabsl_malloc_internal),
     LibraryProduct("libabsl_periodic_sampler", :libabsl_periodic_sampler),
-    LibraryProduct("libabsl_poison", :libabsl_poison),
-    LibraryProduct("libabsl_profile_builder", :libabsl_profile_builder),
     LibraryProduct("libabsl_random_distributions", :libabsl_random_distributions),
     LibraryProduct("libabsl_random_internal_distribution_test_util", :libabsl_random_internal_distribution_test_util),
-    LibraryProduct("libabsl_random_internal_entropy_pool", :libabsl_random_internal_entropy_pool),
     LibraryProduct("libabsl_random_internal_platform", :libabsl_random_internal_platform),
+    LibraryProduct("libabsl_random_internal_pool_urbg", :libabsl_random_internal_pool_urbg),
     LibraryProduct("libabsl_random_internal_randen", :libabsl_random_internal_randen),
     LibraryProduct("libabsl_random_internal_randen_hwaes", :libabsl_random_internal_randen_hwaes),
     LibraryProduct("libabsl_random_internal_randen_hwaes_impl", :libabsl_random_internal_randen_hwaes_impl),
@@ -122,18 +140,16 @@ products = [
     LibraryProduct("libabsl_stacktrace", :libabsl_stacktrace),
     LibraryProduct("libabsl_status", :libabsl_status),
     LibraryProduct("libabsl_statusor", :libabsl_statusor),
-    LibraryProduct("libabsl_strerror", :libabsl_strerror),
     LibraryProduct("libabsl_str_format_internal", :libabsl_str_format_internal),
+    LibraryProduct("libabsl_strerror", :libabsl_strerror),
+    LibraryProduct("libabsl_string_view", :libabsl_string_view),
     LibraryProduct("libabsl_strings", :libabsl_strings),
     LibraryProduct("libabsl_strings_internal", :libabsl_strings_internal),
-    LibraryProduct("libabsl_string_view", :libabsl_string_view),
     LibraryProduct("libabsl_symbolize", :libabsl_symbolize),
     LibraryProduct("libabsl_synchronization", :libabsl_synchronization),
     LibraryProduct("libabsl_throw_delegate", :libabsl_throw_delegate),
     LibraryProduct("libabsl_time", :libabsl_time),
     LibraryProduct("libabsl_time_zone", :libabsl_time_zone),
-    LibraryProduct("libabsl_tracing_internal", :libabsl_tracing_internal),
-    LibraryProduct("libabsl_utf8_for_code_point", :libabsl_utf8_for_code_point),
     LibraryProduct("libabsl_vlog_config_internal", :libabsl_vlog_config_internal),
 ]
 
@@ -143,8 +159,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                julia_compat="1.6",
-               # abseil headers include <filesystem>, which GCC 7 and 8 do not ship
-               preferred_gcc_version=v"9",
+               preferred_gcc_version=v"7",
 )
