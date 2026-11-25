@@ -1,0 +1,66 @@
+--- a/subprojects/linkcell/src/knn_region.c
++++ b/subprojects/linkcell/src/knn_region.c
+@@ -569,8 +569,8 @@
+ #endif
+ }
+ 
+-/* 1 started, 0 the place could not be applied, -1
+- * `pthread_attr_setstacksize` returned EINVAL, -2 some other start
++/* 1 started, -1 `pthread_attr_setstacksize` returned EINVAL,
++ * -2 some other start
+  * failure. A `pthread_create` failure is -2, including EAGAIN. */
+ static int create_worker(pthread_t *th, void *arg, const void *place) {
+     pthread_attr_t attr;
+@@ -583,20 +583,20 @@
+             return set == EINVAL ? -1 : -2;
+         }
+     }
+-#ifdef LC_AFFINITY
+-    if (place != NULL &&
+-        pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), (const cpu_set_t *)place) != 0) {
+-        pthread_attr_destroy(&attr);
+-        return 0;
+-    }
+-#else
++#ifndef LC_AFFINITY
+     (void)place;
+     pthread_attr_getguardsize(&attr, &g_guard);
+ #endif
+     if (pthread_create(th, &attr, team_worker, arg) != 0) {
+         pthread_attr_destroy(&attr);
+         return -2;
+     }
++#ifdef LC_AFFINITY
++    /* The worker waits on the team mutex before processing a job. */
++    if (place != NULL) {
++        pthread_setaffinity_np(*th, sizeof(cpu_set_t), (const cpu_set_t *)place);
++    }
++#endif
+     pthread_attr_destroy(&attr);
+     return 1;
+ }
+--- a/src/meson.build
++++ b/src/meson.build
+@@ -184,12 +184,14 @@
+   _yds_build_rpath = _yds_build_rpath + ':' + chemfiles_libdir
+ endif
+ 
++_rust_local_map = files('yoda-rust.map')
+ ydslib = library('yodaLib',
+   ydslib_sources,
+   dependencies: _deps + [linkcell_dep],
+   cpp_args: _args,
+   link_with: _shell_link + _ylm_link,
+-  link_args: _lib_link_args,
++  link_args: _lib_link_args + ['-Wl,--gc-sections', '-Wl,--version-script,' + _rust_local_map[0].full_path()],
++  link_depends: _rust_local_map,
+   include_directories: _incdirs,
+   build_rpath: _yds_build_rpath,
+   install_rpath: _lib_origin,
+--- /dev/null
++++ b/src/yoda-rust.map
+@@ -0,0 +1,4 @@
++/* Rust implementation symbols are private to the shared library. */
++{
++  local: _R*;
++};

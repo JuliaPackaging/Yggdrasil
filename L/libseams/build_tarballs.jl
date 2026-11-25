@@ -32,6 +32,7 @@ fi
 if [[ "${rust_target}" == *-linux-musl ]]; then
     # Readcon ships shared libraries, so link musl dynamically.
     export RUSTFLAGS="${RUSTFLAGS:+${RUSTFLAGS} }-Ctarget-feature=-crt-static"
+    atomic_patch -p1 ${WORKSPACE}/srcdir/seams-overlays/patches/musl-runtime.patch
 fi
 export CMAKE_BUILD_PARALLEL_LEVEL=2
 if [[ "${target}" == *apple* ]]; then
