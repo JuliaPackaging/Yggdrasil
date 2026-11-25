@@ -49,6 +49,21 @@ function platform_label(config::BuildConfig)
     return join([triplet(ts.platform.target) for ts in [default_spec; extra_specs]], " => ")
 end
 
+# The platform of the agents that load-check the JLLs (see `agent()` in `.buildkite/utils.jl`)
+const LOAD_CHECK_PLATFORM = Platform("x86_64", "linux"; libc="glibc")
+
+# Whether the JLL's wrapper can select an artifact of `platform` on the load-check agents.
+# JLLs encode a `CrossPlatform` with the host as the base platform and the target in
+# `target_*` tags, or, for a host of `any`, with the target as the base platform; only the
+# base platform's architecture, OS and libc matter here, as the agent's other tags depend
+# on the Julia version that runs the check.
+loadable_on_load_check_agent(::AnyPlatform) = true
+loadable_on_load_check_agent(cp::CrossPlatform) = loadable_on_load_check_agent(cp.encoded)
+function loadable_on_load_check_agent(p::Platform)
+    return arch(p) == arch(LOAD_CHECK_PLATFORM) && os(p) == os(LOAD_CHECK_PLATFORM) &&
+           libc(p) == libc(LOAD_CHECK_PLATFORM)
+end
+
 # Next, iterate over `PackageResult` objects; each `PackageResult` will become a registration job,
 # and the `BuildConfig`'s from each `PackageResult` will become a build job.  Note that we
 # deduplicate `BuildConfig`'s because it's possible for a single build to be packaged into multiple
@@ -74,6 +89,7 @@ for (_, package_result) in meta.packagings
         "name" => package_result.config.name,
         "version" => string(package_result.config.version),
         "julia_compat" => package_result.config.julia_compat,
+        "load_check" => any(er -> loadable_on_load_check_agent(er.config.platform), collect_extractions(package_result)),
         "dependencies" => package_deps,
     ))
 end
