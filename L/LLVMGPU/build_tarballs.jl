@@ -65,7 +65,8 @@ for f in avoid_builtin_available minmax_i1 nested_aggregate_insertvalue \
          getmemscope_per_context fence_storage_class printf_unmangled \
          bool_vector_bitcast_wide fp_fast_math_default_type copysign_shader \
          fminimum_fmaximum phi_select_retyped_operands bool_switch_selector \
-         loop_merge_switch_header smul_overflow_flag resort_blocks_after_loopsimplify; do
+         loop_merge_switch_header smul_overflow_flag resort_blocks_after_loopsimplify \
+         clamp_access_alignment; do
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/spirv/${f}.patch
 done
 cd ${WORKSPACE}/srcdir/llvm-project
