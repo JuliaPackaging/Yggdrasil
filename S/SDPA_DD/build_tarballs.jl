@@ -18,6 +18,8 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/static-qd-on-macos.patch
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/qd-no-fma.patch
 autoreconf -fi
 
+# QD and SPOOLES are the copies upstream bundles, linked statically. QD_jll has no Windows build;
+# with one, --with-system-qd could use it.
 # With OpenMP, MPLAPACK's dot products add per-thread partial sums in the order the threads finish,
 # so results vary between runs.
 ./configure \
@@ -31,8 +33,9 @@ autoreconf -fi
 unset FC
 # The bundled SPOOLES passes NULL as an int, an error in clang. Its makefiles ignore CFLAGS.
 make -j${nproc} CC="${CC} -Wno-int-conversion"
-# make install fails: external/qd/Makefile.am has no rule for the stamp its install target needs.
-install -Dvm 755 sdpa_dd${exeext} ${bindir}/sdpa_dd${exeext}
+# Not make install: it recurses into external/qd, whose Makefile.am has no rule for the stamp its
+# install target needs.
+make install-binPROGRAMS
 
 install_license COPYING
 install_license external/spooles/work/internal/spooles.*.html
