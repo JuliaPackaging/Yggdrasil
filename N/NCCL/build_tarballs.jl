@@ -90,8 +90,9 @@ case "${bb_full_target}" in
     *-cuda+13.[0-3]*) sms="75 80 90 100 110 120" ;;
     *-cuda+13.*)      sms="75 80 90 100 107 110 120" ;;
 esac
+
 for sm in ${sms}; do
-    make -j ${nproc} ir.llvm_ir CUDA_HOME=${CUDA_HOME} BITCODE_LIB_ARCH=sm_${sm}
+    make -j ${nproc} ir.llvm_ir CUDA_HOME=${CUDA_HOME} BITCODE_LIB_ARCH=sm_${sm} CLANG="clang -include new"
     install -Dvm 644 build/lib/libnccl_device.bc "${libdir}/libnccl_device.sm_${sm}.bc"
     make ir.clean
 done
@@ -133,8 +134,8 @@ for platform in CUDA.supported_platforms(; min_version=v"12")
         x86_platform = deepcopy(platform)
         x86_platform["arch"] = "x86_64"
         append!(platform_sources, get_sources("cuda", components;
-                                              version=CUDA.full_version(cuda_ver),
-                                              platform=x86_platform))
+            version=CUDA.full_version(cuda_ver),
+            platform=x86_platform))
     end
 
     push!(
