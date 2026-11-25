@@ -5,7 +5,7 @@ using BinaryBuilder
 name = "GoogleCodeSearch"
 version = v"1.2.0"
 # Adding compat bounds to the JLL of upstream v1.2.0 needed a new JLL version
-ygg_version = v"1.2.1"
+ygg_version = v"1.2.2"
 
 # Collection of sources required to complete build
 sources = [
