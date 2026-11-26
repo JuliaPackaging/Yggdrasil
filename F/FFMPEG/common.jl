@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "FFMPEG"
-version_string = "9.0.2" # when patch number is zero, they use X.Y format
+version_string = "9.1" # when patch number is zero, they use X.Y format
 version = VersionNumber(version_string)
 
 # Collection of sources required to build FFMPEG
@@ -14,7 +14,7 @@ macos_sdk_version = "10.13"
 sources = [
     ArchiveSource(
         "https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
-        "8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e",
+        "1a4d394ae63d190a526cd052eb4415c156b5c5e2df37efab41a7de0b8fde2433",
     ),
     DirectorySource("../bundled"),
     get_macos_sdk_sources(macos_sdk_version)...
@@ -158,4 +158,5 @@ end
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-preferred_gcc_version = v"8"
+# x265_jll 4.2 is built with GCC 12, and its libx265 needs libstdc++ symbols (GLIBCXX_3.4.29) that GCC 8 lacks
+preferred_gcc_version = v"12"
