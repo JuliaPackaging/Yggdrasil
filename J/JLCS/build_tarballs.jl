@@ -34,6 +34,8 @@ cmake --build ${WORKSPACE}/jlcs-build -j${nproc}
 cmake --install ${WORKSPACE}/jlcs-build
 
 install_license ${WORKSPACE}/srcdir/RepliBuild.jl/LICENSE
+# LLVM and MLIR are linked in
+install_license ${prefix}/share/licenses/LLVM_full/LICENSE.TXT
 """
 
 platforms = supported_platforms()
@@ -61,7 +63,7 @@ llvm_version = v"23.1.4+1"
 dependencies = [
     HostBuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
-    # libgcc_s
+    # libstdc++ and libgcc_s
     Dependency("CompilerSupportLibraries_jll"; compat="1.0.5"),
     # LLVM_full's archives are built with zlib and zstd enabled, so the
     # library loads libz and libzstd.
