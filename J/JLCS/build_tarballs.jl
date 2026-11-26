@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "JLCS"
-version = v"3.0.0"
+version = v"3.0.1"
 
 # libJLCS is the JLCS MLIR dialect of RepliBuild.jl: the library that lowers
 # and JITs the call thunks RepliBuild's Julia wrappers of C++ and Rust
@@ -11,7 +11,7 @@ version = v"3.0.0"
 # and tagged apart from the Julia package.
 sources = [
     GitSource("https://github.com/obsidianjulua/RepliBuild.jl.git",
-              "dcf6a2ee4b29c143777d651045165ad614bd1802"; tag="jlcs-v$(version)"),
+              "b7ab08c38b7c046de2df8e432cc042f53d4f1afc"; tag="jlcs-v$(version)"),
 ]
 
 script = raw"""
