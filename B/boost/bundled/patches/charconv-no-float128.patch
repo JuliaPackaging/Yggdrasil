@@ -1,5 +1,6 @@
 Make boost.charconv's has_float128 check fail, so libboost_charconv is built without __float128
-conversion support.  libquadmath is not available as a BinaryBuilder2 dependency.
+conversion support.  libquadmath is not available as a BinaryBuilder2 dependency, see
+https://github.com/JuliaPackaging/Yggdrasil/issues/15815
 
 --- a/libs/charconv/config/has_float128.cpp
 +++ b/libs/charconv/config/has_float128.cpp

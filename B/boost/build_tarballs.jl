@@ -197,6 +197,10 @@ build_tarballs(;
     platforms,
     products,
     build_spec_generator,
+    # boost.locale links the system iconv on macOS (`/usr/lib/libiconv.2.dylib`, as the previous
+    # boost_jll did).  The auditor no longer accepts that unless the build declares it.
+    audit_config = platform -> Sys.isapple(platform isa CrossPlatform ? platform.target : platform) ?
+        AuditConfig(; extra_system_libraries = ["libiconv.2.dylib"]) : AuditConfig(),
     # The libraries need CXXABI_1.3.15 (libstdc++ 6.0.33), first bundled with Julia 1.12; the
     # `julia_libstdcxx` audit rejects a lower `julia_compat`.
     julia_compat = "1.12",
