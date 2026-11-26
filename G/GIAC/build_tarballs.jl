@@ -9,6 +9,22 @@ using BinaryBuilder, Pkg
 name = "GIAC"
 version = v"2.1.0"
 
+# The JLL version is decoupled from the upstream version, as for PARI_jll and
+# FLINT_jll. The ABI of this JLL can change without an upstream major release:
+# GIAC_jll 2.0.2 and 2.0.3 were built from the JuliaGiac fork with an 8-bit
+# type field in `gen`, and this release goes back to upstream's 5-bit layout;
+# libgiac itself is always libgiac.so.0, so its soname does not tell ABIs
+# apart. Upstream X.Y.Z maps to X00.Y00.Z00, e.g. 2.1.0 -> 200.100.0: no
+# compat bound written for the 2.0.x JLLs (`"=2.0.3"` in libgiac_julia,
+# `"2.0.1 - 2"` in Giac.jl) admits it.
+#
+# Packages depending on this JLL should use `~` in their compat ranges, e.g.
+# `compat="~200.100.0"`. The JLL patch level can then be bumped for rebuilds,
+# and a rebuild that breaks ABI without an upstream change can bump the minor
+# version (200.100.0 -> 200.101.0).
+ygg_version = VersionNumber(100 * version.major, 100 * version.minor,
+                            100 * version.patch)
+
 # Collection of sources required to build GIAC
 # Using the Meson-based fork from https://github.com/JuliaGiac/giac
 sources = [
@@ -135,5 +151,5 @@ dependencies = [
 # Since 2.1.0 `gen` uses upstream's 5-bit type bitfield again (the 8-bit
 # type gave wrong integrals from the second call on): libgiac and every
 # consumer must keep being built with the same GCC.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
   clang_use_lld=false, preferred_gcc_version=v"10", julia_compat="1.10")
