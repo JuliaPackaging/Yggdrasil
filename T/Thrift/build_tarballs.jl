@@ -3,23 +3,17 @@
 using BinaryBuilder, Pkg
 
 name = "Thrift"
-source_version = v"0.21.0" 
-version = v"0.21.1" # Bump rebuild for riscv, drop at next release
+version = v"0.25.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/apache/thrift.git", "1a31d9051d35b732a5fce258955ef95f576694ba"),
-    DirectorySource("bundled"),
+    GitSource("https://github.com/apache/thrift.git",
+              "27e8a425ffb498e190df3a12e239326bf5ba9ed6"; tag="v$(version)"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir/thrift
-
-# Needed until https://github.com/apache/thrift/pull/3090 released
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
 
 CMAKE_FLAGS=(
     -DCMAKE_INSTALL_PREFIX=${prefix}
@@ -64,6 +58,7 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
+# GCC 11 is what boost_jll is built with
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"11.1")
 
 # Build trigger: 1
