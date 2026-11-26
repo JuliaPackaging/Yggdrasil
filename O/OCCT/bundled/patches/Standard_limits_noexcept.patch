@@ -1,0 +1,44 @@
+Mark RealFirst/RealLast and IntegerFirst/IntegerLast noexcept: GCC 9 deletes
+constructors such as Bnd_Box's `noexcept = default` one, whose member
+initializers call them. Not yet reported upstream.
+
+diff --git a/src/FoundationClasses/TKernel/Standard/Standard_Integer.hxx b/src/FoundationClasses/TKernel/Standard/Standard_Integer.hxx
+--- a/src/FoundationClasses/TKernel/Standard/Standard_Integer.hxx
++++ b/src/FoundationClasses/TKernel/Standard/Standard_Integer.hxx
+@@ -73,13 +73,13 @@ constexpr int Min(const int theValue1, const int theValue2)
+ }
+ 
+ //! Returns the minimum value of an integer.
+-[[nodiscard]] constexpr int IntegerFirst()
++[[nodiscard]] constexpr int IntegerFirst() noexcept
+ {
+   return INT_MIN;
+ }
+ 
+ //! Returns the maximum value of an integer.
+-[[nodiscard]] constexpr int IntegerLast()
++[[nodiscard]] constexpr int IntegerLast() noexcept
+ {
+   return INT_MAX;
+ }
+diff --git a/src/FoundationClasses/TKernel/Standard/Standard_Real.hxx b/src/FoundationClasses/TKernel/Standard/Standard_Real.hxx
+--- a/src/FoundationClasses/TKernel/Standard/Standard_Real.hxx
++++ b/src/FoundationClasses/TKernel/Standard/Standard_Real.hxx
+@@ -164,7 +164,7 @@ inline double Abs(const double theValue)
+ }
+ 
+ //! Returns the minimum value of a double.
+-[[nodiscard]] constexpr double RealFirst()
++[[nodiscard]] constexpr double RealFirst() noexcept
+ {
+   return -DBL_MAX;
+ }
+@@ -176,7 +176,7 @@ inline double Abs(const double theValue)
+ }
+ 
+ //! Returns the maximum value of a double.
+-[[nodiscard]] constexpr double RealLast()
++[[nodiscard]] constexpr double RealLast() noexcept
+ {
+   return DBL_MAX;
+ }
