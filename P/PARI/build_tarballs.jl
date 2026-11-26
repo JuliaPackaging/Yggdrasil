@@ -6,12 +6,12 @@
 using BinaryBuilder, Pkg
 
 name = "PARI"
-version = v"2.17.3"
+version = v"2.19.1"
 
 sources = [
     ArchiveSource(
         "https://pari.math.u-bordeaux.fr/pub/pari/unix/pari-$(version).tar.gz",
-        "8d9c4fcd584c468d27e0f23c36836587284452094c4b1c404c20c4b810462dcb",
+        "419553b11ff8c3ecb8e9031b7d91d7cee003a5d721e685fcb499565c96fe2943",
     ),
 ]
 
