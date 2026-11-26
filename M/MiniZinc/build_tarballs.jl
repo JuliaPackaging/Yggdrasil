@@ -17,8 +17,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libminizinc
 
-# mimalloc adds -march=armv8.1-a by default on arm64, which BinaryBuilder forbids.
-CMAKE_FLAGS=(-DMI_OPT_ARCH=OFF)
+CMAKE_FLAGS=()
+# libmzn is dlopen'ed into Julia, so mimalloc must not replace the
+# process-wide malloc (it segfaults on load). MiniZinc still uses mimalloc
+# for its own AST allocations.
+CMAKE_FLAGS+=(-DMZN_MIMALLOC_OVERRIDE=OFF)
 if [[ "${target}" == *-mingw* ]]; then
     # The tree-sitter grammars mark two symbols __declspec(dllexport), which
     # disables MinGW's automatic export of every other symbol in libmzn.
