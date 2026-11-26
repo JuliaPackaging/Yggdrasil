@@ -3,21 +3,24 @@
 using BinaryBuilder
 
 name = "rr"
-version = v"5.9"
+version = v"5.10.0"
 
 # Collection of sources required to build rr
 sources = [
-    GitSource("https://github.com/JuliaLang/rr.git",
-              "fda1312b35589dbc0c96260836c7e165646bbfc5")
+    GitSource("https://github.com/rr-debugger/rr.git",
+              "7c5a08e538e7999bf996f60a8c206e122f4b8050";
+              tag="$(version)"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-pip3 install pexpect
 cd ${WORKSPACE}/srcdir/rr/
 
-# our prehistorical glibc doesn't have prlimit
-sed -i 's/#if defined (__i386__)/#if false/' src/record_signal.cc
+# Don't require ARMv8.3 of the host running rr
+sed -i 's/-march=armv8.3-a //' CMakeLists.txt
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/aarch64-xpac-without-armv8.3.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/x86_64-syscall-cancel-arch-hook.patch
 
 mkdir build && cd build
 PKG_CONFIG_LIBDIR=/workspace/destdir/lib/pkgconfig \
