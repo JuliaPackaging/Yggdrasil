@@ -8,9 +8,8 @@ When a pull request that changes a recipe is merged, CI builds it for every plat
 
 ## Contributing
 
-The rules every recipe follows are in [AGENTS.md](AGENTS.md), together with a build script reference and common patterns.
-It is written for AI coding agents, but applies to human contributors too.
 [CONTRIBUTING.md](CONTRIBUTING.md) covers the contribution process: commit messages, special keywords, rebuilds and compat bounds.
+The rules every recipe follows, a build script reference and common patterns are in [AGENTS.md](AGENTS.md), named so that coding agents find it too.
 Before opening a pull request, check it against the [review checklist](.agents/skills/reviewing-prs/SKILL.md) maintainers use.
 
 To build a newer version of an existing recipe, open a pull request that updates `version` and the source in its `build_tarballs.jl`: the commit hash and `tag` of a `GitSource`, or the URL and SHA256 of an `ArchiveSource`.
@@ -36,22 +35,16 @@ julia --project build_tarballs.jl --verbose --debug x86_64-linux-gnu
 
 The trailing triplet builds only that platform; omit it to build all of them.
 `--debug` drops you into the build sandbox when a step fails.
-Before merging, test the generated JLL as the [`testing-jll`](.agents/skills/testing-jll/SKILL.md) skill describes.
+Before merging, [test the generated JLL](.agents/skills/testing-jll/SKILL.md) on your own machine: a successful build is not enough.
 
-## Working with AI coding agents
+### Using an AI coding agent
 
-Yggdrasil is set up for AI coding agents such as Claude Code, Codex and GitHub Copilot:
+You don't need one to contribute. If you use one:
 
-- [AGENTS.md](AGENTS.md) holds the rules for recipes, pull requests and security. Most agents read it automatically; point yours to it if it doesn't.
-- [`.agents/skills/`](.agents/skills) holds topic guidance in the [Agent Skills](https://agentskills.io) format: MPI, CUDA, BLAS, libjulia/CxxWrap, Fortran, Rust, OpenMP, macOS and Windows recipes, JLL versioning, testing and reviewing. AGENTS.md lists when each one applies, and an agent reads the matching ones before working on a recipe.
-- [`.agents/mcp-bb-sandbox/`](.agents/mcp-bb-sandbox) is `bb-sandbox`, an MCP server that gives an agent an interactive BinaryBuilder cross-compilation sandbox. [`.mcp.json`](.mcp.json) registers it for agents that read that file; its [README](.agents/mcp-bb-sandbox/README.md) explains the one-time setup.
-- GitHub Copilot code review follows [`.github/instructions/code-review.instructions.md`](.github/instructions/code-review.instructions.md), which applies the same review checklist.
-
-Before letting an agent work in this repository, read the [Security](AGENTS.md#security) section of AGENTS.md.
-In short: `julia build_tarballs.jl` runs the whole recipe as Julia code on your machine, outside the sandbox, so build only recipes you trust.
-Run an agent that handles other people's pull requests in a VM, container or separate account that holds none of your credentials, give it a fine-grained GitHub token limited to what its task needs, and keep its approval prompts on.
-
-Review what your agent writes, and test the JLL before the pull request is merged: a successful build is not enough.
+- Most agents read [AGENTS.md](AGENTS.md) automatically; point yours to it if it doesn't. It sends the agent to the topic guides in [`.agents/skills/`](.agents/skills) that match the recipe.
+- [`.mcp.json`](.mcp.json) registers an optional MCP server that gives the agent an interactive build sandbox; its [README](.agents/mcp-bb-sandbox/README.md) explains the setup.
+- Read the [Security](AGENTS.md#security) section of AGENTS.md first. `julia build_tarballs.jl` runs the whole recipe as Julia code on your machine, outside the sandbox, so build only recipes you trust, and run an agent that handles other people's pull requests somewhere that holds none of your credentials.
+- A pull request is held to the same rules and review whoever wrote it, so check your agent's work before you open one.
 
 ## Using the generated JLL packages
 
