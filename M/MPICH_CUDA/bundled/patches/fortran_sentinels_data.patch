@@ -1,0 +1,37 @@
+Define MPICH's Fortran sentinel COMMON blocks as initialized data so that shared libraries using mpif.h bind to them: https://github.com/pmodels/mpich/issues/8020
+
+--- a/src/binding/fortran/mpif_h/setbotf.f.in
++++ b/src/binding/fortran/mpif_h/setbotf.f.in
+@@ -27,3 +27,32 @@
+        call mpirinitc(si, ssi, bt, ip, c_ba, uw, ecsi, an, asn, we)
+        return
+        end
++
++!     Initialize the common blocks so that they are defined in .data
++!     instead of .bss. GNU ld then resolves the common blocks of shared
++!     libraries that include mpif.h to this library, instead of giving
++!     each such library a private copy that MPI does not recognize.
++       block data mpirinitf_data
++       integer mpi_status_size
++       parameter (mpi_status_size=@MPI_STATUS_SIZE@)
++       integer si(mpi_status_size), ssi(mpi_status_size,1)
++       integer bt, ip, c_ba(1), uw(1), we(1), ecsi(1)
++       character*1 asn(1,1), an(1)
++       common /MPIFCMB5/ uw
++       common /MPIFCMB9/ we
++       common /MPIFCMBa/ c_ba
++       common /MPIPRIV1/ bt, ip, si
++       common /MPIPRIV2/ ssi, ecsi
++       common /MPIPRIVC/ asn, an
++       save /MPIFCMB5/
++       save /MPIFCMB9/
++       save /MPIFCMBa/
++       save /MPIPRIV1/, /MPIPRIV2/
++       save /MPIPRIVC/
++       data uw /1/
++       data we /1/
++       data c_ba /1/
++       data bt /1/
++       data ecsi /1/
++       data an /'X'/
++       end

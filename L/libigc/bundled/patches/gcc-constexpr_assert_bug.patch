@@ -1,9 +1,0 @@
-diff --git a/IGC/Compiler/CISACodeGen/CISABuilder.cpp b/IGC/Compiler/CISACodeGen/CISABuilder.cpp
-index 2496ad87..f4b89939 100644
---- intel-graphics-compiler/IGC/Compiler/CISACodeGen/CISABuilder.cpp
-+++ intel-graphics-compiler/IGC/Compiler/CISACodeGen/CISABuilder.cpp
-@@ -71,3 +71,2 @@ inline VISA_Exec_Size visaExecSize(SIMDMode width) {
-   case SIMDMode::UNKNOWN:
-   default:
--    IGC_ASSERT_MESSAGE(0, "unreachable");
-     break;

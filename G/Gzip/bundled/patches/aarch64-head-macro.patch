@@ -1,0 +1,28 @@
+Include gzip.h after all system headers; its "head" macro breaks asm/sigcontext.h on aarch64.
+Backport of https://git.savannah.gnu.org/cgit/gzip.git/commit/?id=b4ed8e73401968bcad749afb0e636dd3ec205ca7
+(https://bugs.gnu.org/81904)
+
+diff --git a/gzip.c b/gzip.c
+index 220f6fc..6c0af7f 100644
+--- a/gzip.c
++++ b/gzip.c
+@@ -58,7 +58,6 @@ static char const license_msg[] =
+ 
+ #include "tailor.h"
+ 
+-#include "gzip.h"
+ #include "lzw.h"
+ #include "revision.h"
+ #include "version.h"
+@@ -99,6 +98,11 @@ static char const license_msg[] =
+ #  include <utimens.h>
+ #endif
+ 
++/* Include this only after all system headers. Otherwise, its definition
++   of "head" conflicts with member names in linux-headers 7.2.6's
++   asm/sigcontext.h pulled in via <signal.h>.  */
++#include "gzip.h"
++
+ #ifndef MAX_PATH_LEN
+ #  define MAX_PATH_LEN   1024 /* max pathname length */
+ #endif

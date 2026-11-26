@@ -4,12 +4,14 @@ using BinaryBuilder, Pkg
 
 include("../common.jl")
 name = "oneAPI_Level_Zero_Loader"
+push!(sources, DirectorySource("./bundled"))
 
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd level-zero
 install_license LICENSE
+atomic_patch -p1 ../patches/strerror_r-musl.patch
 
 mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=$prefix \
@@ -54,5 +56,5 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               preferred_gcc_version=v"8")
+               preferred_gcc_version=v"8", julia_compat="1.10")
 # bump 2

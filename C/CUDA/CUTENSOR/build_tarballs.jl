@@ -49,7 +49,9 @@ products = [
 dependencies = [
     RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll")),
     RuntimeDependency(PackageSpec(name="CompilerSupportLibraries_jll",
-                                  uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"))
+                                  uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    # the Windows DLLs are MSVC-built and link the Visual C++ runtime dynamically
+    RuntimeDependency("MSVCRuntime_jll"; platforms=[Platform("x86_64", "windows")]),
 ]
 
 platforms = [Platform("x86_64", "linux"),

@@ -1,0 +1,159 @@
+Fix two crashes in the Julia GC integration
+
+Backport of gap-system/gap#6729 to v4.16.1; drop it once GAP is updated
+to v4.17.0.
+
+This patch fixes two issues.
+
+The first is that `MPtrMarkFunc` could mark the body of a bag after
+Julia had freed it. It took the Julia type tag of the body as proof
+that the body is still allocated. But Julia leaves the cells of a page
+untouched when it frees the page as a whole, so a freed small bag can
+keep its tag. A quick sweep can free the page of a dead body and skip
+the page of its master pointer. If the conservative stack scan finds
+that master pointer later, the freed body is queued for marking, and
+since Julia 1.10 this crashes in `gc_setmark_pool_`, as a freed page
+has no metadata. This is one way to get the backtrace collected in
+oscar-system/GAP.jl#1224.
+
+The second issue is that an old bag could leave the remembered set
+while it still referenced a young object. The next quick collection
+that did not reach the young object in another way then freed it. Mark
+functions count the young objects a bag references, and `JMark`,
+`JMarkTyped` and `MarkJuliaObjSafe` took the return value of
+`jl_gc_mark_queue_obj` for "the object is young". Up to Julia 1.9 it
+was. Since Julia 1.10 (JuliaLang/julia#47292) it tells whether the
+call set the mark bit, which it does not if the object was marked
+before. With several GC threads, another thread can mark a young bag
+between the check in `MarkBag` and the call. With one GC thread, the
+same happens to a young Julia object in an old bag, which `CLONE_OBJ`
+can produce, if the collection reaches the object through another
+reference first.
+
+To fix these, we do the following:
+
+- `MPtrMarkFunc` asks `jl_gc_internal_obj_base_ptr` whether the body
+  of a small bag is allocated.
+- The new helper `MarkQueueObj` reads from the GC bits whether an
+  object is young. `JMarkTyped`, `MarkJuliaObj`, `MarkJuliaObjSafe` and
+  `MPtrMarkFunc` report that. `JMark` reports nothing anymore, as the
+  root scanners ignored its result.
+
+The first fix does not cover large bags, as
+`jl_gc_internal_obj_base_ptr` only knows pool objects, nor Julia
+objects and Julia weak references held by a dead bag.
+
+As an additional benefit, performance improves. Indeed, the check in
+`MPtrMarkFunc` alone made a full collection 5% to 14% slower, but
+`MPtrMarkFunc` also no longer reports an old body as young, which put
+old master pointers into the remembered set for no reason. Together,
+measured with GAP 4.16.1 and one GC thread:
+
+Before:
+
+    julia> using GAP, Chairmarks
+
+    julia> l = GAP.evalstr("List([1..3000000], i -> [i])");
+
+    julia> GC.gc(true); GC.gc(true)
+
+    julia> @b GC.gc(true)
+    313.477 ms (98.14% gc time, without a warmup)
+
+After:
+
+    julia> @b GC.gc(true)
+    263.173 ms (99.98% gc time, without a warmup)
+
+A quick collection that marks one million new lists took 60 to 65 ms
+before and 34 to 36 ms after.
+
+diff --git a/src/julia_gc.c b/src/julia_gc.c
+index a960be47..487cda55 100644
+--- a/src/julia_gc.c
++++ b/src/julia_gc.c
+@@ -265,12 +265,26 @@ static void MarkAllSubBagsDefault(Bag bag, void * ref)
+     MarkArrayOfBags(CONST_PTR_BAG(bag), SIZE_BAG(bag) / sizeof(Bag), ref);
+ }
+ 
++// Queue `obj` for marking and return whether it is young. Mark functions
++// count the young objects a bag references, so that an old bag stays in
++// the remembered set. The return value of jl_gc_mark_queue_obj is of no
++// use for this: since Julia 1.10 it tells whether the call set the mark
++// bit, which it does not if `obj` was marked before, be it by another GC
++// thread.
++static inline int MarkQueueObj(jl_ptls_t ptls, void * obj)
++{
++    // 2 is GC_OLD
++    int young = !(jl_astaggedvalue(obj)->bits.gc & 2);
++    jl_gc_mark_queue_obj(ptls, (jl_value_t *)obj);
++    return young;
++}
++
+ static inline int JMarkTyped(jl_ptls_t ptls, void * obj, jl_datatype_t * ty)
+ {
+     // only traverse objects internally used by GAP
+     if (!jl_typeis(obj, ty))
+         return 0;
+-    return jl_gc_mark_queue_obj(ptls, (jl_value_t *)obj);
++    return MarkQueueObj(ptls, obj);
+ }
+ 
+ // Check that `obj` is still allocated and not on a free list already,
+@@ -291,13 +305,13 @@ static inline int ValidTypeOfMarkedObj(void * obj)
+     return jl_typeis(ty, jl_datatype_type);
+ }
+ 
+-static inline int JMark(jl_ptls_t ptls, void * obj)
++static inline void JMark(jl_ptls_t ptls, void * obj)
+ {
+ #ifdef VALIDATE_MARKING
+     if (!ValidTypeOfMarkedObj(obj))
+         abort();
+ #endif
+-    return jl_gc_mark_queue_obj(ptls, (jl_value_t *)obj);
++    jl_gc_mark_queue_obj(ptls, (jl_value_t *)obj);
+ }
+ 
+ // helper called directly by GAP.jl / JuliaInterface
+@@ -307,7 +321,7 @@ void MarkJuliaObjSafe(void * obj, void * ref)
+         return;
+     if (!ValidTypeOfMarkedObj(obj))
+         return;
+-    if (jl_gc_mark_queue_obj(((MarkData *)ref)->ptls, (jl_value_t *)obj))
++    if (MarkQueueObj(((MarkData *)ref)->ptls, obj))
+         ((MarkData *)ref)->youngRef++;
+ }
+ 
+@@ -316,7 +330,11 @@ void MarkJuliaObj(void * obj, void * ref)
+ {
+     if (!obj)
+         return;
+-    if (JMark(((MarkData *)ref)->ptls, obj))
++#ifdef VALIDATE_MARKING
++    if (!ValidTypeOfMarkedObj(obj))
++        abort();
++#endif
++    if (MarkQueueObj(((MarkData *)ref)->ptls, obj))
+         ((MarkData *)ref)->youngRef++;
+ }
+ 
+@@ -684,7 +702,17 @@ static uintptr_t MPtrMarkFunc(jl_ptls_t ptls, jl_value_t * obj)
+     void * ty = jl_typeof(header);
+     if (ty != DatatypeSmallBag && ty != DatatypeLargeBag)
+         return 0;
+-    if (JMark(ptls, header))
++    // The tag alone does not prove that a small bag is still allocated:
++    // Julia leaves the cells of a page untouched when it frees the page as
++    // a whole.
++    if (ty == DatatypeSmallBag &&
++        jl_gc_internal_obj_base_ptr(header) != header)
++        return 0;
++#ifdef VALIDATE_MARKING
++    if (!ValidTypeOfMarkedObj(header))
++        abort();
++#endif
++    if (MarkQueueObj(ptls, header))
+         return 1;
+     return 0;
+ }

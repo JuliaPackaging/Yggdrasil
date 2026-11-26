@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Expat"
-version = v"2.8.4"
+version = v"2.11.0"
 
 # Collection of sources required to build Expat
 sources = [
     ArchiveSource("https://github.com/libexpat/libexpat/releases/download/R_$(version.major)_$(version.minor)_$(version.patch)/expat-$(version).tar.xz",
-                  "656ae1cc8da3b4ea513bb4e254f33e6243938084c0ec6239da873376b09985a7"),
+                  "61e7614b602201c28a189dafee78f5bceaee192bbde46a930752ff09cf5542fa"),
 ]
 
 # Bash recipe for building across all platforms

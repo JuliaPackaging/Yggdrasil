@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "LaMEM"
-version = v"3.1.0"
+version = v"3.4.0"
 
 # PETSc_jll 3.25.4 uses MPI.augment_platforms' default compat bounds; LaMEM must resolve the
 # same MPI per platform because petscsys.h errors out when mpi.h reports a different version.
@@ -15,8 +15,7 @@ PETSc_COMPAT_VERSION = "3.25.4"
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/UniMainzGeo/LaMEM",
-    "7e7a012ebbaacf85b5e0ecd963a2ddb83b5cbd1a"),  # v3.1.0
-    DirectorySource("./bundled"),
+    "6124aa7d2c6861d379c4b4598a0259b892a12149"),  # v3.4.0
 ]
 
 # Bash recipe for building across all platforms
@@ -38,24 +37,10 @@ mkdir $WORKSPACE/srcdir/LaMEM/dep/opt
 mkdir $WORKSPACE/srcdir/LaMEM/lib
 mkdir $WORKSPACE/srcdir/LaMEM/lib/opt
 
-cd $WORKSPACE/srcdir/LaMEM
-
-atomic_patch -p1 $WORKSPACE/srcdir/patches/stdc-format-macros.patch
-
 cd $WORKSPACE/srcdir/LaMEM/src
 
-# LaMEM 3.0.0 added an explicit `-std=c++17` flag (vs the previous reliance on PETSc's
-# `-std=gnu++17`), which switches MinGW onto strict ISO mode and hides M_PI (a GNU/POSIX
-# extension to <math.h>/<cmath>) unless _USE_MATH_DEFINES is defined before the first
-# include of <math.h>/<cmath>. src/Tensor.cpp and src/scaling.cpp use M_PI directly, so
-# without this the Windows build fails with "M_PI was not declared in this scope".
-# Setting CXXFLAGS doesn't reach the compile line (PETSc's conf/variables re-defines it),
-# so patch the define directly into the two files that need it.
-if [[ "${target}" == *mingw* ]]; then
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/mingw-use-math-defines.patch
-fi
-
 export PETSC_OPT=${libdir}/petsc/double_real_Int32/
+export FASTSCAPE_LIB=${libdir}
 
 # LaMEM >= 3.1.0 picks its extra warning flags from the compiler name behind the MPI wrapper
 # and errors out on anything but g++/clang++/icpx; name the family of our toolchain instead.
@@ -64,7 +49,7 @@ if [[ "${target}" == *-apple-* || "${target}" == *freebsd* ]]; then
 else
     LAMEM_CXX_COMPILER=g++
 fi
-MAKE_ARGS=(mode=opt CXX_COMPILER=${LAMEM_CXX_COMPILER})
+MAKE_ARGS=(mode=opt surf=scape CXX_COMPILER=${LAMEM_CXX_COMPILER})
 
 # `uname -m` says ppc64le, which LaMEM's platform check does not recognise
 if [[ "${target}" == powerpc64le-* ]]; then
@@ -154,6 +139,8 @@ products = [
 # Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("PETSc_jll"; compat=PETSc_COMPAT_VERSION),
+    # surf=scape links libfastscapelib_fortran (surface processes with FastScape, surf_mode = 2)
+    Dependency("Fastscapelib_jll"; compat="2.8.4"),
     Dependency("CompilerSupportLibraries_jll"),
     # PETSc's mpiabi build links libmpif (Fortran MPI bindings); the MPI augmentation
     # only provides MPIABI_jll (libmpi_abi), so add mpif_jll for mpiabi platforms to

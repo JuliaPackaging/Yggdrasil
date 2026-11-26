@@ -8,14 +8,17 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "t8code"
-version = v"4.0.9"
-commit_hash = "b6d4f270ebc382e81e7ec7034dde60fe9db295b5"
+version = v"4.0.11"
+commit_hash = "fb60a9b09b1322999a77954b14ef1cd364a479b3"
 
 sources = [GitSource("https://github.com/DLR-AMR/t8code", commit_hash),
            DirectorySource("./bundled")]
 
 script = raw"""
 cd $WORKSPACE/srcdir/t8code
+
+# HOTFIX: replace u_int8_t by uint8_t
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/u_int8_t.patch"
 
 # Microsoft MPI is still 2.0 but has the required features; remove the strict 3.0 requirement
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/mpi2.patch"
@@ -91,4 +94,4 @@ append!(dependencies, platform_dependencies)
 
 # Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version = v"12.1.0", clang_use_lld=false)
+               augment_platform_block, julia_compat="1.10", preferred_gcc_version = v"13.2.0", clang_use_lld=false)

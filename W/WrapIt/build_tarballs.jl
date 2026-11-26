@@ -6,7 +6,7 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "WrapIt"
-version = v"1.8.0"
+version = v"1.9.0"
 
 #Clang_jll version used for the build. Required clang libraries will be shipped with the package.
 clang_vers=v"19.1.7+1"
@@ -16,12 +16,11 @@ clang_patch="$(clang_vers.major).$(clang_vers.minor).$(clang_vers.patch)"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/grasph/wrapit.git", "63c300eab056a0d79dfd2b7d2dc69b6a9a1c7f7a")
+   GitSource("https://github.com/grasph/wrapit.git", "2fea656ee97c8c9b97d81574fb74fedd999941ff"; tag="v$(version)")
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
-set -x
 
 # Search for libcrypto.$dlext which can be in /workspace/destdir/lib ($libdir) or /workspace/destdir/lib64
 if [ -f "$libdir/libcrypto.$dlext" ]; then
@@ -146,6 +145,8 @@ platform_veto(p) = Sys.iswindows(p) || triplet(p) ∈ [ "i686-linux-musl" ]
 platforms = supported_platforms(exclude = platform_veto)
 
 # platforms = expand_cxxstring_abis(platforms)
+
+# println(Base.BinaryPlatforms.triplet.(platforms))
 
 # The products that we will ensure are always built
 products = [

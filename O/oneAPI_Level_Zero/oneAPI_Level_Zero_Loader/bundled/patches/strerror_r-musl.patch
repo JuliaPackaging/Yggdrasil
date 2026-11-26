@@ -1,0 +1,57 @@
+Fix strerror_r on non-GNU libcs (musl): pick the overload by return type.
+Backport of https://github.com/oneapi-src/level-zero/pull/493 (426e96a, in v1.33.0).
+
+diff --git a/source/utils/ze_logger.cpp b/source/utils/ze_logger.cpp
+index 76d22c9..1049dd6 100644
+--- a/source/utils/ze_logger.cpp
++++ b/source/utils/ze_logger.cpp
+@@ -105,20 +105,41 @@ const char *levelColor(LogLevel l) {
+ }
+ 
+ // Thread-safe, portable errno-to-string conversion.
+-// MSVC deprecates strerror() in favour of strerror_s(); POSIX provides strerror_r().
++// strerror_r has two incompatible POSIX signatures depending on libc:
++//   - GNU:  char *strerror_r(int, char *, size_t)   (glibc with _GNU_SOURCE)
++//   - XSI:  int   strerror_r(int, char *, size_t)   (musl, Bionic, uClibc, POSIX)
++// _GNU_SOURCE is not a reliable discriminator — it requests GNU extensions but
++// only glibc honours it for strerror_r.  We let overload resolution pick the
++// right handler based on the actual return type the compiler sees, so the
++// code is correct under any libc without preprocessor guesswork.
++// MSVC uses strerror_s.
++#ifndef _WIN32
++// Mark both overloads as "may be unused" — only one matches strerror_r's
++// signature for any given libc, so the other is intentionally dead code.
++#if defined(__GNUC__) || defined(__clang__)
++#define ZE_LOGGER_MAYBE_UNUSED __attribute__((unused))
++#else
++#define ZE_LOGGER_MAYBE_UNUSED
++#endif
++// XSI variant: returns int (0 on success); message is in `buf`.
++static ZE_LOGGER_MAYBE_UNUSED std::string strerrorRDispatch(int /*ret*/, char *buf) {
++    return std::string(buf);
++}
++// GNU variant: returns char* that may or may not point at `buf`.
++static ZE_LOGGER_MAYBE_UNUSED std::string strerrorRDispatch(char *ret, char *buf) {
++    return ret ? std::string(ret) : std::string(buf);
++}
++#undef ZE_LOGGER_MAYBE_UNUSED
++#endif
++
+ static std::string errnoToString(int err) {
+     char buf[256];
++    buf[0] = '\0';
+ #ifdef _WIN32
+     strerror_s(buf, sizeof(buf), err);
+     return buf;
+-#elif defined(_GNU_SOURCE)
+-    // GNU strerror_r returns char* (may or may not use buf)
+-    const char *result = strerror_r(err, buf, sizeof(buf));
+-    return result ? result : buf;
+ #else
+-    // XSI-compliant strerror_r returns int
+-    strerror_r(err, buf, sizeof(buf));
+-    return buf;
++    return strerrorRDispatch(strerror_r(err, buf, sizeof(buf)), buf);
+ #endif
+ }
+ 

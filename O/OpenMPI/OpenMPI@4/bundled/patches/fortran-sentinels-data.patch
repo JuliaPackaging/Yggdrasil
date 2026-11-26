@@ -1,0 +1,29 @@
+Define the Fortran sentinels (MPI_IN_PLACE etc.) as initialized data, not in .bss,
+and link libmpi_usempi_ignore_tkr against libmpi so that it doesn't define its own.
+Upstream: <https://github.com/open-mpi/ompi/issues/14646>.
+See also <https://github.com/JuliaPackaging/Yggdrasil/issues/15133>.
+
+--- a/ompi/mpi/fortran/base/gen-mpi-mangling.pl
++++ b/ompi/mpi/fortran/base/gen-mpi-mangling.pl
+@@ -171,7 +171,10 @@
+     foreach my $key (sort(keys(%{$fortran}))) {
+         my $f = $fortran->{$key};
+         my $m = mangle($f->{c_name});
+-        print OUT "$f->{c_type} $m;\n";
++        # Initialized definitions go into .data, not .bss. GNU ld gives a
++        # shared library that declares a matching COMMON block its own copy
++        # of a .bss definition, which it then uses under RTLD_DEEPBIND.
++        print OUT "$f->{c_type} $m = ($f->{c_type}) 1;\n";
+     }
+ 
+     close (OUT);
+--- a/ompi/mpi/fortran/use-mpi-ignore-tkr/Makefile.in
++++ b/ompi/mpi/fortran/use-mpi-ignore-tkr/Makefile.in
+@@ -1814,6 +1814,7 @@
+ # directly (pulling it in indirectly via libmpi.la does not work on
+ # all platforms).
+ @OMPI_BUILD_FORTRAN_USEMPI_IGNORE_TKR_BINDINGS_TRUE@lib@OMPI_LIBMPI_NAME@_usempi_ignore_tkr_la_LIBADD = \
++@OMPI_BUILD_FORTRAN_USEMPI_IGNORE_TKR_BINDINGS_TRUE@        $(OMPI_TOP_BUILDDIR)/ompi/lib@OMPI_LIBMPI_NAME@.la \
+ @OMPI_BUILD_FORTRAN_USEMPI_IGNORE_TKR_BINDINGS_TRUE@        $(OMPI_TOP_BUILDDIR)/opal/lib@OPAL_LIB_PREFIX@open-pal.la
+ 
+ @OMPI_BUILD_FORTRAN_USEMPI_IGNORE_TKR_BINDINGS_TRUE@lib@OMPI_LIBMPI_NAME@_usempi_ignore_tkr_la_LDFLAGS = \

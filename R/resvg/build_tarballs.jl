@@ -3,11 +3,11 @@
 using BinaryBuilder, Pkg
 
 name = "resvg"
-version = v"0.45.1"
+version = v"0.48.1"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/linebender/resvg.git", "1b6c2fddbcbeffa8135df4323b02aaae84890907")
+    GitSource("https://github.com/linebender/resvg.git", "68b14c4c3bccdb60344c777406486b54c36ec1a4")
 ]
 
 # Bash recipe for building across all platforms
@@ -22,7 +22,7 @@ install_license LICENSE-MIT LICENSE-APACHE
 # platforms are passed in on the command line
 platforms = supported_platforms()
 filter!(p -> arch(p) != "riscv64", platforms)
-filter!(p -> !Sys.isfreebsd(p), platforms)
+filter!(p -> !(Sys.isfreebsd(p) && arch(p) == "aarch64"), platforms)
 filter!(p -> !(nbits(p) == 32 && Sys.iswindows(p)), platforms)
 
 # The products that we will ensure are always built

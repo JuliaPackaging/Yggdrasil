@@ -3,8 +3,8 @@
     "bb-sandbox": {
       "command": "julia",
       "args": [
-        "--project=.claude",
-        ".claude/mcp-bb-sandbox/server.jl"
+        "--project=.agents/mcp-bb-sandbox",
+        ".agents/mcp-bb-sandbox/server.jl"
       ]
     }
   }

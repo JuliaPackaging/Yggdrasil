@@ -3,12 +3,13 @@
 using BinaryBuilder
 
 name = "SPIRV_Headers"
-version = v"1.4.309"
+version = v"1.4.363"
 
 # Collection of sources required to build this package
 sources = [
     GitSource("https://github.com/KhronosGroup/SPIRV-Headers.git",
-              "09913f088a1197aba4aefd300a876b2ebbaa3391"),
+              "496543121ce6419f23d6fa5d7194ba66c36212d2";
+              tag="vulkan-sdk-$(version).0"),
 ]
 
 # Bash recipe for building across all platforms

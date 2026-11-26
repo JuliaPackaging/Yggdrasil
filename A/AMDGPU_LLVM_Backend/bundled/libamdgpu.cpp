@@ -391,9 +391,15 @@ int AMDGPUCompile(const char *Bitcode, size_t Length,
     Module &M = *S->M;
 
     // Target machine: typed options instead of llc's command-line flags. The
-    // module's triple and datalayout are the target's, whatever it claimed.
+    // module's triple and datalayout are the target's, whatever it claimed,
+    // except for the i128 alignment: a module that aligns i128 to 64 bits (as
+    // Julia before 1.12 does on the host) gets the target's "i128:64" variant,
+    // so that kernel arguments are laid out like the host's.
     TargetOptions TO;
     TO.MCOptions.AsmVerbose = true;
+    if (M.getDataLayout().getABITypeAlign(Type::getInt128Ty(Context)) ==
+        Align(8))
+      TO.MCOptions.ABIName = "i128:64";
     S->TM.reset(TheTarget.createTargetMachine(TT, Options->CPU, Features, TO,
                                               Reloc::PIC_, std::nullopt,
                                               OptLevel));

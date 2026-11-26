@@ -6,7 +6,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "LLVMDowngrader"
-version = v"0.11.0"
+version = v"0.13.0"
 
 # Build `libllvm_downgrade`, a shared library with a small C API (see
 # include/llvm-downgrade.h upstream) over the legacy bitcode writers,
@@ -17,14 +17,14 @@ version = v"0.11.0"
 #
 # Because LLVM's bitcode reader is backwards compatible (any bitcode since 3.0,
 # auto-upgraded on load), this single tool ingests bitcode from any LLVM up to
-# its own version and emits the legacy 5.0/7.0/14.0/15.0/18.0 formats. So it is ONE
+# its own version and emits the legacy 5.0/7.0/14.0/18.0/20.0 formats. So it is ONE
 # universal build -- not one per consumer LLVM version, and not augmented by
 # llvm_version. Built against LLVM 23; track the newest LLVM as new ones land.
 llvm_version = v"23.1.1+0"
 
 sources = [
     GitSource("https://github.com/JuliaLLVM/llvm-downgrade",
-              "4244e2a1ec56dd9c714755453ba840a48a0b5ee5"),
+              "93a95ab4e3a19face22d38f356b4486281033e24"),
 ]
 
 # Bash recipe for building across all platforms
@@ -46,18 +46,24 @@ install_license LICENSE.TXT
 # inside the library faults on Julia 1.10's mingw runtime
 # (JuliaGPU/GPUCompiler.jl#930). LLD's output (0x180000000 base, dynamic base)
 # is relocated on every load and works.
+# Take the multibyte C runtime functions from mingw-w64's libmsvcrt, which
+# implements them statically, before libzstd-1.dll, which also exports them
+# (see the check below).
 if [[ "${target}" == *mingw* ]]; then
     TOOLCHAIN=${CMAKE_TARGET_TOOLCHAIN%.*}_clang.cmake
     CXX_FLAGS="-pthread"
+    LINKER_FLAGS="-lmsvcrt"
 else
     TOOLCHAIN=${CMAKE_TARGET_TOOLCHAIN}
     CXX_FLAGS=""
+    LINKER_FLAGS=""
 fi
 cmake -B build -S . -GNinja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN} \
     -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" \
+    -DCMAKE_SHARED_LINKER_FLAGS="${LINKER_FLAGS}" \
     -DCMAKE_CROSSCOMPILING:BOOL=ON \
     -DLLVM_DIR=${prefix}/lib/cmake/llvm \
     -DLLVM_LINK_LLVM_DYLIB=OFF \
@@ -72,6 +78,22 @@ if [[ "${target}" == *-linux-* || "${target}" == *-freebsd* ]]; then
     echo "STB_GNU_UNIQUE symbols: $(readelf -Ws ${libdir}/libllvm_downgrade.${dlext} | grep -c UNIQUE)"
 elif [[ "${target}" == *-apple-* ]]; then
     echo "exported symbols:"; nm -gU ${libdir}/libllvm_downgrade.${dlext}
+fi
+
+# On Windows, the multibyte C runtime functions must not be imported from a
+# dependency's DLL.
+# Zstd_jll builds before v1.5.7+2 re-exported mingw-w64's `mbrtowc` and
+# `wcrtomb`, the link resolved LLVM's references to them through
+# libzstd-1.dll, and the library stopped loading ("The specified procedure
+# could not be found") once Zstd_jll was rebuilt without those exports.
+if [[ "${target}" == *mingw* ]]; then
+    ${target}-objdump -p ${libdir}/libllvm_downgrade.${dlext} > imports.txt
+    awk '
+        /DLL Name:/ { dll = tolower($3); next }
+        dll ~ /^lib/ && /^[ \t]+[0-9a-f]+[ \t]/ &&
+        $NF ~ /^(mbrtowc|mbrlen|mbsrtowcs|mbtowc|wcrtomb|wcsrtombs|wctomb)$/ {
+            print "C runtime function " $NF " imported from " dll; bad = 1 }
+        END { exit bad }' imports.txt
 fi
 """
 
@@ -113,5 +135,4 @@ dependencies = [
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products,
-               dependencies; preferred_gcc_version=v"10", julia_compat="1.6",
-               lazy_artifacts=true)
+               dependencies; preferred_gcc_version=v"10", julia_compat="1.6")

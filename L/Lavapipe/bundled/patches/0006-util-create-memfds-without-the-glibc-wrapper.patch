@@ -1,0 +1,36 @@
+util: create memfds without the glibc wrapper
+
+os_create_anonymous_file() uses memfd_create() only when meson finds the wrapper, which
+glibc gained in 2.27; BinaryBuilder targets 2.17 (2.19 on ARM). Without it the helper
+creates an unlinked file in $XDG_RUNTIME_DIR instead, and llvmpipe allocates all device
+memory from one such file. That is a small tmpfs (a tenth of RAM by default) while the
+driver reports all of RAM as its heap, and ftruncate() reserves nothing, so a large
+allocation succeeds and the process dies with SIGBUS when a shader first writes past the
+space left. Make the system call directly, as Android already does; the kernel has had it
+since Linux 3.17, and without it the call fails and the file fallback still runs.
+
+--- a/src/util/anon_file.c
++++ b/src/util/anon_file.c
+@@ -40,7 +40,9 @@
+ 
+ #if defined(HAVE_MEMFD_CREATE) || defined(__FreeBSD__) || defined(__OpenBSD__)
+ #include <sys/mman.h>
+-#elif DETECT_OS_ANDROID
++#elif DETECT_OS_LINUX
++/* A C library without the memfd_create() wrapper (glibc before 2.27): call the kernel,
++ * which has had it since Linux 3.17, directly as on Android. */
+ #include <sys/syscall.h>
+ #include <linux/memfd.h>
+ #endif
+@@ -196,6 +198,11 @@
+    if (!debug_name)
+       debug_name = "mesa-shared";
+    fd = syscall(SYS_memfd_create, debug_name, MFD_CLOEXEC | MFD_ALLOW_SEALING);
++#elif DETECT_OS_LINUX && defined(__NR_memfd_create)
++   /* On a kernel without memfd this fails with ENOSYS and the file fallback below runs. */
++   if (!debug_name)
++      debug_name = "mesa-shared";
++   fd = syscall(__NR_memfd_create, debug_name, MFD_CLOEXEC | MFD_ALLOW_SEALING);
+ #elif defined(__FreeBSD__)
+    fd = shm_open(SHM_ANON, O_CREAT | O_RDWR | O_CLOEXEC, 0600);
+ #elif defined(__OpenBSD__)

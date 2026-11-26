@@ -10,13 +10,15 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "UCC"
-version = v"1.8.0"
+version = v"1.9.0"
+# The JLL needs a new version for the raised NCCL_jll bound
+ygg_version = v"1.9.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/openucx/ucc.git",
-                  "211e2f60436cba7c044195acb43752aa70eab38f"),
-    ]
+        "a134efa188b66a51fd5a19211a362aeb23b10ae5"; tag="v$(version)"),
+]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -32,26 +34,32 @@ FLAGS+=(--with-ucx=${prefix})
 FLAGS+=(--disable-debug)
 FLAGS+=(--enable-shared)
 
+if [[ "${bb_full_target}" == *-cuda+[0-9]* ]]; then
+    FLAGS+=(--with-cuda=${prefix}/cuda)
+    FLAGS+=(--with-nccl=${prefix})
+    export CUDA_HOME=${prefix}/cuda
+    export PATH=$PATH:$CUDA_HOME/bin
+    export CUDACXX=$CUDA_HOME/bin/nvcc
+    export CUDA_LIB=${CUDA_HOME}/lib
+fi
+
+./configure ${FLAGS[@]}
+
+make -j${nproc} V=1
+make install
+
+install_license LICENSE
 """
 
 MIN_CUDA_VERSION = v"12.3"
-MAX_CUDA_VERSION = v"13.0.999" 
+MAX_CUDA_VERSION = v"13.0.999"
 
-# We need to wait until https://github.com/JuliaPackaging/Yggdrasil/pull/13039 is merged
-# for the newer CUDA version support in UCX_jll for things to properly work
+cpu_platforms = CUDA.cpu_platforms([Platform("x86_64", "linux"; libc="glibc"), Platform("aarch64", "linux"; libc="glibc")])
 
-cpu_platforms = [Platform("x86_64", "linux"; libc="glibc"), Platform("aarch64", "linux"; libc="glibc")]
-
-cuda_platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
+cuda_platforms = CUDA.supported_platforms(; min_version=MIN_CUDA_VERSION, max_version=MAX_CUDA_VERSION)
 filter!(p -> arch(p) == "x86_64", cuda_platforms)
 
 all_platforms = [cpu_platforms; cuda_platforms]
-
-for platform in all_platforms
-    if CUDA.is_supported(platform) && !haskey(platform, "cuda")
-        platform["cuda"] = "none"
-    end
-end
 
 products = [
     LibraryProduct("libucc", :libucc),
@@ -59,50 +67,22 @@ products = [
 ]
 
 dependencies = [
-    Dependency("UCX_jll"; compat="~1.20.0"),
+    # Older releases have no artifact where this JLL falls back to its CPU build
+    Dependency("UCX_jll"; compat="~1.20.1"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency("NCCL_jll"; compat="~2.32.3", platforms=cuda_platforms),
+    CUDA.required_dependencies(all_platforms)...,
 ]
 
 for platform in all_platforms
-
     should_build_platform(triplet(platform)) || continue
 
-    platform_deps = BinaryBuilder.AbstractDependency[dependencies...]
-    platform_script = deepcopy(script)
-
-    if haskey(platform, "cuda") && platform["cuda"] != "none" 
-        append!(platform_deps, CUDA.required_dependencies(platform))
-        push!(platform_deps, Dependency("NCCL_jll"; compat="=2.28.9"))
-
-        platform_script *= "\n"
-        platform_script *= raw"""
-            FLAGS+=(--with-cuda=${prefix}/cuda)
-            FLAGS+=(--with-nccl=${prefix})
-            export CUDA_HOME=${prefix}/cuda;
-            export PATH=$PATH:$CUDA_HOME/bin
-            export CUDACXX=$CUDA_HOME/bin/nvcc
-            export CUDA_LIB=${CUDA_HOME}/lib
-        """
-
-    end
-
-    platform_script *= "\n"
-    platform_script *= raw"""
-        ./configure ${FLAGS[@]}
-
-        make -j${nproc} V=1
-        make install
-
-        install_license LICENSE
-    """
-
     build_tarballs(
-        ARGS, name, version, sources, 
-        platform_script, [platform], products, platform_deps;
-        julia_compat = "1.10", 
-        preferred_gcc_version = v"11",
-        lazy_artifacts = true,
-        augment_platform_block = CUDA.augment
+        ARGS, name, ygg_version, sources,
+        script, [platform], products, dependencies;
+        julia_compat="1.10",
+        preferred_gcc_version=v"11",
+        lazy_artifacts=true,
+        augment_platform_block=CUDA.augment
     )
-
 end

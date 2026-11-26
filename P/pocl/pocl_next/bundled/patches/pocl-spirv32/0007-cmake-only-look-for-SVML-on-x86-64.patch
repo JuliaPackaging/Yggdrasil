@@ -1,0 +1,31 @@
+From d39ef505f30e22a6f0a214f169f12762117661c1 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Sun, 25 Oct 2026 15:05:41 +0100
+Subject: [PATCH] cmake: only look for SVML on x86-64
+
+The search for the static SVML and IRC libraries in the oneAPI compiler
+directory also ran on 32-bit x86 (I386 and X32 set X86 too), where it finds
+the x86-64 archives, as oneAPI no longer ships ia32 libraries. These were
+then linked into the 32-bit kernels, which crashed in vectorized math
+builtins.
+---
+ CMakeLists.txt | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f3781a904..96ccd1804 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1049,7 +1049,8 @@ file(RELATIVE_PATH POCL_INSTALL_FROM_LIB_TO_PRIVATE_LIBDIR
+ ######################################################################################
+ 
+ set(HAVE_LIBSVML 0)
+-if(X86)
++# oneAPI only ships SVML for x86-64; linking it into 32-bit kernels crashes them
++if(X86_64)
+   set(ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
+   # use static libraries, so that the poclbinary is independent of system
+   set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
+-- 
+2.56.0
+

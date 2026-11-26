@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_xorgproto"
-version = v"2024.1.1"
+version = v"2026.1"
 
 # Collection of sources required to build xproto
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/proto/xorgproto-$(version.major).$(version.minor).tar.gz",
-                  "4f6b9b4faf91e5df8265b71843a91fc73dc895be6210c84117a996545df296ce"),
+                  "7fa90e48cbaca6bc4c99d176e88c5c147ab0ed42358e14a0869ee9c8a610ae7e"),
 ]
 
 # Bash recipe for building across all platforms

@@ -2,13 +2,16 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "Python"
-version = v"3.12.14"
+version = v"3.12.15"
 
 # Collection of sources required to build Python
 sources = [
     ArchiveSource("https://www.python.org/ftp/python/$(version)/$(name)-$(version).tar.xz",
-                  "5c8462af5790baf43a321a1559dbe0db06d1be4300fb85fb53c40060668e548a"),
+                  "c2c4321961fab0fb999d66e0cecf521c2ab3994c7992873ea99e306c1094fd5a"),
     # Deliberately an installer from the same 24.3.0 generation as the py311 one
     # this replaced: Miniconda installers from 24.11 onwards gate on
     # `ldd --version` reporting GLIBC >= 2.28, which fails outright in
@@ -111,6 +114,13 @@ make install
 install_license ${WORKSPACE}/srcdir/Python-*/LICENSE
 """
 
+# CPython guards newer APIs with `__builtin_available` (up to macOS 10.15, for
+# `posix_spawn` setsid). Below that target clang emits calls to the compiler-rt
+# helper `__isPlatformVersionAtLeast`, which is left unresolved and makes the
+# interpreter segfault at startup.
+# https://github.com/JuliaPackaging/Yggdrasil/issues/14491
+sources, script = require_macos_sdk("10.15", sources, script)
+
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
 platforms = supported_platforms()
@@ -131,7 +141,7 @@ dependencies = [
     Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("Bzip2_jll"; compat="1.0.9"),
     Dependency("Libffi_jll"; compat="~3.4.7"),
-    Dependency("SQLite_jll"),
+    Dependency("SQLite_jll"; compat="3.54.0"),
     Dependency("Zlib_jll"),
     Dependency("XZ_jll"),
     Dependency("OpenSSL_jll"; compat="3.0.16"),

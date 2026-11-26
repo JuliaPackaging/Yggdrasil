@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Xorg_libXrender"
-version = v"0.9.12"
+version = v"0.9.13"
 
 # Collection of sources required to build libXrender
 sources = [
     ArchiveSource("https://www.x.org/archive/individual/lib/libXrender-$(version).tar.xz",
-                  "b832128da48b39c8d608224481743403ad1691bf4e554e4be9c174df171d1b97"),
+                  "3fe88c609df6782e1e7af2e4de36b2563d70cd70ff7dcb1cda561ad64912bb64"),
 ]
 
 # Bash recipe for building across all platforms

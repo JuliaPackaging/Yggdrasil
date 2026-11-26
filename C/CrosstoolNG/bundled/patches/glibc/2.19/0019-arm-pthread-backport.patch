@@ -1,0 +1,28 @@
+commit 3b13c109e2f0050b002b0d2385898ca75773aed7
+Author: Elliot Saba <staticfloat@gmail.com>
+Date:   Mon Apr 7 14:21:00 2025 +0000
+
+    Hack to get around `-Wint-conversion` errors when building with GCC 14
+
+diff --git a/include/atomic.h b/include/atomic.h
+index 5a5319a582..779c08ade6 100644
+--- a/include/atomic.h
++++ b/include/atomic.h
+@@ -71,13 +71,13 @@
+   ({									      \
+     int __atg2_result;							      \
+     if (sizeof (*mem) == 1)						      \
+-      __atg2_result = pre##_8_##post (mem, __VA_ARGS__);		      \
++      __atg2_result = (int)pre##_8_##post (mem, __VA_ARGS__);		      \
+     else if (sizeof (*mem) == 2)					      \
+-      __atg2_result = pre##_16_##post (mem, __VA_ARGS__);		      \
++      __atg2_result = (int)pre##_16_##post (mem, __VA_ARGS__);		      \
+     else if (sizeof (*mem) == 4)					      \
+-      __atg2_result = pre##_32_##post (mem, __VA_ARGS__);		      \
++      __atg2_result = (int)pre##_32_##post (mem, __VA_ARGS__);		      \
+     else if (sizeof (*mem) == 8)					      \
+-      __atg2_result = pre##_64_##post (mem, __VA_ARGS__);		      \
++      __atg2_result = (int)pre##_64_##post (mem, __VA_ARGS__);		      \
+     else								      \
+       abort ();								      \
+     __atg2_result;							      \

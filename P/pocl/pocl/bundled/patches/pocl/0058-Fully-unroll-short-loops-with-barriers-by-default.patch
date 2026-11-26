@@ -1,0 +1,347 @@
+From 45d5a83b02e96b6b4791aa77c626cd52ca8daedb Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Thu, 5 Nov 2026 13:57:28 +0100
+Subject: [PATCH] Fully unroll short loops with barriers by default
+
+LLVM's unroller fully unrolls a short loop with a constant trip count on
+its own, but not when the loop contains a barrier: pocl.barrier is
+noduplicate. Such a loop becomes a b-loop instead, with context arrays for
+the values live across the barriers and extra barriers around the loop
+control, which costs far more than the copies of a short body.
+
+Have UnrollBarrierLoops also fully unroll loops without an unroll request
+when LLVM's static full unroll check accepts them: the unrolled size
+estimate, with the unrolling preferences of the O3 pipeline the pass runs
+in, has to stay below the full unroll threshold. The simplification bonus
+of LLVM's dynamic cost analysis is not applied. '#pragma nounroll' and
+partial unroll requests still keep the loop; requested loops keep the
+larger pragma threshold.
+
+The compiler unit test for a plain sub-group butterfly now checks that it
+is unrolled, and new ones check that '#pragma nounroll' and a loop over the
+size threshold stay b-loops. cond_barriers_in_for, test_issue_231 and
+test_issue_553 cover b-loop handling with loops of 2 and 10 iterations
+that would now be unrolled, so they get '#pragma nounroll'; so does
+for_bug, which only stays over the threshold because of its printf.
+---
+ lib/llvmopencl/UnrollBarrierLoops.cc          | 60 ++++++++++++++-----
+ tests/compiler_unit/CMakeLists.txt            |  4 +-
+ .../unroll-barrier-loop-default.cl            | 12 ++++
+ .../unroll-barrier-loop-default.fc            |  2 +
+ .../unroll-barrier-loop-large.cl              | 15 +++++
+ .../unroll-barrier-loop-large.fc              |  2 +
+ ...est.cl => unroll-barrier-loop-nounroll.cl} |  3 +-
+ ...est.fc => unroll-barrier-loop-nounroll.fc} |  0
+ tests/regression/test_issue_231.cpp           |  2 +
+ tests/regression/test_issue_553.cpp           |  2 +
+ .../regression/test_unrolled_barrier_loops.c  |  8 +--
+ tests/workgroup/cond_barriers_in_for.cl       |  2 +
+ tests/workgroup/for_bug.cl                    |  2 +
+ 13 files changed, 93 insertions(+), 21 deletions(-)
+ create mode 100644 tests/compiler_unit/unroll-barrier-loop-default.cl
+ create mode 100644 tests/compiler_unit/unroll-barrier-loop-default.fc
+ create mode 100644 tests/compiler_unit/unroll-barrier-loop-large.cl
+ create mode 100644 tests/compiler_unit/unroll-barrier-loop-large.fc
+ rename tests/compiler_unit/{unroll-barrier-loop-no-request.cl => unroll-barrier-loop-nounroll.cl} (82%)
+ rename tests/compiler_unit/{unroll-barrier-loop-no-request.fc => unroll-barrier-loop-nounroll.fc} (100%)
+
+diff --git a/lib/llvmopencl/UnrollBarrierLoops.cc b/lib/llvmopencl/UnrollBarrierLoops.cc
+index 55c390668..5550ef55c 100644
+--- a/lib/llvmopencl/UnrollBarrierLoops.cc
++++ b/lib/llvmopencl/UnrollBarrierLoops.cc
+@@ -1,4 +1,4 @@
+-// UnrollBarrierLoops fully unrolls loops with barriers on request.
++// UnrollBarrierLoops fully unrolls short or requested loops with barriers.
+ //
+ // Copyright (c) 2026 PoCL developers
+ //
+@@ -26,6 +26,7 @@ IGNORE_COMPILER_WARNING("-Wmaybe-uninitialized")
+ POP_COMPILER_DIAGS
+ IGNORE_COMPILER_WARNING("-Wunused-parameter")
+ #include <llvm/Analysis/AssumptionCache.h>
++#include <llvm/Analysis/CodeMetrics.h>
+ #include <llvm/Analysis/LoopInfo.h>
+ #include <llvm/Analysis/OptimizationRemarkEmitter.h>
+ #include <llvm/Analysis/ScalarEvolution.h>
+@@ -46,7 +47,7 @@ POP_COMPILER_DIAGS
+ 
+ #define PASS_NAME "unroll-barrier-loops"
+ #define PASS_CLASS pocl::UnrollBarrierLoops
+-#define PASS_DESC "Fully unroll loops with barriers on request"
++#define PASS_DESC "Fully unroll short or requested loops with barriers"
+ 
+ namespace pocl {
+ 
+@@ -55,23 +56,29 @@ using namespace llvm;
+ // A loop with a barrier (a b-loop) gets its body split into parallel regions
+ // that are each executed for all work-items in every iteration, with the
+ // values that are live across the barriers saved in per-work-item context
+-// arrays, and extra barriers isolating the loop control. A request to unroll
+-// such a loop ('#pragma unroll', opencl_unroll_hint, or SPIR-V's Unroll loop
+-// control) can't be honored by LLVM's unroller, as pocl.barrier is
+-// noduplicate, and often the trip count only became a constant when the
+-// stage 1 optimizations folded the local or sub-group size. This pass fully
+-// unrolls such loops if their trip count is a constant.
++// arrays, and extra barriers isolating the loop control. LLVM's unroller
++// can't unroll such a loop, as pocl.barrier is noduplicate, and often the
++// trip count only became a constant when the stage 1 optimizations folded the
++// local or sub-group size. This pass fully unrolls such loops if their trip
++// count is a constant and either they carry an unroll request ('#pragma
++// unroll', opencl_unroll_hint, or SPIR-V's Unroll loop control) or LLVM would
++// fully unroll them if not for the barrier. '#pragma nounroll' is honored.
+ 
+ // LLVM's default -pragma-unroll-threshold
+ static constexpr unsigned MaxUnrolledSize = 16 * 1024;
+ 
+-static unsigned getUnrollCount(Loop &L, ScalarEvolution &SE) {
++static unsigned getUnrollCount(Loop &L, ScalarEvolution &SE,
++                               const TargetTransformInfo &TTI,
++                               AssumptionCache &AC,
++                               OptimizationRemarkEmitter &ORE) {
+   if (!L.isInnermost() || !L.isLoopSimplifyForm() ||
+       L.getExitingBlock() == nullptr || !Barrier::isLoopWithBarrier(L))
+     return 0;
+ 
+-  if (hasUnrollTransformation(&L) != TM_ForcedByUser)
++  TransformationMode Mode = hasUnrollTransformation(&L);
++  if (Mode & TM_Disable)
+     return 0;
++  bool Forced = Mode == TM_ForcedByUser;
+ 
+   unsigned TripCount = SE.getSmallConstantTripCount(&L);
+   if (TripCount == 0)
+@@ -83,6 +90,10 @@ static unsigned getUnrollCount(Loop &L, ScalarEvolution &SE) {
+   if (Count && *Count >= 0 && unsigned(*Count) < TripCount)
+     return 0;
+ 
++  SmallPtrSet<const Value *, 32> EphValues;
++  if (!Forced)
++    CodeMetrics::collectEphemeralValues(&L, &AC, EphValues);
++
+   unsigned Size = 0;
+   for (BasicBlock *BB : L.blocks()) {
+     for (Instruction &I : *BB) {
+@@ -95,9 +106,28 @@ static unsigned getUnrollCount(Loop &L, ScalarEvolution &SE) {
+           return 0;
+       if (!I.isDebugOrPseudoInst())
+         ++Size;
++      // UnrollCostEstimator can't size a loop with an invalid cost
++      if (!Forced && !EphValues.contains(&I) &&
++          !TTI.getInstructionCost(&I, TargetTransformInfo::TCK_CodeSize)
++               .isValid())
++        return 0;
+     }
+   }
+-  if (uint64_t(Size) * TripCount > MaxUnrolledSize)
++
++  if (Forced)
++    return uint64_t(Size) * TripCount > MaxUnrolledSize ? 0 : TripCount;
++
++  // The static full unroll size check of LoopUnrollPass (shouldFullUnroll),
++  // without the bonus for the simplifications of the unrolled body. OptLevel
++  // 3 because the pass runs in stage 2's O3 pipeline. UCE.canUnroll() would
++  // reject the loop for its noduplicate barrier.
++  TargetTransformInfo::UnrollingPreferences UP = gatherUnrollingPreferences(
++      &L, SE, TTI, /*BFI=*/nullptr, /*PSI=*/nullptr, ORE, /*OptLevel=*/3,
++      std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt,
++      std::nullopt);
++  UnrollCostEstimator UCE(&L, TTI, EphValues, UP.BEInsns);
++  if (TripCount > UP.FullUnrollMaxCount ||
++      UCE.getUnrolledLoopSize(UP, TripCount) >= UP.Threshold)
+     return 0;
+ 
+   return TripCount;
+@@ -110,18 +140,18 @@ static bool unrollBarrierLoops(Function &F, FunctionAnalysisManager &AM) {
+ 
+   LoopInfo &LI = AM.getResult<LoopAnalysis>(F);
+   ScalarEvolution &SE = AM.getResult<ScalarEvolutionAnalysis>(F);
++  AssumptionCache &AC = AM.getResult<AssumptionAnalysis>(F);
++  TargetTransformInfo &TTI = AM.getResult<TargetIRAnalysis>(F);
++  OptimizationRemarkEmitter ORE(&F);
+ 
+   SmallVector<std::pair<Loop *, unsigned>, 4> Loops;
+   for (Loop *L : LI.getLoopsInPreorder())
+-    if (unsigned Count = getUnrollCount(*L, SE))
++    if (unsigned Count = getUnrollCount(*L, SE, TTI, AC, ORE))
+       Loops.push_back({L, Count});
+   if (Loops.empty())
+     return false;
+ 
+   DominatorTree &DT = AM.getResult<DominatorTreeAnalysis>(F);
+-  AssumptionCache &AC = AM.getResult<AssumptionAnalysis>(F);
+-  TargetTransformInfo &TTI = AM.getResult<TargetIRAnalysis>(F);
+-  OptimizationRemarkEmitter ORE(&F);
+ 
+   // pocl.barrier is noduplicate so that the optimizations don't create
+   // barriers that only some work-items reach. Fully unrolling a loop with a
+diff --git a/tests/compiler_unit/CMakeLists.txt b/tests/compiler_unit/CMakeLists.txt
+index 6e1d2dccf..c61bd6e3f 100644
+--- a/tests/compiler_unit/CMakeLists.txt
++++ b/tests/compiler_unit/CMakeLists.txt
+@@ -73,9 +73,11 @@ add_llvm_check(OPENCLC_NAME frontend-loop-hints)
+ add_llvm_check(OPENCLC_NAME frontend-assignment-tracking ENVIRONMENT "POCL_EXTRA_BUILD_FLAGS=-g")
+ add_llvm_check(OPENCLC_NAME unroll-barrier-loop-local-size ENVIRONMENT "POCL_BINARY_SPECIALIZE_WG=16-1-1")
+ add_llvm_check(OPENCLC_NAME unroll-barrier-loop-partial ENVIRONMENT "POCL_BINARY_SPECIALIZE_WG=16-1-1")
++add_llvm_check(OPENCLC_NAME unroll-barrier-loop-large)
+ # sub-groups aren't advertised by conformant builds
+ if(NOT ENABLE_CONFORMANCE)
+   add_llvm_check(OPENCLC_NAME unroll-barrier-loop)
+   add_llvm_check(OPENCLC_NAME unroll-barrier-loop-runtime)
+-  add_llvm_check(OPENCLC_NAME unroll-barrier-loop-no-request)
++  add_llvm_check(OPENCLC_NAME unroll-barrier-loop-default)
++  add_llvm_check(OPENCLC_NAME unroll-barrier-loop-nounroll)
+ endif()
+diff --git a/tests/compiler_unit/unroll-barrier-loop-default.cl b/tests/compiler_unit/unroll-barrier-loop-default.cl
+new file mode 100644
+index 000000000..e90eaf101
+--- /dev/null
++++ b/tests/compiler_unit/unroll-barrier-loop-default.cl
+@@ -0,0 +1,12 @@
++// A short sub-group butterfly over a sub-group size that is known at compile
++// time is fully unrolled before the barrier passes without an unroll request,
++// so it doesn't become a b-loop.
++#pragma OPENCL EXTENSION cl_khr_subgroups : enable
++__attribute__((intel_reqd_sub_group_size(8)))
++kernel void sub_group_sum(global int *out, global const int *in) {
++  size_t i = get_global_id(0);
++  int v = in[i];
++  for (uint m = 1; m < get_max_sub_group_size(); m <<= 1)
++    v += sub_group_shuffle_xor(v, m);
++  out[i] = v;
++}
+diff --git a/tests/compiler_unit/unroll-barrier-loop-default.fc b/tests/compiler_unit/unroll-barrier-loop-default.fc
+new file mode 100644
+index 000000000..d14d6ba68
+--- /dev/null
++++ b/tests/compiler_unit/unroll-barrier-loop-default.fc
+@@ -0,0 +1,2 @@
++CHECK: @_pocl_kernel_sub_group_sum_workgroup
++CHECK-NOT: loopbarrier
+diff --git a/tests/compiler_unit/unroll-barrier-loop-large.cl b/tests/compiler_unit/unroll-barrier-loop-large.cl
+new file mode 100644
+index 000000000..f161cbf21
+--- /dev/null
++++ b/tests/compiler_unit/unroll-barrier-loop-large.cl
+@@ -0,0 +1,15 @@
++// A loop with barriers and a constant trip count stays a b-loop without an
++// unroll request if fully unrolling it exceeds LLVM's full unroll threshold,
++// which LoopBarriers marks with a barrier in the preheader.
++kernel void rotate_local(global int *out, global const int *in) {
++  local int s[64];
++  size_t l = get_local_id(0);
++  int v = in[get_global_id(0)];
++  for (uint k = 0; k < 64; ++k) {
++    s[l] = v;
++    barrier(CLK_LOCAL_MEM_FENCE);
++    v = s[(l + 1) % 64];
++    barrier(CLK_LOCAL_MEM_FENCE);
++  }
++  out[get_global_id(0)] = v;
++}
+diff --git a/tests/compiler_unit/unroll-barrier-loop-large.fc b/tests/compiler_unit/unroll-barrier-loop-large.fc
+new file mode 100644
+index 000000000..399be4b11
+--- /dev/null
++++ b/tests/compiler_unit/unroll-barrier-loop-large.fc
+@@ -0,0 +1,2 @@
++CHECK: @_pocl_kernel_rotate_local_workgroup
++CHECK: loopbarrier
+diff --git a/tests/compiler_unit/unroll-barrier-loop-no-request.cl b/tests/compiler_unit/unroll-barrier-loop-nounroll.cl
+similarity index 82%
+rename from tests/compiler_unit/unroll-barrier-loop-no-request.cl
+rename to tests/compiler_unit/unroll-barrier-loop-nounroll.cl
+index a547506e5..dcfcabd90 100644
+--- a/tests/compiler_unit/unroll-barrier-loop-no-request.cl
++++ b/tests/compiler_unit/unroll-barrier-loop-nounroll.cl
+@@ -1,11 +1,12 @@
+ // A sub-group butterfly over a sub-group size that is known at compile time
+-// stays a b-loop without an unroll request, which LoopBarriers marks with a
++// stays a b-loop with '#pragma nounroll', which LoopBarriers marks with a
+ // barrier in the preheader.
+ #pragma OPENCL EXTENSION cl_khr_subgroups : enable
+ __attribute__((intel_reqd_sub_group_size(8)))
+ kernel void sub_group_sum(global int *out, global const int *in) {
+   size_t i = get_global_id(0);
+   int v = in[i];
++  #pragma nounroll
+   for (uint m = 1; m < get_max_sub_group_size(); m <<= 1)
+     v += sub_group_shuffle_xor(v, m);
+   out[i] = v;
+diff --git a/tests/compiler_unit/unroll-barrier-loop-no-request.fc b/tests/compiler_unit/unroll-barrier-loop-nounroll.fc
+similarity index 100%
+rename from tests/compiler_unit/unroll-barrier-loop-no-request.fc
+rename to tests/compiler_unit/unroll-barrier-loop-nounroll.fc
+diff --git a/tests/regression/test_issue_231.cpp b/tests/regression/test_issue_231.cpp
+index f79d5ccc3..43aa3e0f3 100644
+--- a/tests/regression/test_issue_231.cpp
++++ b/tests/regression/test_issue_231.cpp
+@@ -62,6 +62,8 @@ void scan_scan_intervals_lev1(
+     };
+     // padded in psc_WG_SIZE to avoid bank conflicts
+     LOCAL_MEM struct psc_wrapped_scan_type psc_ldata[psc_WG_SIZE];
++    // keep the b-loop, which UnrollBarrierLoops would unroll
++    #pragma nounroll
+     for(int i = 0; i < 10; ++i)
+     {
+         local_barrier();
+diff --git a/tests/regression/test_issue_553.cpp b/tests/regression/test_issue_553.cpp
+index 5686613c2..36d919dde 100644
+--- a/tests/regression/test_issue_553.cpp
++++ b/tests/regression/test_issue_553.cpp
+@@ -32,6 +32,8 @@ __kernel void pocltest(int xarg1, int xarg2) {
+   arg2 = xarg2; // XXXX
+   for (outer = 0; outer < outerend; outer++) // XXXX
+   {
++    // keep the b-loop, which UnrollBarrierLoops would unroll
++    #pragma nounroll
+     for (inner = 0; inner < innerend; inner++) // XXXX
+     {
+       //barrier(CLK_LOCAL_MEM_FENCE);
+diff --git a/tests/regression/test_unrolled_barrier_loops.c b/tests/regression/test_unrolled_barrier_loops.c
+index b185f50f9..14af85267 100644
+--- a/tests/regression/test_unrolled_barrier_loops.c
++++ b/tests/regression/test_unrolled_barrier_loops.c
+@@ -24,10 +24,10 @@
+   before the barrier passes when the size is known at compile time, from
+   intel_reqd_sub_group_size or from the local size X of a work-group function
+   specialized for it, and so is a tree reduction over the local size. A loop
+-  bounded by a kernel argument stays a b-loop despite the request, and so does
+-  a rotation by a constant without one. Requested loops next to each other
+-  or inside a runtime loop are unrolled as well. All of them must give the
+-  same results.
++  bounded by a kernel argument stays a b-loop despite the request. A short
++  rotation by a constant is unrolled without one. Requested loops next to
++  each other or inside a runtime loop are unrolled as well. All of them must
++  give the same results.
+ */
+ 
+ #include "pocl_opencl.h"
+diff --git a/tests/workgroup/cond_barriers_in_for.cl b/tests/workgroup/cond_barriers_in_for.cl
+index dacd26111..7ca294dbe 100644
+--- a/tests/workgroup/cond_barriers_in_for.cl
++++ b/tests/workgroup/cond_barriers_in_for.cl
+@@ -19,6 +19,8 @@ test_kernel (global int *output)
+ 
+   scratch[local_id] = global_id;
+ 
++  // keep the b-loop, which UnrollBarrierLoops would unroll
++  #pragma nounroll
+   for (int i = 0; i < 2; i++)
+     {
+       if (group_id > 0)
+diff --git a/tests/workgroup/for_bug.cl b/tests/workgroup/for_bug.cl
+index 4cc21120b..c58f43753 100644
+--- a/tests/workgroup/for_bug.cl
++++ b/tests/workgroup/for_bug.cl
+@@ -43,6 +43,8 @@ test_kernel (void)
+    barrier tail replication.
+ */
+ 
++  // keep the b-loop, which UnrollBarrierLoops could unroll
++  #pragma nounroll
+   for (i = 16; i > 0; i--) {
+       barrier(CLK_LOCAL_MEM_FENCE);
+       printf ("gid_x %u after barrier at iteration %d\n", gid_x, i);
+-- 
+2.56.0
+

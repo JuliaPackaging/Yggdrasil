@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "GEOS"
-version = v"3.14.1"
+version = v"3.15.1"
 
 # Collection of sources required to build GEOS
 sources = [
-    ArchiveSource("http://download.osgeo.org/geos/geos-$version.tar.bz2",
-                  "3c20919cda9a505db07b5216baa980bacdaa0702da715b43f176fb07eff7e716"),
+    ArchiveSource("https://github.com/libgeos/geos/releases/download/$version/geos-$version.tar.bz2",
+                  "8eb6dc2ea78b00c2f5109c6b0dba9e028c60bad42d7b1b0cc9952b12dc71f571"),
 ]
 
 # Bash recipe for building across all platforms
@@ -54,6 +54,6 @@ products = [
 dependencies = []
 
 # Build the tarballs, and possibly a `build.jl` as well.
-# We need at least GCC 7 for newer C++ features
+# GEOS 3.15 requires C++17 std::filesystem support, use GCC 9 or newer
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6", preferred_gcc_version=v"7")
+               julia_compat="1.6", preferred_gcc_version=v"9")

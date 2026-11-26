@@ -1,0 +1,22 @@
+Initialise swpc_psv's MPI halo buffers: unset, they put NaN into the ghost cells at MPI_PROC_NULL edges.
+Upstream issue: https://github.com/OpenSWPC/OpenSWPC/issues/20
+
+diff --git a/src/swpc_psv/m_global.f90 b/src/swpc_psv/m_global.f90
+index bb32054..85858c3 100644
+--- a/src/swpc_psv/m_global.f90
++++ b/src/swpc_psv/m_global.f90
+@@ -238,10 +238,10 @@ contains
+ 
+         ! MPI coordinate
+         allocate (itbl(-1:nproc_x))
+-        allocate (sbuf_V_ip(3 * nz), sbuf_V_im(3 * nz))
+-        allocate (rbuf_V_ip(3 * nz), rbuf_V_im(3 * nz))
+-        allocate (sbuf_S_ip(3 * nz), sbuf_S_im(3 * nz))
+-        allocate (rbuf_S_ip(3 * nz), rbuf_S_im(3 * nz))
++        allocate (sbuf_V_ip(3 * nz), sbuf_V_im(3 * nz), source=0.0_SP)
++        allocate (rbuf_V_ip(3 * nz), rbuf_V_im(3 * nz), source=0.0_SP)
++        allocate (sbuf_S_ip(3 * nz), sbuf_S_im(3 * nz), source=0.0_MP)
++        allocate (rbuf_S_ip(3 * nz), rbuf_S_im(3 * nz), source=0.0_MP)
+ 
+         ! MPI communication table
+         call set_mpi_table

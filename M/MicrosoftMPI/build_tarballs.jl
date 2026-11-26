@@ -1,118 +1,89 @@
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "MicrosoftMPI"
-microsoftmpi_version = v"10.1.3"
-version = v"10.1.4"
+version = v"10.1.3"
+# Must exceed registered JLL v10.1.4, which already holds upstream 10.1.3
+ygg_version = v"10.1.5"
 sources = [
     FileSource("https://download.microsoft.com/download/7/2/7/72731ebb-b63c-4170-ade7-836966263a8f/msmpisetup.exe",
                "47443829114d8d8670f77af98939fe876d33eceb35d0ce4e0e85efeec4d87213"),
     FileSource("https://download.microsoft.com/download/7/2/7/72731ebb-b63c-4170-ade7-836966263a8f/msmpisdk.msi",
                "8ccbc77a0cfe1e30f7495a759886b4d99b2c494b9b9ad414dcda1da84c00d3fa"),
-    GitSource("https://github.com/eschnett/MPIconstants", "d2763908c4d69c03f77f5f9ccc546fe635d068cb"),
 ]
 
 script = raw"""
 apk add p7zip
 
-cd ${WORKSPACE}/srcdir/
-7z x -t# msmpisetup.exe -otmp
-if [[ ${target} == i686-w64-* ]]; then
-    # 32-bit files
-    7z x tmp/2.msi -o$prefix
+cd ${WORKSPACE}/srcdir
+7z x -t# msmpisetup.exe -osetup
+7z x msmpisdk.msi -osdk
+# The 64-bit MSI and SDK ship both architectures, with the 64-bit files suffixed "64"
+if [[ ${nbits} == 32 ]]; then
+    7z x setup/2.msi -oruntime
+    suffix=""
+    # The stdcall Fortran import libraries only exist for 32-bit
+    import_libs="msmpi msmpifec msmpifes msmpifmc msmpifms"
 else
-    # 64-bit files
-    7z x tmp/4.msi -o$prefix
-    mv -f $prefix/msmpi64.dll $prefix/msmpi.dll
-    mv -f $prefix/msmpires64.dll $prefix/msmpires.dll
+    7z x setup/4.msi -oruntime
+    suffix="64"
+    import_libs="msmpi msmpifec msmpifmc"
 fi
 
-7z x msmpisdk.msi -o$prefix
-cd ${prefix}
-chmod +x *.exe
-mkdir -p bin
-mv *.exe *.dll bin
-mkdir -p lib
-mv *.lib lib
-mkdir -p include
-# Move to includedir only the mpifptr.h for current architecture
-mv "mpifptr${nbits}.h" "include/mpifptr.h"
-rm mpifptr*.h
-mv *.h *.man include
-mkdir -p src
-mv *.f90 src
-mkdir -p share/licenses/MicrosoftMPI
-mv *.txt *.rtf share/licenses/MicrosoftMPI
+install -Dvm 755 runtime/*.exe -t ${bindir}
+install -Dvm 755 runtime/msmpi${suffix}.dll ${libdir}/msmpi.dll
+install -Dvm 755 runtime/msmpires${suffix}.dll ${libdir}/msmpires.dll
+for lib in ${import_libs}; do
+    install -Dvm 644 sdk/${lib}${suffix}.lib ${prefix}/lib/${lib}.lib
+    if [[ -n ${suffix} ]]; then
+        # Also keep the SDK's name, which consumers link as e.g. `-lmsmpi64`
+        install -Dvm 644 sdk/${lib}${suffix}.lib -t ${prefix}/lib
+    fi
+done
+
+# Replace the one non-ASCII byte in mpif.h (Latin-1 0xA0) by a space. Not a patch:
+# the file is CRLF, and .gitattributes would convert a patch's context lines to LF.
+LC_ALL=C sed -i $'s/\xa0/ /' sdk/mpif.h
+install -Dvm 644 sdk/mpi.h sdk/mpio.h sdk/mpif.h sdk/mspms.h sdk/pmidbg.h runtime/mpitrace.man -t ${includedir}
+install -Dvm 644 sdk/mpifptr${nbits}.h ${includedir}/mpifptr.h
+install -Dvm 644 sdk/mpi.f90 -t ${prefix}/src
 
 # Generate "mpi.mod", "mpi_base.mod", "mpi_sizeofs.mod" and "mpi_constants.mod"
-cd $includedir
-gfortran -I. ../src/mpi.f90 -fsyntax-only -fno-range-check
+cd ${includedir}
+${FC} -I. ../src/mpi.f90 -fsyntax-only -fno-range-check
 
-# Replace an unknown character in mpif.h by a space
-sed -i '/Copyright Notice/!b;n;c!    + 2002 University of Chicago' mpif.h
-
-################################################################################
-# Install MPIconstants
-################################################################################
-
-cd ${WORKSPACE}/srcdir/MPIconstants*
-mkdir build
-cd build
-
-if [[ "$target" == x86_64-w64-mingw32 ]]; then
-    cmake \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_FIND_ROOT_PATH=${prefix} \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DBUILD_SHARED_LIBS=ON \
-        -DMPI_HOME=$prefix \
-        -DMPI_GUESS_LIBRARY_NAME=MSMPI \
-        -DMPI_C_LIBRARIES=msmpi64 \
-        -DMPI_CXX_LIBRARIES=msmpi64 \
-        ..
-elif [[ "$target" == *-mingw* ]]; then
-    cmake \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_FIND_ROOT_PATH=${prefix} \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DBUILD_SHARED_LIBS=ON \
-        -DMPI_HOME=$prefix \
-        -DMPI_GUESS_LIBRARY_NAME=MSMPI \
-        ..
-else
-    exit 1
-fi
-
-cmake --build . --config RelWithDebInfo --parallel $nproc
-cmake --build . --config RelWithDebInfo --parallel $nproc --target install
-
-if [[ ${target} == i686-w64-* ]]; then
-    # Remove 64-bit import libraries
-    rm $prefix/lib/*64.lib
-else
-    # Rename 64-bit import libraries
-    mv -f $prefix/lib/msmpifmc64.lib $prefix/lib/msmpifmc.lib
-    mv -f $prefix/lib/msmpifec64.lib $prefix/lib/msmpifec.lib
-    mv -f $prefix/lib/msmpi64.lib $prefix/lib/msmpi.lib
-fi
-
-install_license $WORKSPACE/destdir/share/licenses/MicrosoftMPI/* $WORKSPACE/srcdir/MPIconstants*/LICENSE.md
+install_license \
+    ${WORKSPACE}/srcdir/runtime/*.rtf \
+    ${WORKSPACE}/srcdir/runtime/*.txt \
+    ${WORKSPACE}/srcdir/sdk/*.rtf \
+    ${WORKSPACE}/srcdir/sdk/*.txt
 """
+
+augment_platform_block = """
+    using Base.BinaryPlatforms
+    $(MPI.augment)
+    augment_platform!(platform::Platform) = augment_mpi!(platform)
+    """
 
 platforms = filter!(Sys.iswindows, supported_platforms())
 platforms = expand_gfortran_versions(platforms)
 
+# Add `mpi+microsoftmpi` platform tag
+for p in platforms
+    p["mpi"] = "MicrosoftMPI"
+end
+
 products = [
-    # MicrosoftMPI
     LibraryProduct("msmpi", :libmpi),
     ExecutableProduct("mpiexec", :mpiexec),
-    # MPIconstants
-    LibraryProduct("libload_time_mpi_constants", :libload_time_mpi_constants),
-    ExecutableProduct("generate_compile_time_mpi_constants", :generate_compile_time_mpi_constants),
 ]
 
-dependencies = Dependency[
+dependencies = [
+    RuntimeDependency(PackageSpec(name="MPIPreferences", uuid="3da0fdf6-3ccc-4f1b-acd9-58baa6c99267");
+                      compat="0.1", top_level=true),
 ]
 
-# Build the tarballs.
-# We use GCC 5 to ensure Fortran module files are readable by all `libgfortran3` architectures. GCC 4 would use an older format.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies, preferred_gcc_version=v"5")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+               augment_platform_block, julia_compat="1.6")

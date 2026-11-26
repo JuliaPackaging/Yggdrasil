@@ -3,9 +3,9 @@
 using BinaryBuilder, Pkg
 
 name = "LEMON"
-version = v"1.3.6"
+version = v"1.3.7"
 upstreamversion = v"1.3.1"
-min_jl_version = v"1.9"
+min_jl_version = v"1.10"
 
 # Collection of sources required to complete build
 sources = [
@@ -47,6 +47,7 @@ $CXX -shared -std=c++17 -O3 -fPIC ${EXTRA_CXXFLAGS} -o ${libdir}/liblemoncxxwrap
 # Because we bundle the Julia-targetting cxxwrapper,
 # we need a build for each supported julia version.
 include("../../L/libjulia/common.jl")
+@assert libjulia_min_julia_version <= min_jl_version
 supported_julia_versions = filter(>=(min_jl_version), julia_versions)
 platforms = vcat(libjulia_platforms.(supported_julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
@@ -61,11 +62,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    # Keep on newer 0.14.x so julia_version+1.14 platforms get complete cxxwrap artifacts
-    # (including jlcxx headers needed at build time).
-    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.9"),
-    BuildDependency("libjulia_jll")
+    Dependency("libcxxwrap_julia_jll"; compat = "~0.14.12"),
+    BuildDependency(PackageSpec(; name="libjulia_jll", version="1.11.5"))
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat=string(min_jl_version), preferred_gcc_version = v"7.1.0")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+    julia_compat=libjulia_julia_compat(supported_julia_versions), preferred_gcc_version=v"10")

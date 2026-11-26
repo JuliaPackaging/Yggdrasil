@@ -12,9 +12,11 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include("make_script.jl")
 
 name = "legate"
-version = v"26.06.0" # Year.Month
+version_string = "26.06.01" # Year.Month.Patch
+version = VersionNumber(version_string)
 sources = [
-    GitSource("https://github.com/nv-legate/legate.git","3b9f6d247d8504fa9b9411caed72da26b517545b"),
+    GitSource("https://github.com/nv-legate/legate.git","3249a596f630f3dac22e957668f6ae09bf0014ff";
+              tag="v$(version_string)"),
     FileSource("https://repo.anaconda.com/miniconda/Miniconda3-py311_24.3.0-0-Linux-x86_64.sh", 
                 "4da8dde69eca0d9bc31420349a204851bfa2a1c87aeb87fe0c05517797edaac4", "miniconda.sh")
 ]
@@ -23,7 +25,7 @@ MIN_CUDA_VERSION = v"13.0"
 MAX_CUDA_VERSION = v"13.0.999" # none of the dependency JLLs have 13.1 builds rn
 
 # Just so I can do CPU only tests on GitHub runners
-cpu_platform = [Platform("x86_64", "linux")]
+cpu_platform = CUDA.cpu_platforms([Platform("x86_64", "linux")])
 
 cuda_platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
 all_platforms = [cpu_platform; cuda_platforms]
@@ -36,27 +38,21 @@ filter!(p -> cxxstring_abi(p) == "cxx11", all_platforms)
 # platforms, mpi_dependencies = MPI.augment_platforms(platforms)
 # filter!(p -> p["mpi"] ∉ ["mpitrampoline", "microsoftmpi"], platforms)
 
-# manually mark platforms that could support CUDA, set 
-# flag so we know that we do NOT want to install CUDA on this one
-for platform in all_platforms
-    if CUDA.is_supported(platform) && !haskey(platform, "cuda")
-        platform["cuda"] = "none"
-    end
-end
-
 products = [
     LibraryProduct("liblegate", :liblegate)
 ] 
 
-# Dependencies that do not need CUDA
 dependencies = [
     Dependency("HDF5_jll"; compat="^2"),
     Dependency("MPICH_jll"; compat="4.3.0"),
     Dependency("Zlib_jll"; compat="1.2.12"),
-    Dependency("UCC_jll"; compat="1.8.0"),
-    Dependency("UCX_jll"; compat="1.20.0"),
+    # the first releases with a CPU build on hosts whose toolkit has no CUDA build
+    Dependency("UCC_jll"; compat="1.8.1"),
+    Dependency("UCX_jll"; compat="1.20.1"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.31.9")),
+    Dependency("NCCL_jll"; compat="2.28.9", platforms=filter(p -> p["cuda"] != "none", all_platforms)),
+    CUDA.required_dependencies(all_platforms; static_sdk=true)...,
 ]
 
 for platform in all_platforms
@@ -66,7 +62,6 @@ for platform in all_platforms
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     clang_ver = v"18"
 
-    _dependencies = copy(dependencies)
     script = get_script(Val{false}())
 
     if haskey(platform, "cuda") && platform["cuda"] != "none" 
@@ -78,14 +73,11 @@ for platform in all_platforms
             push!(platform_sources, CUDA.cuda_nvcc_redist_source(cuda_ver, "x86_64"))
         end
 
-        push!(_dependencies, Dependency("NCCL_jll"; compat="2.28.9"))
-        append!(_dependencies, CUDA.required_dependencies(platform, static_sdk=true))
-
         script = get_script(Val{true}())
     end # else CPU only build
 
     build_tarballs(ARGS, name, version, platform_sources, script, [platform],
-                    products, _dependencies;
+                    products, dependencies;
                     julia_compat = "1.10", preferred_gcc_version = v"11",
                     preferred_llvm_version = clang_ver,
                     augment_platform_block=CUDA.augment,

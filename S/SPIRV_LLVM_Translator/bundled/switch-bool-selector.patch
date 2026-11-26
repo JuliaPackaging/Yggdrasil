@@ -1,0 +1,84 @@
+From 4608a2293687ba917f1d4490117aba88980ced6b Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Fri, 6 Nov 2026 12:48:49 +0100
+Subject: [PATCH] Convert boolean switch selectors to integers
+
+OpSwitch requires an integer selector, but a switch on an i1 (which InstCombine
+leaves when it narrows a switch's condition) was translated with an OpTypeBool
+one, which spirv-val rejects. Select a 32-bit 0 or 1 to switch on instead.
+---
+ lib/SPIRV/SPIRVWriter.cpp        |  7 ++++++
+ test/transcoding/OpSwitchBool.ll | 43 ++++++++++++++++++++++++++++++++
+ 2 files changed, 50 insertions(+)
+ create mode 100644 test/transcoding/OpSwitchBool.ll
+
+diff --git a/lib/SPIRV/SPIRVWriter.cpp b/lib/SPIRV/SPIRVWriter.cpp
+index a4889516..6b8c7d0e 100644
+--- a/lib/SPIRV/SPIRVWriter.cpp
++++ b/lib/SPIRV/SPIRVWriter.cpp
+@@ -2528,6 +2528,13 @@ LLVMToSPIRVBase::transValueWithoutDecoration(Value *V, SPIRVBasicBlock *BB,
+   if (auto *Switch = dyn_cast<SwitchInst>(V)) {
+     std::vector<SPIRVSwitch::PairTy> Pairs;
+     auto *Select = transValue(Switch->getCondition(), BB);
++    // OpSwitch takes an integer selector, while i1 is a boolean in SPIR-V:
++    // switch on the condition converted to a 32-bit integer
++    if (Select->getType()->isTypeBool()) {
++      SPIRVType *Int32Ty = transType(Type::getInt32Ty(Switch->getContext()));
++      Select = BM->addSelectInst(Select, BM->addConstant(Int32Ty, 1),
++                                 BM->addConstant(Int32Ty, 0), BB);
++    }
+ 
+     for (auto I = Switch->case_begin(), E = Switch->case_end(); I != E; ++I) {
+       SPIRVSwitch::LiteralTy Lit;
+diff --git a/test/transcoding/OpSwitchBool.ll b/test/transcoding/OpSwitchBool.ll
+new file mode 100644
+index 00000000..f1875388
+--- /dev/null
++++ b/test/transcoding/OpSwitchBool.ll
+@@ -0,0 +1,43 @@
++; A switch on an i1, which InstCombine can leave behind when it narrows a
++; switch's condition. OpSwitch takes an integer selector, so the boolean
++; condition is converted to a 32-bit integer.
++
++; RUN: llvm-as %s -o %t.bc
++; RUN: llvm-spirv %t.bc -spirv-text -o %t.spt
++; RUN: FileCheck < %t.spt %s --check-prefix=CHECK-SPIRV
++; RUN: llvm-spirv %t.bc -o %t.spv
++; RUN: spirv-val %t.spv
++; RUN: llvm-spirv -r %t.spv -o %t.rev.bc
++; RUN: llvm-dis < %t.rev.bc | FileCheck %s --check-prefix=CHECK-LLVM
++
++; CHECK-SPIRV-DAG: TypeInt [[#I32:]] 32 0
++; CHECK-SPIRV-DAG: TypeBool [[#BOOL:]]
++; CHECK-SPIRV-DAG: Constant [[#I32]] [[#ONE:]] 1
++; CHECK-SPIRV-DAG: Constant [[#I32]] [[#ZERO:]] 0
++; CHECK-SPIRV: FunctionParameter [[#BOOL]] [[#COND:]]
++; CHECK-SPIRV: Select [[#I32]] [[#SEL:]] [[#COND]] [[#ONE]] [[#ZERO]]
++; CHECK-SPIRV: Switch [[#SEL]] [[#]] 0 [[#]] 1 [[#]]
++
++; CHECK-LLVM: %[[#SEL:]] = select i1 %c, i32 1, i32 0
++; CHECK-LLVM: switch i32 %[[#SEL]], label %{{.*}} [
++; CHECK-LLVM-NEXT: i32 0, label %{{.*}}
++; CHECK-LLVM-NEXT: i32 1, label %{{.*}}
++
++target datalayout = "e-i64:64-v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:256-v512:512-v1024:1024"
++target triple = "spir64-unknown-unknown"
++
++define spir_kernel void @test(ptr addrspace(1) %p, i1 %c) {
++entry:
++  switch i1 %c, label %default [
++    i1 false, label %false
++    i1 true, label %true
++  ]
++false:
++  store i32 1, ptr addrspace(1) %p
++  ret void
++true:
++  store i32 2, ptr addrspace(1) %p
++  ret void
++default:
++  ret void
++}
+-- 
+2.56.0
+

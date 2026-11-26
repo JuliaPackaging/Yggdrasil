@@ -10,11 +10,22 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 # `pocl_next` is the 7.2 track of PoCL: an OpenCL ICD driver built with the in-process
 # JIT (no run-time clang/lld/llvm-spirv tooling). The actual build lives in ../common.jl,
 # shared with the `pocl_standalone` (OpenCL-less) variant and selected via its `standalone`
-# argument (false here). See ../common.jl for the full rationale.
+# argument (false here). See ../common.jl for the full rationale. This track also carries
+# the experimental `pocl-spirv32` series (SPIR-V on 32-bit x86, JuliaGPU/pocl#3).
 
 name = "pocl_next"
-version = v"7.2.0"
-llvm_version = v"22.1.1"
+# upstream's 7.2 maintenance branch plus our patch series; bumped past 7.2 when the series
+# changes API (7.2.1 added cl_pocl_cpu_compute_units, 7.2.2 removed it again, 7.2.3 adds
+# cl_pocl_host_kernel)
+version = v"7.2.3"
+# Unlike the stable recipes, built with LLVM 23 (which PoCL 7.2 accepts but doesn't
+# officially support), to try it before moving them: its translator reads
+# SPV_KHR_float_controls2, which carries `contract` so that `muladd` can fuse into an FMA,
+# and it fixes LLVM 22 rounding <8 x bfloat> arithmetic wrongly for AArch64 targets without
+# BF16 (JuliaGPU/KernelAbstractions.jl#949).
+# On macOS, clang 23 tunes the kernel library for apple-m5 by default, which keeps the
+# inliner from inlining its barrier helpers into kernels; patch 0051 fixes that.
+llvm_version = v"23.1.4"
 macos_sdk_version = "11.0"
 
 # Build
@@ -23,11 +34,11 @@ macos_sdk_version = "11.0"
 sources = [
     DirectorySource("./bundled"),
     GitSource("https://github.com/pocl/pocl",
-              "888c9774b94590fff1afef003154ca2c0ea66605"), # tag v7.2
+              "0a8861d1b989a926dcdf506aeed69d0de2394274"), # release_next (v7.2 + backports)
     # vendored SPIR-V translator, built as a static library against our LLVM (see
-    # common.jl); this is the latest LLVM-22.1 maintenance revision.
+    # common.jl); this is the latest LLVM-23.1 maintenance revision.
     GitSource("https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-              "0e67244861402a51b071414d7cb231a052b1ce03"),
+              "db5855d76a0ff33228bcf48032b350b25dcdbcf2"),
 ]
 
 #=
@@ -57,7 +68,7 @@ filter!(p -> !(arch(p) == "i686" && os(p) == "windows"), platforms)
 
 include("../common.jl")
 
-# LLVM 22 requires macOS 11.0. The shared helper installs the SDK and redirects
+# LLVM 22 and later require macOS 11.0. The shared helper installs the SDK and redirects
 # the toolchain without modifying the read-only rootfs.
 sources, macos_sdk_script = require_macos_sdk(macos_sdk_version, sources, "")
 
@@ -81,7 +92,16 @@ dependencies = [
     Dependency("OpenCL_jll"),
     Dependency("OpenCL_Headers_jll"),
     Dependency("Hwloc_jll"),
-    Dependency("Zstd_jll"), # our LLVM 22 build has LLVM_ENABLE_ZSTD=ON
+    Dependency("Zstd_jll"), # our LLVM builds have LLVM_ENABLE_ZSTD=ON
+    # Vectorize OpenCL math builtins via SLEEF's libmvec-ABI library (libsleefgnuabi), which
+    # the in-process JIT dlopens at run time (see common.jl for the matching CMake flags). Only
+    # on x86_64/aarch64 Linux and FreeBSD, the ELF targets where LLVM maps a veclib *and*
+    # SLEEF_jll ships libsleefgnuabi (macOS has no GNUABI variant, Windows has no SLEEF_jll).
+    # This has to be declared here, not per platform in the loop below: the JLL's Project.toml
+    # comes from the last (registering) `build_tarballs` call, which isn't one of these.
+    Dependency("SLEEF_jll"; platforms=filter(platforms) do p
+        (Sys.islinux(p) || Sys.isfreebsd(p)) && arch(p) in ["x86_64", "aarch64"]
+    end),
 ]
 
 builds = []
@@ -90,15 +110,8 @@ for platform in platforms
 
     platform_sources = deepcopy(sources)
     platform_dependencies = deepcopy(dependencies)
-
-    # Vectorize OpenCL math builtins via SLEEF's libmvec-ABI / SLEEF compat library
-    # (libsleefgnuabi), which the in-process JIT dlopens at run time (see common.jl for the
-    # matching CMake flags). Gated to x86_64/aarch64 on the ELF OSes where LLVM maps a veclib
-    # *and* SLEEF_jll ships libsleefgnuabi: Linux and FreeBSD (not macOS -- no GNUABI on
-    # Mach-O -- and not Windows -- no SLEEF_jll). Static linking isn't used: the JIT resolves
-    # _ZGV* symbols by dlopen, so a dynamic dependency is the natural fit.
-    if (Sys.islinux(platform) || Sys.isfreebsd(platform)) && arch(platform) in ["x86_64", "aarch64"]
-        push!(platform_dependencies, Dependency("SLEEF_jll"))
+    if needs_llvm_vplan_fix(platform)
+        append!(platform_sources, llvm_vplan_fix_sources)
     end
 
     # On Windows we now link PoCL with the Clang/lld toolchain, but still build against this
@@ -132,9 +145,13 @@ end
 
 for (i,build) in enumerate(builds)
     build_tarballs(i == lastindex(builds) ? non_platform_ARGS : non_reg_ARGS,
-                   name, version, build.sources, macos_sdk_script * build_script(),
+                   name, version, build.sources, macos_sdk_script * build_script(; spirv32=true),
                    [build.platform], products, build.dependencies;
                    build.preferred_gcc_version,
                    preferred_llvm_version=Base.thismajor(llvm_version),
-                   julia_compat="1.6", init_block=init_block())
+                   # libpocl needs the libgcc_s of GCC 12 (for its FP16 helpers), which Julia
+                   # bundles since 1.8; 1.10 is the oldest version the users of these JLLs support
+                   julia_compat="1.10", init_block=init_block())
 end
+
+# Build trigger: 3

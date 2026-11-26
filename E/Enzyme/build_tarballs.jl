@@ -14,14 +14,14 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 name = "Enzyme"
 repo = "https://github.com/EnzymeAD/Enzyme.git"
 
-auto_version = "refs/tags/v0.0.299"
+auto_version = "refs/tags/v0.0.311"
 version = VersionNumber(split(auto_version, "/")[end])
 
-llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.8"]
+llvm_versions = [v"15.0.7", v"16.0.6", v"18.1.7", v"20.1.8", v"23.1.4"]
 
 # Collection of sources required to build attr
 sources = [
-    GitSource(repo, "535d7b4a9b4f89b8f2e3586f1b84a3cc7ced409d"),
+    GitSource(repo, "0231d1a774492d524955c6b952f5a92edeced679"),
 ]
 
 # These are the platforms we will build for by default, unless further
@@ -89,6 +89,8 @@ build-native/tools/enzyme-tblgen/enzyme-tblgen --version
 # 2. Cross-compile
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DENZYME_EXTERNAL_SHARED_LIB=ON)
+# Enzyme.jl only loads libEnzyme and libEnzymeBCLoad; skip the opt/LLD/Clang plugins.
+CMAKE_FLAGS+=(-DENZYME_ENABLE_PLUGINS=OFF)
 CMAKE_FLAGS+=(-DBC_LOAD_HEADER=`pwd`/build-native/BCLoad/gsl/blas_headers.h)
 CMAKE_FLAGS+=(-DEnzyme_TABLEGEN=`pwd`/build-native/tools/enzyme-tblgen/enzyme-tblgen)
 CMAKE_FLAGS+=(-DEnzyme_TABLEGEN_EXE=`pwd`/build-native/tools/enzyme-tblgen/enzyme-tblgen)
@@ -151,9 +153,6 @@ augment_platform_block = """
 # determine exactly which tarballs we should build
 builds = []
 for llvm_version in llvm_versions, llvm_assertions in (false, true)
-    if llvm_version == v"11.0.1" && llvm_assertions
-        continue # Does not have Clang available
-    end
     # Dependencies that must be installed before this package can be built
     llvm_name = llvm_assertions ? "LLVM_full_assert_jll" : "LLVM_full_jll"
     dependencies = [

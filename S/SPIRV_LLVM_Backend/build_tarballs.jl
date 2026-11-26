@@ -6,8 +6,8 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "SPIRV_LLVM_Backend"
-version = v"23.1.1"
-llvm_version = v"23.1.1"
+version = v"23.1.4"
+llvm_version = v"23.1.4"
 
 # This JLL ships `libspirv`, a shared library exposing a small, typed C API (see
 # bundled/libspirv.h) over a statically linked, symbol-hidden LLVM SPIR-V
@@ -18,7 +18,7 @@ llvm_version = v"23.1.1"
 # LLVM ships a single monorepo source archive (`llvm-project-X.Y.Z.src.tar.xz`).
 sources = [
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(llvm_version)/llvm-project-$(llvm_version).src.tar.xz",
-                  "ebe9be46fe8756d58c5b198ffad0fa2a766257add81a4dc52179bfacc7888ee6"),
+                  "819ecf7351f1a66f76b2d701d8942faaf5faeb324cb90c9d5b090de142434bb2"),
     DirectorySource("./bundled")
 ]
 
@@ -52,6 +52,79 @@ atomic_patch -p1 $WORKSPACE/srcdir/patches/aggregate_extractvalue_return.patch
 # pointee types of pointers extracted from or inserted into aggregates"; still
 # open upstream), for Julia's bits-union return values.
 atomic_patch -p1 $WORKSPACE/srcdir/patches/aggregate_member_pointee_types.patch
+# Backport of https://github.com/llvm/llvm-project/pull/209232 ("[SPIR-V]
+# Preserve signed i1 semantics in sitofp"; merged after the 23.x branch), so
+# that `sitofp i1 true` gives -1.0 instead of 1.0.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/sitofp_signed_i1.patch
+# Backport of https://github.com/llvm/llvm-project/pull/229444 ("[SPIRV] Don't
+# cache SyncScope IDs across LLVMContexts in getMemScope"; still open
+# upstream): with a fresh context per compilation, later modules got wrong
+# atomic scopes (e.g. Subgroup instead of Device).
+atomic_patch -p1 $WORKSPACE/srcdir/patches/getmemscope_per_context.patch
+# Backport of https://github.com/llvm/llvm-project/pull/223023 ("[SPIR-V] Add
+# storage class bits to fence and generic atomic semantics"; merged after the
+# 23.x branch), without which fences order no memory.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/fence_storage_class.patch
+# Backport of https://github.com/llvm/llvm-project/pull/229720 ("[SPIR-V] Type
+# the format string of unmangled printf calls as i8"; approved upstream), without
+# which IGC asserts on kernels with multiple printf format strings.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/printf_unmangled.patch
+# Backport of https://github.com/llvm/llvm-project/pull/231150 ("[SPIR-V]
+# Decompose bool vector bitcasts element-wise"; open upstream), without which
+# bitcasts between vectors and bool vectors of more than 64 lanes fail with
+# "Unsupported Integer width!", e.g. for KernelAbstractions sub-group shuffles of
+# structs with a Bool field.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/bool_vector_bitcast_wide.patch
+# Backport of https://github.com/llvm/llvm-project/pull/231173 ("[SPIR-V] Fix
+# FPFastMathDefault type lookup for calls and post-isel registers"; open
+# upstream), without which kernels with an FPFastMathDefault execution mode
+# segfault when MachineCSE hoists a floating-point instruction at -O2.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/fp_fast_math_default_type.patch
+# Backport of https://github.com/llvm/llvm-project/pull/225667 ("[SPIR-V] Lower
+# llvm.minimum/maximum instead of selecting fmin/fmax"; merged after the 23.x
+# branch), without which `llvm.minimum`/`llvm.maximum` ignore NaNs and don't
+# order signed zeros. 23.x lacks SPV_EXT_long_vector, so its long-vector
+# changes and tests are left out. Shaders need the `copysign` lowering of
+# https://github.com/llvm/llvm-project/pull/217421 (also merged after 23.x;
+# only its SPIR-V part is backported).
+atomic_patch -p1 $WORKSPACE/srcdir/patches/copysign_shader.patch
+atomic_patch -p1 $WORKSPACE/srcdir/patches/fminimum_fmaximum.patch
+# Revalidate the operands of a PHI or select whose pointee type is changed
+# after its operands were checked (not yet submitted upstream), without which a
+# null incoming value can keep the old pointer type and spirv-val rejects the
+# OpPhi or OpSelect. LoopSimplify, which runs for OpenCL since LLVM 23, creates
+# the PHI chains that trigger it.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/phi_select_retyped_operands.patch
+# Backport of https://github.com/llvm/llvm-project/pull/239575 ("[SPIR-V]
+# Switch on an integer when the condition is an i1"; still open upstream): i1
+# is a boolean in SPIR-V, which OpSwitch doesn't take as its selector, so
+# spirv-val rejected it. InstCombine leaves such switches when it narrows their
+# conditions, e.g. in Julia's union splits.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/bool_switch_selector.patch
+# Backport of https://github.com/llvm/llvm-project/pull/229289 ("[SPIRV] Fix
+# invalid SPIR-V for loops with switch headers"; merged after the 23.x branch).
+# Since LLVM 23, OpenCL loops with unroll hints get an OpLoopMerge, which was
+# emitted after the OpSwitch of a header ending in a switch, so spirv-val
+# rejected the module. Julia emits such headers for `x^n` with an integer `n`
+# in loops that IRCE cloned or `@unroll` annotated (JuliaGPU/KernelAbstractions.jl#959).
+atomic_patch -p1 $WORKSPACE/srcdir/patches/loop_merge_switch_header.patch
+# Backport of https://github.com/llvm/llvm-project/pull/240309 ("[SPIR-V] Fix
+# the overflow flag of llvm.smul.with.overflow"; open upstream): the flag tested
+# the high half of the product against zero, so negative products overflowed
+# (Julia's `checked_mul(-1, 1)` threw) and some overflows went unnoticed.
+atomic_patch -p1 $WORKSPACE/srcdir/patches/smul_overflow_flag.patch
+# Backport of https://github.com/llvm/llvm-project/pull/229678 ("[SPIRV] Re-sort
+# basic blocks after LoopSimplify for non-shader targets"; merged after the 23.x
+# branch). Since LLVM 23, LoopSimplify runs for OpenCL after the blocks were
+# sorted, so a dedicated exit or preheader it inserts could precede its
+# dominator, and spirv-val rejected the module (JuliaGPU/KernelAbstractions.jl#894).
+atomic_patch -p1 $WORKSPACE/srcdir/patches/resort_blocks_after_loopsimplify.patch
+# Backport of https://github.com/llvm/llvm-project/pull/245982 ("[SPIR-V] Clamp
+# memory access alignments to 2^31"; open upstream): an access alignment of
+# 2^32, which InferAlignment gives to accesses of null, was truncated to an
+# invalid `Aligned 0`. Julia emits such accesses in dead code that unboxes a
+# union value (JuliaGPU/OpenCL.jl#631).
+atomic_patch -p1 $WORKSPACE/srcdir/patches/clamp_access_alignment.patch
 
 install_license LICENSE.TXT
 

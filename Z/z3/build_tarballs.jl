@@ -6,17 +6,20 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "z3"
-version = v"5.1.0"
+version = v"5.4.1"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/Z3Prover/z3/releases/download/z3-$(version)/z3_solver-$(version).0.tar.gz",
-                  "269a0bf62949d227a16ab42afee6750f18477e173a14de6aeaf8789f33f813b5"),
+                  "f2c745d1623128400c208d875fba741ccd88f061cb89b5661a9f2169eb24b110"),
     DirectorySource("bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
+# z3 requires CMake >= 3.26; remove the system CMake so the JLL-provided one is used
+apk del cmake
+
 cd $WORKSPACE/srcdir/z3*/core
 
 # GCC rejects `context::fpa_rounding_mode` under -Werror=return-type
@@ -67,9 +70,10 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
+    HostBuildDependency("CMake_jll"),
     BuildDependency("libjulia_jll"),
     Dependency("GMP_jll"),
-    Dependency("libcxxwrap_julia_jll"; compat="0.14.9"),
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.12"),
     Dependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isapple, platforms)),
 ]
 

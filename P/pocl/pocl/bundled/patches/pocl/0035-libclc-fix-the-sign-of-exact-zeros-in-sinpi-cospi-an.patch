@@ -1,0 +1,149 @@
+From 58a047114bece855ac8ae781395981720c83c1ca Mon Sep 17 00:00:00 2001
+From: anun333 <anun333@posteo.net>
+Date: Wed, 16 Sep 2026 02:02:56 -0500
+Subject: [PATCH] libclc: fix the sign of exact zeros in sinpi, cospi and tanpi
+
+The interval logic in these three derives the result's sign from the
+parity of the integral part of x. That is correct for every non-zero
+result, and wrong when the result is an exact zero, because the parity
+term then lands on the zero itself:
+
+  sinpi(1.0)  gave -0.0, must be +0.0   (zero takes the sign of x)
+  sinpi(-1.0) gave +0.0, must be -0.0
+  cospi(0.5)  gave -0.0, must be +0.0   (+0.0 at every half-integer)
+  cospi(2.5)  gave -0.0, must be +0.0
+  tanpi(1.0)  gave +0.0, must be -0.0   (sign of x flipped by parity)
+  tanpi(3.0)  gave +0.0, must be -0.0
+
+Both precisions, 18 cases in all, reported by the math_brute_force
+math_edge_cases test that OpenCL-CTS added in May (KhronosGroup/
+OpenCL-CTS#2665). Not a regression -- a new test finding old behaviour.
+
+tanpi is the clearest of the three: the >= 2^23 and >= 2^52 paths in the
+same function already return xodd for integral arguments, so this only
+makes the small-argument path agree with them.
+
+Verified on an x86-64 host CPU device with ENABLE_CONFORMANCE=ON:
+math_edge_cases goes from 19 failures to 0, and the full brute-force
+sinpi, cospi, tanpi and atanpi tests all still pass, so no non-zero
+result moved.
+
+Assisted-by: Claude Opus 5 (Claude Code)
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+(cherry picked from commit 4106b8f5395fe4df70e5290b72d43916d1e7a1d0)
+---
+ lib/kernel/libclc/cospi_fp32.cl | 6 ++++++
+ lib/kernel/libclc/cospi_fp64.cl | 6 ++++++
+ lib/kernel/libclc/sinpi_fp32.cl | 6 ++++++
+ lib/kernel/libclc/sinpi_fp64.cl | 6 ++++++
+ lib/kernel/libclc/tanpi_fp32.cl | 7 +++++++
+ lib/kernel/libclc/tanpi_fp64.cl | 7 +++++++
+ 6 files changed, 38 insertions(+)
+
+diff --git a/lib/kernel/libclc/cospi_fp32.cl b/lib/kernel/libclc/cospi_fp32.cl
+index b8a7e09de..08397d6eb 100644
+--- a/lib/kernel/libclc/cospi_fp32.cl
++++ b/lib/kernel/libclc/cospi_fp32.cl
+@@ -66,6 +66,12 @@ _CL_OVERLOADABLE vtype cospi(vtype x)
+     v2type t = __pocl_sincosf_piby4(a * M_PI_F);
+     itype jr = s ^ as_itype(e ? t.hi : t.lo);
+ 
++    // cospi(n + 0.5) is +0.0 for every integral n. The s term carries a
++    // sign derived from the parity of the integral part, which is right
++    // for the non-zero results and wrong for an exact zero: cospi(0.5)
++    // and cospi(2.5) came out -0.0.
++    jr = (r == (vtype)0.5) ? (itype)0 : jr;
++
+     ir = (ix < (itype)0x4b000000) ? jr : ir;
+ 
+     return as_vtype(ir);
+diff --git a/lib/kernel/libclc/cospi_fp64.cl b/lib/kernel/libclc/cospi_fp64.cl
+index b61972d5a..1039f6a7c 100644
+--- a/lib/kernel/libclc/cospi_fp64.cl
++++ b/lib/kernel/libclc/cospi_fp64.cl
+@@ -67,6 +67,12 @@ _CL_OVERLOADABLE vtype cospi(vtype x) {
+     v2type sc = __pocl_sincos_piby4(a * M_PI, (vtype)0.0);
+     itype jr = s ^ as_itype(e ? sc.hi : sc.lo);
+ 
++    // cospi(n + 0.5) is +0.0 for every integral n. The s term carries a
++    // sign derived from the parity of the integral part, which is right
++    // for the non-zero results and wrong for an exact zero: cospi(0.5)
++    // and cospi(2.5) came out -0.0.
++    jr = (r == (vtype)0.5) ? (itype)0 : jr;
++
+     ir = (ax < (vtype)0x1.0p+52) ? jr : ir;
+ 
+     return as_vtype(ir);
+diff --git a/lib/kernel/libclc/sinpi_fp32.cl b/lib/kernel/libclc/sinpi_fp32.cl
+index a44c8574f..d4cfcf5f9 100644
+--- a/lib/kernel/libclc/sinpi_fp32.cl
++++ b/lib/kernel/libclc/sinpi_fp32.cl
+@@ -64,6 +64,12 @@ _CL_OVERLOADABLE vtype sinpi(vtype x)
+     v2type t = __pocl_sincosf_piby4(a * M_PI_F);
+     itype jr = xodd ^ as_itype(e ? t.hi : t.lo);
+ 
++    // sinpi(n) for integral n is zero with the sign of x. The xodd term
++    // above also folds in the parity of n, which is correct for the
++    // non-zero results but flips the sign of an exact zero: sinpi(1.0)
++    // came out -0.0 where it must be +0.0.
++    jr = (r == (vtype)0.0) ? xsgn : jr;
++
+     ir = (ix < (itype)0x4b000000) ? jr : ir;
+ 
+     return as_vtype(ir);
+diff --git a/lib/kernel/libclc/sinpi_fp64.cl b/lib/kernel/libclc/sinpi_fp64.cl
+index 8dc960aed..7d22cd952 100644
+--- a/lib/kernel/libclc/sinpi_fp64.cl
++++ b/lib/kernel/libclc/sinpi_fp64.cl
+@@ -63,6 +63,12 @@ _CL_OVERLOADABLE vtype sinpi(vtype x)
+     v2type sc = __pocl_sincos_piby4(a * M_PI, (vtype)0.0);
+     itype jr = xodd ^ as_itype(e ? sc.hi : sc.lo);
+ 
++    // sinpi(n) for integral n is zero with the sign of x. The xodd term
++    // above also folds in the parity of n, which is correct for the
++    // non-zero results but flips the sign of an exact zero: sinpi(1.0)
++    // came out -0.0 where it must be +0.0.
++    jr = (r == (vtype)0.0) ? xsgn : jr;
++
+     ir = (ax < (vtype)0x1.0p+52) ? jr : ir;
+ 
+     return as_vtype(ir);
+diff --git a/lib/kernel/libclc/tanpi_fp32.cl b/lib/kernel/libclc/tanpi_fp32.cl
+index 42fddf250..eca7619d0 100644
+--- a/lib/kernel/libclc/tanpi_fp32.cl
++++ b/lib/kernel/libclc/tanpi_fp32.cl
+@@ -70,6 +70,13 @@ _CL_OVERLOADABLE vtype tanpi(vtype x) {
+   vtype tr = -MATH_RECIP (t);
+   itype jr = s ^ as_itype (e != (itype)0 ? tr : t);
+ 
++  // tanpi(n) for integral n is zero whose sign is the sign of x flipped
++  // by the parity of n -- which is exactly xodd, and exactly what the
++  // 2^52/2^23-and-above paths above already return. The interval logic
++  // leaves s == xsgn here instead, so tanpi(1.0) came out +0.0 where it
++  // must be -0.0.
++  jr = (r == (vtype)0.0) ? xodd : jr;
++
+   jr = (r == (vtype)0.5f) ? xodd | (itype)0x7f800000 : jr;
+ 
+   ir = (ix < (itype)0x4b000000) ? jr : ir;
+diff --git a/lib/kernel/libclc/tanpi_fp64.cl b/lib/kernel/libclc/tanpi_fp64.cl
+index db6128f61..f5b8a00e0 100644
+--- a/lib/kernel/libclc/tanpi_fp64.cl
++++ b/lib/kernel/libclc/tanpi_fp64.cl
+@@ -74,6 +74,13 @@ _CL_OVERLOADABLE vtype tanpi(vtype x) {
+   __pocl_tan_piby4 (api, (vtype)0.0, &lo, &hi);
+   itype jr = s ^ as_itype (e != (itype)0 ? hi : lo);
+ 
++  // tanpi(n) for integral n is zero whose sign is the sign of x flipped
++  // by the parity of n -- which is exactly xodd, and exactly what the
++  // 2^52/2^23-and-above paths above already return. The interval logic
++  // leaves s == xsgn here instead, so tanpi(1.0) came out +0.0 where it
++  // must be -0.0.
++  jr = (r == (vtype)0.0) ? xodd : jr;
++
+   itype si = xodd | (itype)0x7ff0000000000000LL;
+   jr = (r == (vtype)0.5) ? si : jr;
+ 
+-- 
+2.56.0
+

@@ -3,12 +3,12 @@
 using BinaryBuilder, Pkg
 
 name = "SQLite"
-version = v"3.53.4"
+version = v"3.54.1"
 
 # Collection of sources required to complete build
 sources = [
-    ArchiveSource("https://sqlite.org/2026/sqlite-autoconf-3530400.tar.gz",
-                  "0e9483900e92cd5de8fd48d16bf9200145a61f7fd5be542a5ac81d8a9516eb9c"),
+    ArchiveSource("https://sqlite.org/2026/sqlite-autoconf-3540100.tar.gz",
+                  "926ef8d3eab93fbf6e06011901273eec076b25594a4e1cdadd50c987f4f6d64e"),
     FileSource("https://raw.githubusercontent.com/archlinux/svntogit-community/cf0a3337bd854104252dc1ff711e95cc8bc7ffb3/trunk/license.txt",
                "4e57d9ac979f1c9872e69799c2597eeef4c6ce7224f3ede0bf9dc8d217b1e65d";
                filename="LICENSE"),
@@ -32,6 +32,14 @@ export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
                  -DSQLITE_ENABLE_MATH_FUNCTIONS \
                  -DSQLITE_USE_URI"
 
+# Keep the library identity of the libtool builds (<= 3.48) that existing dependents link against.
+# On macOS, upstream's configure check for the version flags fails when cross-compiling.
+if [[ ${target} == *-apple-* ]]; then
+    makeflags=(LDFLAGS.libsqlite3.os-specific="-Wl,-compatibility_version,9.0.0 -Wl,-current_version,9.6.0 -Wl,-install_name,@rpath/libsqlite3.0.dylib")
+elif [[ ${target} != *-mingw* ]]; then
+    configureflags=(--soname=legacy)
+fi
+
 ./configure --prefix=${prefix} \
     --build=${MACHTYPE} \
     --host=$target \
@@ -39,9 +47,10 @@ export CPPFLAGS="-DSQLITE_ENABLE_COLUMN_METADATA=1 \
     --enable-fts3 \
     --enable-fts4 \
     --enable-fts5 \
-    --enable-rtree
-make -j${nproc}
-make install
+    --enable-rtree \
+    "${configureflags[@]}"
+make -j${nproc} "${makeflags[@]}"
+make install "${makeflags[@]}"
 install_license "${WORKSPACE}/srcdir/LICENSE"
 """
 

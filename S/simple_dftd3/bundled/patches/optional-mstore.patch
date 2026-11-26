@@ -1,0 +1,14 @@
+Build without mstore: it is only used by the unit tests and cannot be downloaded in the sandbox.
+
+diff --git a/test/unit/meson.build b/test/unit/meson.build
+--- a/test/unit/meson.build
++++ b/test/unit/meson.build
+@@ -19,7 +19,7 @@ mstore_dep = dependency(
+   'mstore',
+   fallback: ['mstore', 'mstore_dep'],
+   default_options: ['default_library=static'],
+-  required: not meson.is_subproject(),
++  required: false,
+ )
+ # If we do not find mstore and are a subproject, we just skip testing
+ if not mstore_dep.found()

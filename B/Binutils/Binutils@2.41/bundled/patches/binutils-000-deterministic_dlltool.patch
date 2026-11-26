@@ -1,0 +1,20 @@
+diff --git a/binutils/dlltool.c b/binutils/dlltool.c
+index 0da0011..d9ad99b 100644
+--- a/binutils/dlltool.c
++++ b/binutils/dlltool.c
+@@ -2440,6 +2440,7 @@ make_one_lib_file (export_type *exp, int i, int delay)
+   sprintf (outname, "%s%05d.o", TMP_STUB, i);
+ 
+   abfd = bfd_openw (outname, HOW_BFD_WRITE_TARGET);
++  abfd->flags |= BFD_DETERMINISTIC_OUTPUT;
+ 
+   if (!abfd)
+     /* xgettext:c-format */
+@@ -3167,6 +3168,7 @@ gen_lib_file (int delay)
+   unlink (imp_name);
+ 
+   outarch = bfd_openw (imp_name, HOW_BFD_WRITE_TARGET);
++  outarch->flags |= BFD_DETERMINISTIC_OUTPUT;
+ 
+   if (!outarch)
+     /* xgettext:c-format */

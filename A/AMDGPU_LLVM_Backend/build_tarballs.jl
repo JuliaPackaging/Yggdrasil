@@ -1,10 +1,10 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
 name = "AMDGPU_LLVM_Backend"
-version = v"23.1.1"
-llvm_version = v"23.1.1"
+version = v"23.1.6"
+llvm_version = v"23.1.6"
 
 # This JLL ships `libamdgpu`, a shared library exposing a small, typed C API (see
 # bundled/libamdgpu.h) over a statically linked, symbol-hidden LLVM AMDGPU
@@ -16,21 +16,41 @@ llvm_version = v"23.1.1"
 # LLVM ships a single monorepo source archive (`llvm-project-X.Y.Z.src.tar.xz`).
 sources = [
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(llvm_version)/llvm-project-$(llvm_version).src.tar.xz",
-                  "ebe9be46fe8756d58c5b198ffad0fa2a766257add81a4dc52179bfacc7888ee6"),
+                  "d3b86ab29cfb4445a6652e5c2642ccc75e04e38084dde3701d323320f35a31da"),
+    # ROCm's fork, for the device libraries (TheRock 10.2).
     GitSource("https://github.com/ROCm/llvm-project",
-              "46fcb339fb61119b337f973c7ca9e710a319fdd0"),
+              "bdc35841c97ff51400273b91d7bc05c96e19c2d9";
+              tag="therock-10.2"),
     DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 # Apply backported patches to the upstream LLVM sources.
-# LLVM installs process-wide signal handlers (and, on Windows, an unhandled-
-# exception filter) when it registers files to remove on crash, e.g. for lld's
-# output file, and when a CrashRecoveryContext is enabled. Embedded in Julia,
-# which synchronises its threads with SIGSEGV, those handlers are fatal: they
-# intercept the host's signals and re-raise them with a different siginfo.
-# Make every such installation a no-op; the library never wants them.
+# - no-process-wide-handlers: LLVM installs process-wide signal handlers (and,
+#   on Windows, an unhandled-exception filter) when it registers files to
+#   remove on crash, e.g. for lld's output file, and when a CrashRecoveryContext
+#   is enabled. Embedded in Julia, which synchronises its threads with SIGSEGV,
+#   those handlers are fatal: they intercept the host's signals and re-raise
+#   them with a different siginfo. Make every such installation a no-op; the
+#   library never wants them.
+# - 214518-i128-datalayout-default: llvm/llvm-project#214518, align i128 to
+#   128 bits by default like clang's `__int128`, so that `i128` kernel
+#   arguments land at the offsets HIP/clang expect.
+# - 215829-amdgpu-fix-si-pre-emit-peephole-scc: llvm/llvm-project#215829,
+#   miscompile fix in si-pre-emit-peephole.
+# - 229471-amdgpu-fix-usub-sat-lds-flat: llvm/llvm-project#229471 (merged for
+#   LLVM 24), expand `atomicrmw usub_sat`
+#   to a cmpxchg loop on LDS and flat where the target lacks the instruction,
+#   instead of failing to select it (llvm/llvm-project#229442).
+# - 239163-amdgpu-endpgm-divergent: llvm/llvm-project#239163 (not merged yet),
+#   lower `llvm.amdgcn.endpgm` like a trap without a trap handler, splitting its
+#   block when the call does not end it, as in divergent code, where its
+#   S_ENDPGM was followed by branches. That malformed code crashed branch
+#   relaxation in large kernels.
+# - amdgpu-i128-abi-name (not upstream): the ABI name "i128:64" selects an
+#   AMDGPU datalayout that aligns i128 to 64 bits, for hosts whose ABI does
+#   (Julia before 1.12); libamdgpu sets it from the module's datalayout.
 pushd llvm-project-*
 for f in ${WORKSPACE}/srcdir/patches/*.patch; do
     atomic_patch -p1 ${f}
@@ -43,19 +63,39 @@ LLVM_SRCDIR=$(pwd)
 # The very first thing we need to do is to build llvm-tblgen for x86_64-linux-muslc
 # This is because LLVM's cross-compile setup is kind of borked, so we just
 # build the tools natively ourselves, directly.  :/
+#
+# The same host build also provides the Clang/LLVM tools the ROCm device
+# libraries are compiled with below (clang, llvm-link, opt and the LLVM
+# libraries linked into its `prepare-builtins`), so that they come from the
+# very same LLVM checkout as the back-end shipped here, rather than from a
+# separately versioned LLVM_full_jll.
 
-# Build llvm-tblgen and llvm-config
+# Build llvm-tblgen, llvm-config and a host clang
 mkdir ${WORKSPACE}/bootstrap
 pushd ${WORKSPACE}/bootstrap
 CMAKE_FLAGS=()
-CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING=host)
+# The device libraries are compiled for `amdgcn-amd-amdhsa`, and their
+# compile tests emit code objects, so the host clang needs the AMDGPU back-end too.
+CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD:STRING='host;AMDGPU')
 CMAKE_FLAGS+=(-DLLVM_HOST_TRIPLE=${MACHTYPE})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
-CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm')
+CMAKE_FLAGS+=(-DLLVM_ENABLE_PROJECTS='llvm;clang')
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING=False)
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
+# Keep the host build lean: these tools only ever run inside this build.
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZLIB=OFF)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_ZSTD=OFF)
+CMAKE_FLAGS+=(-DLLVM_ENABLE_LIBXML2=OFF)
+CMAKE_FLAGS+=(-DLLVM_INCLUDE_DOCS=OFF)
+CMAKE_FLAGS+=(-DLLVM_INCLUDE_EXAMPLES=OFF)
+CMAKE_FLAGS+=(-DLLVM_INCLUDE_TESTS=OFF)
+CMAKE_FLAGS+=(-DLLVM_INCLUDE_BENCHMARKS=OFF)
+CMAKE_FLAGS+=(-DCLANG_ENABLE_ARCMT=OFF)
+CMAKE_FLAGS+=(-DCLANG_ENABLE_STATIC_ANALYZER=OFF)
 cmake -GNinja ${LLVM_SRCDIR} ${CMAKE_FLAGS[@]}
-ninja -j${nproc} llvm-tblgen llvm-config
+# `clang` pulls in `clang-resource-headers`, which is where the device
+# libraries pick up `amdhsa_abi.h` from.
+ninja -j${nproc} llvm-tblgen llvm-config clang llvm-link opt
 popd
 
 # Let's do the actual build within the `build` subdirectory
@@ -154,18 +194,20 @@ if [[ "${target}" == *linux* ]]; then
     echo "STB_GNU_UNIQUE symbols: $(readelf -Ws ${libdir}/libamdgpu.${dlext} | grep -c UNIQUE)"
 fi
 
-# build device libs, those live in the ROCm llvm fork
-# `ockl/src/workitem.cl` includes `amdhsa_abi.h`, which LLVM_full_jll's Clang doesn't have so just copy it
-cp ${WORKSPACE}/srcdir/llvm-project/clang/lib/Headers/amdhsa_abi.h \
-   ${WORKSPACE}/srcdir/llvm-project/amd/device-libs/ockl/inc/
+# Build the device libs, those live in the ROCm llvm fork. They are compiled
+# to bitcode with the host clang built above; its bitcode is written by the
+# same LLVM version as the back-end, so no auto-upgrade is needed on load.
 mkdir ${WORKSPACE}/build-device-libs && cd ${WORKSPACE}/build-device-libs
 CMAKE_FLAGS=()
 CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
 # `prepare-builtins` must run during the build, so build it with the host toolchain
 CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${CMAKE_HOST_TOOLCHAIN})
-# Locate the host LLVM/Clang cmake packages from LLVM_full_jll
-CMAKE_FLAGS+=(-DCMAKE_PREFIX_PATH=${host_prefix})
+# Point the LLVM/Clang cmake packages at the host build tree. Nothing gets
+# installed from there: its exported targets (clang, llvm-link, opt, the LLVM
+# component archives) already reference the binaries built above in place.
+CMAKE_FLAGS+=(-DLLVM_DIR=${WORKSPACE}/bootstrap/lib/cmake/llvm)
+CMAKE_FLAGS+=(-DClang_DIR=${WORKSPACE}/bootstrap/lib/cmake/clang)
 cmake -GNinja ${WORKSPACE}/srcdir/llvm-project/amd/device-libs ${CMAKE_FLAGS[@]}
 ninja -j${nproc} install
 
@@ -192,10 +234,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Zlib_jll")
-    # Host LLVM+Clang toolchain for compiling the device libraries to bitcode.
-    # It may trail the LLVM built here: its bitcode is auto-upgraded on load.
-    HostBuildDependency(PackageSpec(; name="LLVM_full_jll", version=v"22.1.8+0"))
+    Dependency("Zlib_jll"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script,

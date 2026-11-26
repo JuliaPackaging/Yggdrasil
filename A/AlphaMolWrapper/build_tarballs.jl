@@ -1,11 +1,11 @@
 using BinaryBuilder, Pkg
 
 name = "AlphaMolWrapper"
-version = v"0.6.0"
+version = v"0.6.1"
 julia_versions = [v"1.10", v"1.11", v"1.12"]
 
 sources = [
-    GitSource("https://github.com/IvanSpirandelli/AlphaMolWrapper", "e48cb4c7b5210379650ad93ca8881fbd2368479d"),
+    GitSource("https://github.com/IvanSpirandelli/AlphaMolWrapper", "ba56dcc8fdcddd955ace4a33f18d897a9ed889fe"),
 ]
 
 script = raw"""
@@ -14,8 +14,10 @@ mkdir build && cd build
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release \
     -DJulia_PREFIX=${prefix}
-VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
+VERBOSE=ON cmake --build . --target install -- -j${nproc}
+install_license ../LICENSE.md
 """
 include("../../L/libjulia/common.jl")
 julia_compat = libjulia_julia_compat(julia_versions)
@@ -26,8 +28,10 @@ products = [
 ]
 
 dependencies = [
-    BuildDependency("libjulia_jll"),
+    BuildDependency(PackageSpec(; name="libjulia_jll", version="1.11.6")),
     Dependency("libcxxwrap_julia_jll"; compat="0.14.8"),
+    # No compat: Pkg resolves this stdlib to the version each `julia_version` ships,
+    # but a compat bound makes BinaryBuilder build against its lower bound on every one.
     Dependency("GMP_jll"),
 ]
 

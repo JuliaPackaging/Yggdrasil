@@ -1,0 +1,49 @@
+diff --git a/Makefile b/Makefile
+index 25762e7..d50ef41 100644
+--- a/Makefile
++++ b/Makefile
+@@ -62,7 +62,9 @@ else ifeq ($(OS),windows)
+   CPPFLAGS += -D_CRT_SECURE_NO_WARNINGS
+ endif
+ # threads exist only in src/par (toks_par, SPEC §2.4); the core is compiled without them
+-ifneq ($(OS),windows)
++ifeq ($(OS),windows)
++  PTHREAD := -lsynchronization
++else
+   PTHREAD := -pthread
+ endif
+ $(BUILD_DIR)/obj/src/par/%.o: XFLAGS := $(PTHREAD)
+@@ -87,12 +89,16 @@ endif
+ 
+ LIB       := $(BUILD_DIR)/libtoks.a
+ ifeq ($(OS),macos)
+-  SHLIB   := $(BUILD_DIR)/libtoks.dylib
++  DLEXT := dylib
+   SHFLAGS := -dynamiclib
++else ifeq ($(OS),windows)
++  DLEXT := dll
++  SHFLAGS := -shared
+ else
+-  SHLIB   := $(BUILD_DIR)/libtoks.so
++  DLEXT := so
+   SHFLAGS := -shared
+ endif
++SHLIB     := $(BUILD_DIR)/libtoks.$(DLEXT)
+ 
+ TEST_COMMON := tests/common/guard.c tests/common/abicheck_$(ISA).S
+ TEST_SRCS   := $(wildcard tests/c/*.c)
+diff --git a/src/par/par.c b/src/par/par.c
+index 9af7f5a..859646c 100644
+--- a/src/par/par.c
++++ b/src/par/par.c
+@@ -62,7 +62,9 @@
+ 
+ #if defined(_WIN32)
+ #  include <windows.h>
+-#  pragma comment(lib, "synchronization.lib")
++#  if defined(_MSC_VER)
++#    pragma comment(lib, "synchronization.lib")
++#  endif
+ #else
+ #  include <pthread.h>
+ #  include <sched.h>

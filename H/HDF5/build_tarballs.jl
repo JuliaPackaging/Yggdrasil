@@ -7,13 +7,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "HDF5"
-version = v"2.2.0"
-ygg_version = v"2.2.2"
+version = v"2.3.0"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/HDFGroup/hdf5/releases/download/$(version)/hdf5-$(version).tar.gz",
-                  "1a1ab8209b35586fbc1aa279ba76d102130b95badcb20ca329587219112d8c16"),
+                  "cd462ef0578927ae75f9e010a806b0dd28f19152db2abf6919cb94f9d5b9b8b0"),
     DirectorySource("bundled"),
 ]
 
@@ -46,10 +45,10 @@ if [[ ${target} == x86_64-apple-darwin* || ${target} == x86_64-unknown-freebsd* 
     float16=OFF
 fi
 
-# `aws_c_s3_jll` has not been built
-ros3_vdf=ON
+# `aws_c_s3_jll` is not built for i686 Windows
+ros3_vfd=ON
 if [[ ${target} == i686-w64-* ]]; then
-    ros3_vdf=OFF
+    ros3_vfd=OFF
 fi
 
 cmake_options=(
@@ -100,12 +99,20 @@ fi
 if [[ ${target} == *-w64-* ]]; then
     # MS-MPI: its Fortran wrapper library cannot be linked with gfortran, but msmpi.dll
     # exports the gfortran-mangled entry points; mpif.h needs -fallow-invalid-boz.
+    # HDF5 calls `find_package(MPI COMPONENTS Fortran)` several times (in `fortran/` and
+    # `hl/fortran/`). Set FindMPI's input variables (`LIB_NAMES` and `COMPILER_INCLUDE_DIRS`)
+    # so that it skips autodetection and gives the same result each time.
+    # Use a library name other than `msmpi`: `MPI_msmpi_LIBRARY` is shared with the C
+    # detection, and C must link against the import library, not the DLL. On i686 the C
+    # bindings are `__stdcall` (e.g. `_MPI_File_close@4`), and linking against the DLL
+    # directly leaves some of them unresolved.
     cmake_options+=(
         -DMPI_GUESS_LIBRARY_NAME=MSMPI
         -DMPI_C_LIBRARIES=msmpi64
         -DMPI_CXX_LIBRARIES=msmpi64
-        -DMPI_Fortran_LIBRARIES=${libdir}/msmpi.${dlext}
-        -DMPI_Fortran_INCLUDE_DIRS=${includedir}
+        -DMPI_Fortran_LIB_NAMES=msmpi_fortran
+        -DMPI_msmpi_fortran_LIBRARY=${libdir}/msmpi.${dlext}
+        -DMPI_Fortran_COMPILER_INCLUDE_DIRS=${includedir}
         -DCMAKE_Fortran_FLAGS=-fallow-invalid-boz
     )
 fi
@@ -325,10 +332,17 @@ dependencies = [
     Dependency("LibCURL_jll"; compat="7.73, 8"),
     Dependency("OpenSSL_jll"; compat="3.0.16"),
     Dependency("Zlib_jll"; compat="1.2.12"),
-    Dependency("aws_c_s3_jll"; compat="0.11.2"),
+    Dependency("aws_c_s3_jll"; compat="~1.3.1"),
     Dependency("dlfcn_win32_jll"; platforms=filter(Sys.iswindows, platforms)),
-    Dependency("libaec_jll"; compat="1.1.4"), # This is the successor of szlib
-    Dependency("mpif_jll"; compat="1.0.0", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
+    Dependency("libaec_jll"; compat="1.1.8"), # This is the successor of szlib
+    Dependency("mpif_jll"; compat="1.0.1", platforms=filter(p -> p["mpi"] == "mpiabi", platforms)), # MPI Fortran bindings
+    # MPICH requires Hwloc, which requires XML2. XML2_jll 2.15.5 (built with BinaryBuilder2)
+    # references musl 1.2 time64 symbols (`__stat_time64` etc.) on 32-bit musl, which our musl
+    # sysroot lacks, so linking against libmpi fails. Build against the previous XML2 instead.
+    # This will work at run time if the system has at least musl 1.2, otherwise it will fail with
+    # an error message (i.e. it will not fail silently).
+    BuildDependency(PackageSpec(; name="XML2_jll", version=v"2.15.4+0");
+                    platforms=filter(p -> Sys.islinux(p) && libc(p) == "musl" && nbits(p) == 32, platforms)),
 ]
 append!(dependencies, platform_dependencies)
 
@@ -337,5 +351,5 @@ append!(dependencies, platform_dependencies)
 ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                augment_platform_block, clang_use_lld=false, julia_compat="1.10", preferred_gcc_version=v"12")

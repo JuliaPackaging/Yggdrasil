@@ -1,20 +1,15 @@
-# Recipe for FindMUS_jll: findMUS (https://gitlab.com/minizinc/FindMUS), the
-# Minimal Unsatisfiable Subset (MUS / IIS) tool for MiniZinc. Given an
-# unsatisfiable MiniZinc model it reports a minimal conflicting subset of
-# constraints, running as a MiniZinc pseudo-solver.
-
+# Note that this script can accept some limited command-line arguments, run
+# `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
 name = "FindMUS"
-# findMUS has no release tags; findmus.msc reports 0.7.0, so pin a commit.
-version = v"0.7.0"
+version = v"2.10.1"
 
 sources = [
     GitSource(
-        "https://gitlab.com/minizinc/FindMUS.git",
-        "d986e4e114a11eddb7def41837f900e00845a800",
+        "https://github.com/minizinc/FindMUS.git",
+        "5ee1c89028fab9cbc4ae426c06a2f58869a24f60",
     ),
-    DirectorySource("./bundled"),
 ]
 
 # find_package(libminizinc) resolves against MiniZinc_jll's
@@ -28,18 +23,11 @@ sources = [
 # <inttypes.h>/<stdint.h>. Define both globally via CMAKE_CXX_FLAGS.
 script = raw"""
 cd $WORKSPACE/srcdir/FindMUS
-# Apply the bundled source patches. Currently just one: musl lacks glibc's
-# <fpu_control.h>, which the vendored MiniSat includes under a bare __linux__
-# guard (using it, in System.cc, only when _FPU_* are defined); the patch gates
-# the include on __GLIBC__ so the build works on musl too.
-for f in ${WORKSPACE}/srcdir/patches/*.patch; do
-    atomic_patch -p1 ${f}
-done
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_PREFIX_PATH=${prefix} \
+    -DCMAKE_PREFIX_PATH="${prefix};${prefix}/CMake" \
     -DCMAKE_CXX_FLAGS="-D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -48,23 +36,20 @@ install_license LICENSE.txt
 
 products = [
     ExecutableProduct("findMUS", :findMUS),
-    # findmus.msc lets MiniZinc locate findMUS the way it locates Chuffed.
     FileProduct("share/minizinc/solvers/findmus.msc", :findmus_msc),
 ]
 
-# findMUS statically links libmzn.a from MiniZinc_jll. Windows is excluded:
-# findMUS's CMake cannot locate libminizinc in the MiniZinc_jll Windows artifact
-# (libminizinc's own Windows support is a known work in progress), so drop all
-# Windows platforms rather than ship a broken build.
-platforms = expand_cxxstring_abis(
-    supported_platforms(; exclude = Sys.iswindows),
-)
+platforms = supported_platforms()
+# Same exclusions as MiniZinc_jll
+filter!(p -> !(os(p) == "freebsd"), platforms)
+filter!(p -> !(arch(p) == "i686" && Sys.iswindows(p)), platforms)
+platforms = expand_cxxstring_abis(platforms)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     # findMUS links MiniZinc_jll's libmzn.a, so this is an exact pin that must
     # move in lockstep with the MiniZinc_jll version.
-    Dependency("MiniZinc_jll"; compat = "=2.9.5"),
+    Dependency("MiniZinc_jll"; compat = "=2.10.1"),
 ]
 
 build_tarballs(
@@ -76,6 +61,6 @@ build_tarballs(
     platforms,
     products,
     dependencies;
-    preferred_gcc_version = v"6",  # matches MiniZinc_jll for ABI compatibility
+    preferred_gcc_version = v"12",  # matches MiniZinc_jll for ABI compatibility
     julia_compat = "1.10",
 )
