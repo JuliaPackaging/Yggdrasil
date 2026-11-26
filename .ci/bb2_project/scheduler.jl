@@ -76,12 +76,19 @@ for (_, package_result) in meta.packagings
     package_deps = get_dep_names(package_result)
     for build_result in collect_builds(package_result)
         group = get_group(project_path(build_result))
+        build_hash = spec_hash(build_result.config)
+        idx = findfirst(b -> b["build_hash"] == build_hash, group["builds"])
+        if idx !== nothing
+            # This build was already scheduled by another of its JLLs
+            union!(group["builds"][idx]["dependencies"], package_deps)
+            continue
+        end
         push!(group["builds"], Dict(
             "name" => build_result.config.src_name,
             "script" => build_result.config.build_script_path,
-            "build_hash" => spec_hash(build_result.config),
+            "build_hash" => build_hash,
             "platform" => platform_label(build_result.config),
-            "dependencies" => package_deps,
+            "dependencies" => copy(package_deps),
         ))
     end
     group = get_group(project_path(first(collect_builds(package_result))))
