@@ -9,7 +9,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "Lavapipe"
 version = v"26.2.2"
-ygg_version = v"26.2.5"  # New JLL version: no uniform global load with no invocation active (0007).
+ygg_version = v"26.2.6"  # New JLL version: dropped Expat_jll.
 
 # Lavapipe is Mesa's software Vulkan driver: the `swrast` Vulkan driver, i.e. the Vulkan
 # frontend of the llvmpipe gallium driver, which JITs shaders with LLVM. Mesa's meson
@@ -143,6 +143,8 @@ MESA_FLAGS=(
     -D egl=disabled
     -D gbm=disabled
     -D xmlconfig=disabled
+    # Only xmlconfig would link expat, so make sure meson does not look for it.
+    -D expat=disabled
     -D spirv-tools=disabled
     -D gallium-va=disabled
     -D video-codecs=[]
@@ -235,10 +237,12 @@ products = [
 # VK_DRIVER_FILES, so a real GPU stays enumerable alongside this one. The loader reads it at
 # vkCreateInstance, so setting it in __init__ is early enough.
 init_block = raw"""
-let sep = Sys.iswindows() ? ';' : ':',
-    found = split(get(ENV, "VK_ADD_DRIVER_FILES", ""), sep; keepempty=false)
-    if !(lvp_icd in found)
-        ENV["VK_ADD_DRIVER_FILES"] = join(vcat(found, lvp_icd), sep)
+let sep = Sys.iswindows() ? ";" : ":",
+    found = get(ENV, "VK_ADD_DRIVER_FILES", "")
+    if isempty(found)
+        ENV["VK_ADD_DRIVER_FILES"] = lvp_icd
+    elseif !occursin(sep * lvp_icd * sep, sep * found * sep)
+        ENV["VK_ADD_DRIVER_FILES"] = found * sep * lvp_icd
     end
 end
 """
@@ -254,7 +258,6 @@ dependencies = [
     BuildDependency(PackageSpec(name="DirectX_Headers_jll", version=v"1.619.5+0");
                     platforms=windows_platforms),
     Dependency("Zlib_jll"; compat="1.2.12"),
-    Dependency("Expat_jll"; compat="2.6.5"),
     Dependency("Zstd_jll"; compat="1.5.7"), # the LLVM 22 build has LLVM_ENABLE_ZSTD=ON
     Dependency("CompilerSupportLibraries_jll"; compat="1.0.5"),
 ]
