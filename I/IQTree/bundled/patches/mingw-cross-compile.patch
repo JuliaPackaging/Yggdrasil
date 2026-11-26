@@ -1,0 +1,46 @@
+Build on Windows from a case-sensitive file system with a non-Windows shell:
+include <windows.h> as MinGW names it, and copy with `cmake -E copy`
+instead of the cmd.exe builtin `copy`. Not yet submitted upstream.
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1169,20 +1169,20 @@ endif()
+ if (NOT BUILD_LIB AND WIN32)
+     if (MSVC)
+         if (CLANG_UNDER_VS)
+-            ADD_CUSTOM_COMMAND(TARGET iqtree3 POST_BUILD COMMAND copy "iqtree3${EXE_SUFFIX}.exe" "iqtree3${EXE_SUFFIX}-click.exe")
++            ADD_CUSTOM_COMMAND(TARGET iqtree3 POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "iqtree3${EXE_SUFFIX}.exe" "iqtree3${EXE_SUFFIX}-click.exe")
+             if (USE_CMAPLE_AA STREQUAL "ON")
+-            	ADD_CUSTOM_COMMAND(TARGET iqtree3-aa POST_BUILD COMMAND copy "iqtree3-aa${EXE_SUFFIX}.exe" "iqtree3-aa${EXE_SUFFIX}-click.exe")
++            	ADD_CUSTOM_COMMAND(TARGET iqtree3-aa POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "iqtree3-aa${EXE_SUFFIX}.exe" "iqtree3-aa${EXE_SUFFIX}-click.exe")
+             endif()
+         else()
+-            ADD_CUSTOM_COMMAND(TARGET iqtree3 POST_BUILD COMMAND copy "Release\\iqtree3${EXE_SUFFIX}.exe" "Release\\iqtree3${EXE_SUFFIX}-click.exe")
++            ADD_CUSTOM_COMMAND(TARGET iqtree3 POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "Release\\iqtree3${EXE_SUFFIX}.exe" "Release\\iqtree3${EXE_SUFFIX}-click.exe")
+             if (USE_CMAPLE_AA STREQUAL "ON")
+-            	ADD_CUSTOM_COMMAND(TARGET iqtree3-aa POST_BUILD COMMAND copy "Release\\iqtree3-aa${EXE_SUFFIX}.exe" "Release\\iqtree3-aa${EXE_SUFFIX}-click.exe")
++            	ADD_CUSTOM_COMMAND(TARGET iqtree3-aa POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "Release\\iqtree3-aa${EXE_SUFFIX}.exe" "Release\\iqtree3-aa${EXE_SUFFIX}-click.exe")
+             endif()
+         endif()
+     else()
+-        ADD_CUSTOM_COMMAND(TARGET iqtree3 POST_BUILD COMMAND copy "iqtree3${EXE_SUFFIX}.exe" "iqtree3${EXE_SUFFIX}-click.exe")
++        ADD_CUSTOM_COMMAND(TARGET iqtree3 POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "iqtree3${EXE_SUFFIX}.exe" "iqtree3${EXE_SUFFIX}-click.exe")
+         if (USE_CMAPLE_AA STREQUAL "ON")
+-        	ADD_CUSTOM_COMMAND(TARGET iqtree3-aa POST_BUILD COMMAND copy "iqtree3-aa${EXE_SUFFIX}.exe" "iqtree3-aa${EXE_SUFFIX}-click.exe")
++        	ADD_CUSTOM_COMMAND(TARGET iqtree3-aa POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "iqtree3-aa${EXE_SUFFIX}.exe" "iqtree3-aa${EXE_SUFFIX}-click.exe")
+         endif()
+     endif()
+ endif()
+diff --git a/utils/timeutil.h b/utils/timeutil.h
+--- a/utils/timeutil.h
++++ b/utils/timeutil.h
+@@ -199,7 +199,7 @@ inline uint64_t getTotalSystemMemory()
+ 
+ #if defined(_WIN32)
+ #define WIN32_LEAN_AND_MEAN
+-#include <Windows.h>
++#include <windows.h>
+ 
+ #elif defined(__unix__) || defined(__unix) || defined(unix) || (defined(__APPLE__) && defined(__MACH__))
+ #include <unistd.h>
