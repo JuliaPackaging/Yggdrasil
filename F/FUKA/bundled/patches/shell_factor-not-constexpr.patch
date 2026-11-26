@@ -1,0 +1,13 @@
+std::log is not constexpr in libc++ (Clang); only GCC accepts it as an extension. Reported to the maintainer by email (no public issue).
+
+--- a/include/bco_utilities.hpp
++++ b/include/bco_utilities.hpp
+@@ -42,7 +42,7 @@
+ constexpr double psisq = psi * psi;
+ constexpr double invpsisq = 1. / psisq;
+ 
+-static constexpr double shell_factor =
++static const double shell_factor =
+     std::log(1.855) / (100.0 * std::log(2.0));
+ 
+ #define EQUI -11
