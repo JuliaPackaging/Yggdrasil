@@ -16,10 +16,6 @@ sources = [
 # namespace, and the port disables GREASE.
 script = raw"""
 cd ${WORKSPACE}/srcdir/mlspp
-# OpenSSL_jll keeps the 64-bit MinGW import libraries in lib64
-if [[ ${target} == x86_64-*-mingw* ]]; then
-    export OPENSSL_ROOT_DIR=${prefix}/lib64
-fi
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
@@ -52,11 +48,12 @@ dependencies = [
     Dependency("OpenSSL_jll";
                compat="3.0.16"),
     BuildDependency("nlohmann_json_jll"),
-    Dependency("CompilerSupportLibraries_jll";
-               compat="1.1.2",
+    # Julia 1.10 ships 1.0.5; build against 1.1.2, the oldest release with a riscv64 build
+    Dependency("CompilerSupportLibraries_jll", v"1.1.2";
+               compat="1.0.5",
                platforms=filter(!Sys.isbsd, platforms)),
 ]
 
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.6",
+               julia_compat="1.10",
                preferred_gcc_version=v"8")
