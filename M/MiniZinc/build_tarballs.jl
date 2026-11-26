@@ -18,7 +18,7 @@ script = raw"""
 cd $WORKSPACE/srcdir/libminizinc
 
 CMAKE_FLAGS=()
- mimalloc adds -march=armv8.1-a by default on arm64, which BinaryBuilder forbids.
+# mimalloc adds -march=armv8.1-a by default on arm64, which BinaryBuilder forbids.
 CMAKE_FLAGS+=(-DMI_OPT_ARCH=OFF)
 # libmzn is dlopen'ed into Julia, so mimalloc must not replace the
 # process-wide malloc (it segfaults on load). MiniZinc still uses mimalloc
