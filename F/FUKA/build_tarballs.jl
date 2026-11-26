@@ -62,7 +62,10 @@ augment_platform_block = """
     augment_platform!(platform::Platform) = augment_mpi!(platform)
 """
 
-platforms = expand_cxxstring_abis(supported_platforms())
+platforms = supported_platforms()
+# include/implementation/flat_hash_map.hpp keeps primes up to 2^63 in a size_t array
+filter!(p -> nbits(p) == 64, platforms)
+platforms = expand_cxxstring_abis(platforms)
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 # Upstream names the programs of every solver `solve` and `reader`; we prefix them.
@@ -77,7 +80,8 @@ products = [
 ]
 
 dependencies = [
-    Dependency("FFTW_jll"; compat="3.3.10"),
+    # The oldest with riscv64 binaries
+    Dependency("FFTW_jll"; compat="3.3.11"),
     # GSL changes its ABI in minor releases
     Dependency("GSL_jll"; compat="~2.8.1"),
     Dependency("SCALAPACK32_jll"; compat="2.2.302"),
