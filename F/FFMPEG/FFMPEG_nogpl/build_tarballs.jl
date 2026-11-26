@@ -24,6 +24,8 @@ dependencies = [
     HostBuildDependency("NASM_jll"),
     BuildDependency("nv_codec_headers_jll"),
     Dependency("libass_jll"; compat="0.17.4"),
+    # Provides libclang_rt.osx.a, see the script
+    BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> Sys.isapple(p) && arch(p) == "x86_64", platforms)),
     Dependency("FriBidi_jll"),
     Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("LAME_jll"),
@@ -32,7 +34,7 @@ dependencies = [
     Dependency("Ogg_jll"),
     BuildDependency("LibVPX_jll"), # We use the static archive
     Dependency("Bzip2_jll"; compat="1.0.9"),
-    Dependency("Zlib_jll"),
+    Dependency("Zlib_jll"; compat="1.2.12"),
     Dependency("OpenSSL_jll"; compat="3.5.0"),
     Dependency("Opus_jll"),
     Dependency("PCRE2_jll"; compat="10.42.0"),
@@ -43,4 +45,4 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script(; gpl=false), platforms, products, dependencies;
     julia_compat="1.6", preferred_gcc_version=preferred_gcc_version, clang_use_lld=false)
 
-# Build trigger: 5
+# Build trigger: 6
