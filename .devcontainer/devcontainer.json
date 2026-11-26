@@ -11,5 +11,5 @@
     "gpu": "optional"
   },
   "privileged": true,
-  "onCreateCommand": "julia -e 'using Pkg; Pkg.instantiate()' && julia --project=.agents/mcp-bb-sandbox -e 'using Pkg; Pkg.instantiate()'"
+  "onCreateCommand": "julia -e 'using Pkg; Pkg.instantiate()'"
 }
