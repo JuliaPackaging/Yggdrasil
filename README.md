@@ -56,5 +56,5 @@ Review what your agent writes, and test the JLL before the pull request is merge
 ## Using the generated JLL packages
 
 Merging a pull request generates a Julia package (a "JLL package") in the [JuliaBinaryWrappers organization](https://github.com/JuliaBinaryWrappers/) and registers it in the General registry.
-It ships the binaries as [artifacts](https://pkgdocs.julialang.org/v1/artifacts/), so Julia code gets them with `using LibFoo_jll`, with no `Pkg.build()` step.
-Read the [BinaryBuilder documentation](https://docs.binarybuilder.org/stable/jll/) to learn how to use JLL packages, and the blog post "[Pkg + BinaryBuilder -- The Next Generation](https://julialang.org/blog/2019/11/artifacts/)" for the background.
+It ships the binaries as [artifacts](https://pkgdocs.julialang.org/v1/artifacts/), so Julia code gets them with `using LibFoo_jll`.
+Read the [BinaryBuilder documentation](https://docs.binarybuilder.org/stable/jll/) to learn how to use JLL packages.
