@@ -25,7 +25,8 @@ To contribute a new recipe, start from an existing recipe for a similar package,
 
 Builds need an x86_64 host: the build environment consists of x86_64 Linux binaries, which run natively on Linux and under Docker on x86_64 macOS.
 On other hosts, such as Apple silicon Macs, push your branch and let CI build it.
-Use the Julia version named by `julia_version` in the repository's [`Manifest.toml`](Manifest.toml), which is what CI runs, and the repository's root project:
+For recipes using BinaryBuilder (BB1), use the Julia version named by `julia_version` in the repository's [`Manifest.toml`](Manifest.toml) and the repository's root project, as in the example below.
+Recipes starting with `using BinaryBuilder2` instead need the Julia version specified by `BB2_JULIA_VERSION` in [`.buildkite/utils.jl`](.buildkite/utils.jl) and the [`.ci/bb2_project`](.ci/bb2_project) environment for both instantiation and building.
 
 ```bash
 julia --project=. -e 'using Pkg; Pkg.instantiate()'
