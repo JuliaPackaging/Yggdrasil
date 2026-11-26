@@ -8,6 +8,7 @@ sources = [
     ArchiveSource(
         "https://archives.boost.io/release/$version/source/boost_$(version.major)_$(version.minor)_$(version.patch).tar.bz2",
         "af57be25cb4c4f4b413ed692fe378affb4352ea50fbe294a11ef548f4d527d89"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
@@ -28,9 +29,10 @@ rm project-config.jam
 # CompilerSupportLibraries_jll provides it and the BB2 audit cannot map libraries to
 # JLLs without a JLL.toml.  So make the check fail there: libboost_charconv is then built
 # WITHOUT __float128 conversion support (the previous boost_jll had it).  Remove this once
-# CompilerSupportLibraries_jll is available as a BB2 build and can be a dependency.
+# libquadmath is available as a BB2 dependency, see
+# https://github.com/JuliaPackaging/Yggdrasil/issues/15815.
 if [[ $target == x86_64-* || $target == i686-* || $target == powerpc64le-* ]]; then
-    sed -i 's/#include <quadmath.h>/#error "libquadmath disabled"/' libs/charconv/config/has_float128.cpp
+    atomic_patch -p1 ${WORKSPACE}/srcdir/patches/charconv-no-float128.patch
 fi
 toolset=gcc
 targetos=linux
@@ -195,5 +197,7 @@ build_tarballs(;
     platforms,
     products,
     build_spec_generator,
+    # The libraries need CXXABI_1.3.15 (libstdc++ 6.0.33), first bundled with Julia 1.12; the
+    # `julia_libstdcxx` audit rejects a lower `julia_compat`.
     julia_compat = "1.12",
 )
