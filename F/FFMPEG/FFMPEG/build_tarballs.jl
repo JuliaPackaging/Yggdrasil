@@ -24,8 +24,8 @@ dependencies = [
     HostBuildDependency("NASM_jll"),
     BuildDependency("nv_codec_headers_jll"),
     Dependency("libass_jll"; compat="0.17.4"),
-    # libass.pc and glib-2.0.pc link -liconv on FreeBSD. Libiconv_jll 1.18.1 has only freebsd14.1 artifacts, which don't match our freebsd13.4 target.
-    BuildDependency(PackageSpec(; name="Libiconv_jll", version=v"1.18.0+0"); platforms=filter(Sys.isfreebsd, platforms)),
+    # Provides libclang_rt.osx.a, see the script
+    BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> Sys.isapple(p) && arch(p) == "x86_64", platforms)),
     Dependency("libfdk_aac_jll"; compat="2.0.4, 3"),
     Dependency("FriBidi_jll"),
     Dependency("FreeType2_jll"; compat="2.13.4"),
