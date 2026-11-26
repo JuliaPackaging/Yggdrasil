@@ -10,7 +10,7 @@ version = v"0.1.0"
 # (deps/patches) applied. Facil.jl applies the same series when it builds the
 # library locally, so the patches live in its repository, not in bundled/.
 sources = [
-    GitSource("https://github.com/aryan-juliahub/Facil.jl.git", "26d804306e8c0b69f3d2e44fd533eacada3a0923"),
+    GitSource("https://github.com/aryan-juliahub/Facil.jl.git", "16f63ae0fed3e4d5f8af2183a230483296fb2477"),
     GitSource("https://github.com/boazsegev/facil.io.git", "5128747363055201d3ecf0e29bf0a961703c9fa0"),
 ]
 
@@ -23,7 +23,7 @@ done
 
 # facil.io's makefile builds only its own sources and sets feature macros from
 # probes that run test programs. The shim and facil.io are one library, so both
-# are compiled with a single command, as Facil.jl's deps/build.jl does.
+# are compiled with a single command, as Facil.jl's deps/build_local.jl does.
 FLAGS=(-std=gnu11 -O2 -fPIC -DNDEBUG -DHAVE_OPENSSL -DFIO_TLS_FOUND)
 if [[ "${target}" == *-linux-* ]]; then
     # http.c assumes tm_zone only on BSD systems unless told
