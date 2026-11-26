@@ -1,26 +1,24 @@
 using BinaryBuilder, Pkg
 
-const YGGDRASIL_DIR = "../.."
-include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+include("../../L/libjulia/common.jl")
 
 name = "slope"
-version = v"6.5.2"
+version = v"6.6.0"
 
 sources = [
-    GitSource("https://github.com/jolars/libslope.git", "a9899cbf3677ea63236d54dc18626ad3a5aeddc6"),
+    GitSource("https://github.com/jolars/libslope.git", "2a62c4415e086f05ec6e1831546e0b6147cd332b"; tag="v$(version)"),
 ]
 
-# Bash recipe for building across all platforms
 script = raw"""
-cd $WORKSPACE/srcdir/libslope
+cd ${WORKSPACE}/srcdir/libslope
 
-# Build main library
 cmake -B build \
     -DBUILD_TESTING=OFF \
     -DBUILD_JULIA_BINDINGS=ON \
-    -DJlCxx_DIR=$prefix/lib/cmake/JlCxx \
+    -DJlCxx_DIR=${prefix}/lib/cmake/JlCxx \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=$prefix \
+    -DCMAKE_FIND_ROOT_PATH=${prefix} \
+    -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DJulia_PREFIX=${prefix}
@@ -28,14 +26,14 @@ cmake -B build \
 cmake --build build --parallel ${nproc}
 cmake --install build
 
-install_license $WORKSPACE/srcdir/libslope/LICENSE
+install_license LICENSE
 """
 
-# `std::optionals()`'s `value()` needs macOS 10.14 SDK
-sources, script = require_macos_sdk("11.3", sources, script)
+# std::optional::value needs macOS 10.14 or newer.
+sources, script = require_macos_sdk("10.14", sources, script)
 
-include("../../L/libjulia/common.jl")
-julia_versions = filter(v -> v >= v"1.10", julia_versions)
+filter!(>=(v"1.10"), julia_versions)
+@assert libjulia_min_julia_version <= v"1.10.0"
 platforms = vcat(libjulia_platforms.(julia_versions)...)
 platforms = expand_cxxstring_abis(platforms)
 
@@ -45,13 +43,17 @@ products = [
 
 dependencies = [
     BuildDependency("Eigen_jll"),
-    BuildDependency("libjulia_jll"),
-    Dependency("CompilerSupportLibraries_jll"),
-    Dependency("LLVMOpenMP_jll", platforms = filter(Sys.isapple, platforms)),
-    Dependency("libcxxwrap_julia_jll"; compat = "0.14.7"),
+    BuildDependency(PackageSpec(; name="libjulia_jll", version="1.11.6")),
+    # Use the build target's stdlib version for audit, with a runtime bound that admits Julia 1.10.
+    BuildDependency("CompilerSupportLibraries_jll"; platforms=filter(!Sys.isbsd, platforms)),
+    RuntimeDependency("CompilerSupportLibraries_jll"; compat="1.0.5", platforms=filter(!Sys.isbsd, platforms)),
+    # The Clang OpenMP runtime must support __kmpc_dispatch_deinit.
+    Dependency("LLVMOpenMP_jll"; compat="19.1.7 - 23", platforms=filter(Sys.isbsd, platforms)),
+    # This release matches the libjulia headers for the Julia 1.14 and 1.15 variants.
+    Dependency("libcxxwrap_julia_jll"; compat="0.14.14"),
 ]
 
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version = v"11", julia_compat = "1.10"
+    preferred_gcc_version = v"11", julia_compat = libjulia_julia_compat(julia_versions)
 )

@@ -1,58 +1,22 @@
-# Copyright 2026 Advanced Micro Devices, Inc.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# 1. Redistributions of source code must retain the above copyright notice,
-# this list of conditions and the following disclaimer.
-#
-# 2. Redistributions in binary form must reproduce the above copyright notice,
-# this list of conditions and the following disclaimer in the documentation
-# and/or other materials provided with the distribution.
-#
-# 3. Neither the name of the copyright holder nor the names of its contributors
-# may be used to endorse or promote products derived from this software without
-# specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS”
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# Copyright Advanced Micro Devices, Inc.
+# SPDX-License-Identifier: MIT
 
 using BinaryBuilder, Pkg
 
 name = "AOCL"
-version = v"5.3.2"
+version = v"6.0.0"
 
-# Pinned to the AOCL-5.3.2-Submodules tag and its recorded submodule commits
 sources = [
-    GitSource("https://github.com/amd/aocl.git",
-              "2fab7ee97dfce6ebc3cb0522c254a3653429f472"),
-    GitSource("https://github.com/amd/aocl-utils.git",
-              "ba4afcf0247008dc257479c5ae2b5f5300ecaa7b"; unpack_target = "aocl-src"),
-    GitSource("https://github.com/amd/blis.git",
-              "25cad99a6840855ade0a49871197f48ee0e1d317"; unpack_target = "aocl-src"),
-    GitSource("https://github.com/amd/libflame.git",
-              "3b3251adec5beb1844028661319cb4b44b326a20"; unpack_target = "aocl-src"),
-    GitSource("https://github.com/amd/aocl-sparse.git",
-              "3cfff9a70f736d133d67e99c6543f84a2e7324fe"; unpack_target = "aocl-src"),
-    GitSource("https://github.com/amd/aocl-libm-ose.git",
-              "29fd054f383e6c5e2dec2fce781d5220059f1836"; unpack_target = "aocl-src"),
-    GitSource("https://github.com/amd/aocl-compression.git",
-              "8a0b4ba0e53c1a0fabfcb1c1d849baa43947c3a8"; unpack_target = "aocl-src"),
-    GitSource("https://github.com/amd/openrng.git",
-              "12c9003e91b6136178b25f8ec5ab7c60b710097e"; unpack_target = "aocl-src"),
-    GitSource("https://github.com/amd/aocl-fftz.git",
-              "faf92348350621db1738a19901a953a1ca245265"; unpack_target = "aocl-src"),
-    GitSource("https://github.com/amd/aocl-dlp.git",
-              "fe36da707e6f25e8b3e2b742dfa5957d4484fca5"; unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/aocl.git",             "9f36290abb78846f2697d97c5d3001b52092cdf2"; tag = "$(version)"),
+    GitSource("https://github.com/amd/aocl-utils.git",       "059f9a41719c6586507ad6f0bd9095565a1bbbf1"; tag = "$(version)", unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/blis.git",             "e5f75c24bdb8670ff648da7e483eb7e51b28a1db"; tag = "$(version)", unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/libflame.git",         "698c6f8070c5dbf551eb2dc801908db4ac0f5916"; tag = "$(version)", unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/aocl-sparse.git",      "47238ec3c4848e8509def31dac3aaec93e84abd5"; tag = "$(version)", unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/aocl-libm-ose.git",    "155b5ab00879dd0d4fcf89aa602415ced5546218"; tag = "$(version)", unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/aocl-compression.git", "bf3bc76d8cbd63609ca65ebb1427daa28337cd4e"; tag = "$(version)", unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/openrng.git",          "5c05f2eeb6effc696b0df6ce8be1fcbe855b631b"; tag = "$(version)", unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/aocl-fftz.git",        "88da98aa1f08409df7d6dea62509cc6a550cce6a"; tag = "$(version)", unpack_target = "aocl-src"),
+    GitSource("https://github.com/amd/aocl-dlp.git",         "57f3dfcd532e3ccd8a51eeaa018625c8fd36d8c5"; tag = "$(version)", unpack_target = "aocl-src"),
 ]
 
 script = raw"""
@@ -94,7 +58,6 @@ build_aocl_variant() {
         -DCMAKE_Fortran_COMPILER=$(which gfortran) \
         -DOpenMP_libomp_LIBRARY= \
         -DBUILD_CORES=${nproc} \
-        -DUSE_SOURCES_FROM_SUBMODULES=OFF \
         -DENABLE_AOCL_DA=OFF \
         -DENABLE_AOCL_CRYPTO=OFF \
         -DENABLE_AOCL_LIBMEM=OFF \
@@ -127,6 +90,7 @@ install_license ${AOCL_BIY}/LICENSE.txt
 platforms = [
     Platform("x86_64", "linux"; libc = "glibc"),
 ]
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     LibraryProduct("libaocl", :libaocl),
@@ -134,7 +98,7 @@ products = [
 ]
 
 dependencies = [
-    HostBuildDependency(PackageSpec(name="CMake_jll", uuid="3f4e10e2-61f2-5801-8945-23b9d642d0e6")),
+    HostBuildDependency(PackageSpec(name="CMake_jll", uuid="3f4e10e2-61f2-5801-8945-23b9d642d0e6", version="3.28.1")),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
 ]
 
@@ -143,4 +107,4 @@ build_tarballs(ARGS, name, version, sources, script, platforms, products, depend
     lock_microarchitecture = false,
     julia_compat = "1.10",
 )
- 
+

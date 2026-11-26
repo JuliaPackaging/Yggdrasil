@@ -67,6 +67,12 @@ atomic_patch -p1 ../loop-merge-switch-header.patch
 # OpSMulExtended with a sign check on the high half, as the SPIR-V back-end
 # does since llvm/llvm-project#240309.
 atomic_patch -p1 ../signed-with-overflow.patch
+# Backport of https://github.com/KhronosGroup/SPIRV-LLVM-Translator/pull/4196
+# ("Clamp memory access alignments to 2^31"; still open upstream): an access
+# alignment of 2^32, which InferAlignment gives to accesses of null, was
+# truncated to an invalid `Aligned 0`. Julia emits such accesses in dead code
+# that unboxes a union value (JuliaGPU/OpenCL.jl#631).
+atomic_patch -p1 ../clamp-access-alignment.patch
 install_license LICENSE.TXT
 
 CMAKE_FLAGS=()
@@ -152,8 +158,11 @@ if [[ "${target}" == *mingw* ]]; then
     # LLVM.
     LINKER=${target}-clang++
     COMMON_FLAGS+=(-pthread)
+    # Take the multibyte C runtime functions from mingw-w64's libmsvcrt, which
+    # implements them statically, before libzstd-1.dll, which also exports
+    # them (see the check below).
     LINK_FLAGS=(-Wl,--exclude-all-symbols -Wl,--gc-sections
-        ${SYSTEM_LIBS[@]} -lole32 -luuid -lpsapi -lshell32 -ladvapi32 -lws2_32 -lntdll)
+        -lmsvcrt ${SYSTEM_LIBS[@]} -lole32 -luuid -lpsapi -lshell32 -ladvapi32 -lws2_32 -lntdll)
 elif [[ "${target}" == *-apple-* ]]; then
     LINKER=${CXX}
     printf '_%s\n' ${API} > libllvm_spirv.exports
@@ -188,6 +197,22 @@ if [[ "${target}" == *-linux-* || "${target}" == *-freebsd* ]]; then
     echo "STB_GNU_UNIQUE symbols: $(readelf -Ws ${libdir}/libllvm_spirv.${dlext} | grep -c UNIQUE)"
 elif [[ "${target}" == *-apple-* ]]; then
     echo "exported symbols:"; nm -gU ${libdir}/libllvm_spirv.${dlext}
+fi
+
+# On Windows, the multibyte C runtime functions must not be imported from a
+# dependency's DLL.
+# Zstd_jll builds before v1.5.7+2 re-exported mingw-w64's `mbrtowc` and
+# `wcrtomb`, the link resolved LLVM's references to them through
+# libzstd-1.dll, and the library stopped loading ("The specified procedure
+# could not be found") once Zstd_jll was rebuilt without those exports.
+if [[ "${target}" == *mingw* ]]; then
+    ${target}-objdump -p ${libdir}/libllvm_spirv.${dlext} > imports.txt
+    awk '
+        /DLL Name:/ { dll = tolower($3); next }
+        dll ~ /^lib/ && /^[ \t]+[0-9a-f]+[ \t]/ &&
+        $NF ~ /^(mbrtowc|mbrlen|mbsrtowcs|mbtowc|wcrtomb|wcsrtombs|wctomb)$/ {
+            print "C runtime function " $NF " imported from " dll; bad = 1 }
+        END { exit bad }' imports.txt
 fi
 """
 

@@ -6,11 +6,11 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "LLVMGPU"
-version = v"1.3.0"
+version = v"1.4.1"
 llvm_version = v"23.1.4"
 
 # This JLL ships `libLLVMGPU`, a shared library that statically links a patched
-# upstream LLVM with the NVPTX, AMDGPU and SPIR-V back-ends, together with
+# upstream LLVM with the NVPTX, AMDGPU, SPIR-V and BPF back-ends, together with
 # LLVM.jl's LLVMExtra. Every LLVM symbol is hidden except for the LLVM C API,
 # LLVMExtra's functions and the `llvm_orc_*` functions that support JIT-compiled
 # code, so that the library can be used next to Julia's own LLVM in one process,
@@ -27,7 +27,7 @@ sources = [
     # LLVMExtra, and the CMake project that links the library: the same commit
     # as LLVMExtra_jll
     GitSource("https://github.com/JuliaLLVM/LLVM.jl.git",
-              "3b1464b778543ec90356f370bb578e712c7667f3"),
+              "baba1ea6a8b5de904bbe277ab8ba105cae908084"),
     DirectorySource("./bundled"),
 ]
 
@@ -65,7 +65,8 @@ for f in avoid_builtin_available minmax_i1 nested_aggregate_insertvalue \
          getmemscope_per_context fence_storage_class printf_unmangled \
          bool_vector_bitcast_wide fp_fast_math_default_type copysign_shader \
          fminimum_fmaximum phi_select_retyped_operands bool_switch_selector \
-         loop_merge_switch_header smul_overflow_flag resort_blocks_after_loopsimplify; do
+         loop_merge_switch_header smul_overflow_flag resort_blocks_after_loopsimplify \
+         clamp_access_alignment; do
     atomic_patch -p1 ${WORKSPACE}/srcdir/patches/spirv/${f}.patch
 done
 cd ${WORKSPACE}/srcdir/llvm-project
@@ -121,8 +122,9 @@ CMAKE_FLAGS+=(-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN})
 CMAKE_FLAGS+=(-DCMAKE_CXX_FLAGS="${CXX_FLAGS}")
 CMAKE_FLAGS+=(-DCMAKE_CROSSCOMPILING:BOOL=ON)
 CMAKE_FLAGS+=(-DCMAKE_BUILD_TYPE=Release)
-# Only the GPU back-ends; no host target
-CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD="NVPTX;AMDGPU;SPIRV")
+# The GPU back-ends, and BPF (so that GPUCompiler can use this library for every
+# target but the host); no host target
+CMAKE_FLAGS+=(-DLLVM_TARGETS_TO_BUILD="NVPTX;AMDGPU;SPIRV;BPF")
 # Only libraries; the tablegen comes from the bootstrap build
 CMAKE_FLAGS+=(-DLLVM_INCLUDE_TOOLS=OFF)
 CMAKE_FLAGS+=(-DLLVM_INCLUDE_UTILS=OFF)

@@ -279,6 +279,18 @@ cp -vdR ${WORKSPACE}/srcdir/licenses ${prefix}/usr/share/
 # We can never extract these files, because they are too fancy  :(
 rm -rf ${prefix}/usr/share/terminfo
 
+# ca-certificates links some certificates through non-ASCII names (`NetLock_Arany_=Class_Gold=_Főtanúsítvány`).
+# Pkg hashes such symlinks differently from git and Tar.jl (JuliaLang/Pkg.jl#4707), so the Pkg server
+# can't verify the unpacked shard and won't serve it. Replace them by copies of the certificate.
+find ${prefix}/etc/ssl/certs -type l | while read -r link; do
+    if readlink "${link}" | LC_ALL=C grep -q '[^ -~]'; then
+        target=${prefix}$(chroot ${prefix} readlink -f "${link#${prefix}}")
+        [[ -f "${target}" ]] || { echo "${link} does not resolve to a file" >&2; exit 1; }
+        cp -p "${target}" "${link}.tmp"
+        mv -f "${link}.tmp" "${link}"
+    fi
+done
+
 # These cause case sensitivity errors
 rm -rf ${prefix}/usr/share/perl5/core_perl/pod
 rm -rf ${prefix}/etc/vim/bundle/vim-colorschemes/colors/darkBlue.vim

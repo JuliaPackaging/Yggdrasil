@@ -1,0 +1,17 @@
+Allow building with GCC < 11: before C23, a label cannot be followed by a
+declaration.
+Reported as <https://github.com/Blosc/c-blosc2/issues/894>.
+
+diff --git a/blosc/blosclz.c b/blosc/blosclz.c
+index 0dde118..baafade 100644
+--- a/blosc/blosclz.c
++++ b/blosc/blosclz.c
+@@ -1189,7 +1189,7 @@ BLOSCLZ_ALWAYS_INLINE int compress_impl(const int clevel, const void* input, int
+       }
+     }
+ 
+-emit_match:
++emit_match:;
+     /* Emit pending literals in bulk */
+     size_t lit_len = (size_t)(anchor - lit_start);
+     if (lit_len > 0) {

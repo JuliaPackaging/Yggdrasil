@@ -3,16 +3,16 @@
 using BinaryBuilder, Pkg
 
 name = "fmusim"
-version = v"0.15.0"
+version = v"0.16.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/modelica/fmusim.git",
-              "d6f28792ed17ea3398128fbb89b7c43858841052"; tag="v$(version)"),
+              "07608726bd0dc871eca33d3448ac9e0616c0912d"; tag="v$(version)"),
     # The fmi-rs crate downloads and builds static Sundials and libxml2 in its
     # build script, so we build a patched copy that links the JLLs instead.
     GitSource("https://github.com/CATIA-Systems/fmi-rs.git",
-              "95b7a56653fa3ba299f5bb8f0fb4a03016a923fc"; tag="v0.3.4"),
+              "99b9a6011abae49a6e191918cde9fe49e100562d"; tag="v0.3.5"),
     DirectorySource("./bundled"),
 ]
 
@@ -23,6 +23,7 @@ atomic_patch -p1 ${WORKSPACE}/srcdir/patches/fmi-rs-use-shared-deps.patch
 
 cd ${WORKSPACE}/srcdir/fmusim
 atomic_patch -p1 ${WORKSPACE}/srcdir/patches/test-fixtures-dev-dependency.patch
+atomic_patch -p1 ${WORKSPACE}/srcdir/patches/cargo-lock-local-fmi-rs.patch
 
 export CFLAGS="-I${includedir}/libxml2"
 # On Windows the import libraries are in ${prefix}/lib, not ${libdir}.
@@ -32,7 +33,7 @@ if [[ "${target}" == *-mingw* ]]; then
     ${CC} -c ${WORKSPACE}/srcdir/invoke_watson.c -o ${WORKSPACE}/srcdir/invoke_watson.o
     export RUSTFLAGS="${RUSTFLAGS} -C link-arg=${WORKSPACE}/srcdir/invoke_watson.o"
 fi
-cargo build --release --config "patch.crates-io.fmi-rs.path='${WORKSPACE}/srcdir/fmi-rs/fmi-rs'"
+cargo build --release --locked --config "patch.crates-io.fmi-rs.path='${WORKSPACE}/srcdir/fmi-rs/fmi-rs'"
 
 install -Dvm 755 "target/${rust_target}/release/fmusim${exeext}" "${bindir}/fmusim${exeext}"
 install_license LICENSE

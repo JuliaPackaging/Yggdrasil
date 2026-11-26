@@ -83,6 +83,9 @@ function get_script(; debug::Bool)
         # Address OWord spills and fills of indirect operands at the spilled variable's slot
         # https://github.com/intel/intel-graphics-compiler/issues/472
         atomic_patch -p0 patches/oword-spill-indirect.patch
+        # Lower 64-bit llvm.ctpop, which InstCombine creates from (x & (x - 1)) == 0
+        # https://github.com/intel/intel-graphics-compiler/issues/487
+        atomic_patch -p0 patches/ctpop-i64.patch
         # https://reviews.llvm.org/D64388
         sed -i '/add_subdirectory/i add_definitions(-D__STDC_FORMAT_MACROS)' intel-graphics-compiler/external/llvm/llvm.cmake
 

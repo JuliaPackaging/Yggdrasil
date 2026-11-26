@@ -62,7 +62,9 @@ in the trusted registration job.
   each JLL from that depot and load it (see `.ci/bb2_project/load_check/`) on
   the oldest Julia version that its `julia` compat allows (at least v1.3) and
   on the latest Julia release.  On `master`, the registration doesn't wait for
-  these checks.
+  these checks.  The checks run on x86_64 Linux (glibc) agents, so only JLLs
+  with an artifact for that platform (or for `any`) are checked; a build with
+  none, e.g. one for Windows only, gets no load-check steps at all.
 * The `build_step` and `trigger_registration_step` helpers live in
   [`utils.jl`](./utils.jl).
 * Builds upload tarballs and their metadata sidecars as Buildkite artifacts.

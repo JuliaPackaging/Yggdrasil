@@ -216,11 +216,15 @@ end
 # without deploying them, into a local universe, whose JLLs, with their artifacts and its
 # registry, become a depot uploaded as an artifact.  Then the JLLs are installed from that
 # depot and loaded.  These steps form the group "Package Tests", which doesn't hold up the
-# registration on `master`.
+# registration on `master`.  Only the JLLs with an artifact that the load-check agents can
+# load are checked (see `loadable_on_load_check_agent()` in `scheduler.jl`); if there are
+# none, e.g. for a Windows-only build, there are no such steps.
 function bb2_load_check_steps!(group_steps, groups, build_steps)
     packagings = [(group_name, p) for (group_name, group) in groups for p in group["packagings"]]
-    isempty(packagings) && return
+    checked = filter(((_, p),) -> p["load_check"], packagings)
+    isempty(checked) && return
 
+    # Every package is registered, as the checked JLLs may depend on the others
     ps = BB2PackageStep(
         registration_order(packagings),
         [bs for builds in values(build_steps) for bs in builds],
@@ -229,11 +233,12 @@ function bb2_load_check_steps!(group_steps, groups, build_steps)
 
     # Each JLL version is checked on the oldest Julia its `julia` compat allows, and every
     # JLL version on the latest Julia release.
-    oldest_julias = unique(oldest_julia(p["julia_compat"]) for (_, p) in packagings)
+    jlls = ["$(p["name"])_jll@$(p["version"])" for (_, p) in checked]
+    oldest_julias = unique(oldest_julia(p["julia_compat"]) for (_, p) in checked)
     for julia_version in sort(oldest_julias; by=VersionNumber)
-        push!(steps, render(BB2LoadCheckStep(julia_version, true, step_key(ps))))
+        push!(steps, render(BB2LoadCheckStep(julia_version, true, jlls, step_key(ps))))
     end
-    push!(steps, render(BB2LoadCheckStep("1", false, step_key(ps))))
+    push!(steps, render(BB2LoadCheckStep("1", false, jlls, step_key(ps))))
     push!(group_steps, group_step("Package Tests", steps))
 end
 

@@ -8,26 +8,26 @@ using BinaryBuilder
 name = "stb"
 # stb doesn't ever do releases, so the best we can do is stick to a specific git
 # revision...
-version = v"0.0.20221025"
+version = v"0.0.20261119"
 sources = [
-    ArchiveSource("https://github.com/nothings/stb/archive/8b5f1f37b5b75829fc72d38e7b5d4bcbf8a26d55.zip",
-                  "93a16ee3e866e719feec459f6f132cce932c5ec751eb38e3ec1975f911353d2e")
+    GitSource("https://github.com/nothings/stb.git", "6b5799bae8a1fe3792691ef4b72ae26434c3e799"),
 ]
 
 script = raw"""
 cd ${WORKSPACE}/srcdir/stb*/
 mkdir -p "${includedir}"
 cp -vr *.h "${includedir}/."
+install_license LICENSE
 """
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line.
 platforms = [AnyPlatform()]
 
-# Cereal produces nothing, since it is header-only.
+# Header-only
 products = Product[]
 
 # Dependencies that must be installed before this package can be built.
 dependencies = []
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version=v"6", julia_compat="1.7")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10")
