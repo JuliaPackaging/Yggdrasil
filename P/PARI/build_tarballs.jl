@@ -6,12 +6,26 @@
 using BinaryBuilder, Pkg
 
 name = "PARI"
-version = v"2.17.3"
+version = v"2.19.1"
+
+# The JLL version is decoupled from the upstream version, as for FLINT_jll:
+# PARI breaks its ABI between minor releases (the library soname went from
+# libpari-gmp-tls.so.9 in 2.17 to .so.10 in 2.19), so its JLL versions must
+# not follow upstream semver. Upstream X.Y.Z maps to X00.Y00.Z00, e.g.
+# 2.19.1 -> 200.1900.100: no compat bound written for the 2.17.3 JLL
+# (`compat="2.17.3"` in GIAC, `"2.17"` in LibPARI.jl) admits it.
+#
+# Packages depending on this JLL should use `~` in their compat ranges, e.g.
+# `compat="~200.1900.100"`. The JLL patch level can then be bumped for
+# rebuilds, and a rebuild that breaks ABI without an upstream change can bump
+# the minor version (200.1900.100 -> 200.1901.100).
+ygg_version = VersionNumber(100 * version.major, 100 * version.minor,
+                            100 * version.patch)
 
 sources = [
     ArchiveSource(
         "https://pari.math.u-bordeaux.fr/pub/pari/unix/pari-$(version).tar.gz",
-        "8d9c4fcd584c468d27e0f23c36836587284452094c4b1c404c20c4b810462dcb",
+        "419553b11ff8c3ecb8e9031b7d91d7cee003a5d721e685fcb499565c96fe2943",
     ),
 ]
 
@@ -122,5 +136,5 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
                julia_compat = "1.6", preferred_gcc_version = v"10")

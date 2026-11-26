@@ -6,12 +6,12 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "GEOS"
-version = v"3.15.0"
+version = v"3.15.1"
 
 # Collection of sources required to build GEOS
 sources = [
-    ArchiveSource("http://download.osgeo.org/geos/geos-$version.tar.bz2",
-                  "d5e5192a686d065eaed082de14dd26244c5c8e02bff16b2c6cce3265f648e00e"),
+    ArchiveSource("https://github.com/libgeos/geos/releases/download/$version/geos-$version.tar.bz2",
+                  "8eb6dc2ea78b00c2f5109c6b0dba9e028c60bad42d7b1b0cc9952b12dc71f571"),
 ]
 
 # Bash recipe for building across all platforms

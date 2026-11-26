@@ -1,0 +1,56 @@
+commit 33602a6e5c9ede1a3b95da2d9d21e2f2c66c30bd
+Author: Elliot Saba <staticfloat@gmail.com>
+Date:   Sat Apr 12 07:19:56 2025 +0000
+
+    driver-aarch64: Fix `aarch64-linux => aarch64-apple` cross compile
+    
+    Because the `aarch64` driver code was previously keying off of only
+    `TARGET_MACHO`, it caused this host-side code to be compiled for macOS
+    when it could be running on something else, such as an `aarch64` linux
+    machine.  This patch changes the conditional to instead key off of
+    whether `__APPLE__` is defined, which should be a good indicator that
+    the host is actually running on Darwin, and thereby has
+    `sysctlbyname()` available to be called.
+
+diff --git a/gcc/config/aarch64/driver-aarch64.cc b/gcc/config/aarch64/driver-aarch64.cc
+index c8d69bd04ce..21002c3b560 100644
+--- a/gcc/config/aarch64/driver-aarch64.cc
++++ b/gcc/config/aarch64/driver-aarch64.cc
+@@ -28,19 +28,21 @@
+ #include "aarch64-protos.h"
+ #include "aarch64-feature-deps.h"
+ 
+-#if TARGET_MACHO
+-# include <sys/types.h>
+-# include <sys/sysctl.h>
+-#endif
+-
+-
+-#if TARGET_MACHO
+ 
+ /* Default architecture to use if -mcpu=native did not detect a known CPU.  */
++#if TARGET_MACHO
+ #define DEFAULT_ARCH "apple-m1"
++#else
++#define DEFAULT_ARCH "8A"
++#define DEFAULT_CPU "generic-armv8-a"
++#endif
++
+ 
++#if defined(__APPLE__)
+ /* macOS does not have /proc/cpuinfo and needs a different approach,
+    based on sysctl.  It is much simpler.  */
++#include <sys/types.h>
++#include <sys/sysctl.h>
+ 
+ const char *
+ host_detect_local_cpu (ATTRIBUTE_UNUSED int argc, ATTRIBUTE_UNUSED const char **argv)
+@@ -126,8 +128,6 @@ struct aarch64_core_data
+ #define INVALID_IMP ((unsigned char) -1)
+ #define INVALID_CORE ((unsigned)-1)
+ #define ALL_VARIANTS ((unsigned)-1)
+-/* Default architecture to use if -mcpu=native did not detect a known CPU.  */
+-#define DEFAULT_ARCH "8A"
+ 
+ #define AARCH64_CORE(CORE_NAME, CORE_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
+   { CORE_NAME, #ARCH, IMP, PART, VARIANT, feature_deps::cpu_##CORE_IDENT },

@@ -10,15 +10,15 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "UCC"
-version = v"1.8.0"
-# The JLL needs a new version for the raised UCX_jll and CUDA_Runtime_jll bounds
-ygg_version = v"1.8.1"
+version = v"1.9.0"
+# The JLL needs a new version for the raised NCCL_jll bound
+ygg_version = v"1.9.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/openucx/ucc.git",
-              "211e2f60436cba7c044195acb43752aa70eab38f"; tag="v$(version)"),
-    ]
+        "a134efa188b66a51fd5a19211a362aeb23b10ae5"; tag="v$(version)"),
+]
 
 # Bash recipe for building across all platforms
 script = raw"""
@@ -52,11 +52,11 @@ install_license LICENSE
 """
 
 MIN_CUDA_VERSION = v"12.3"
-MAX_CUDA_VERSION = v"13.0.999" 
+MAX_CUDA_VERSION = v"13.0.999"
 
 cpu_platforms = CUDA.cpu_platforms([Platform("x86_64", "linux"; libc="glibc"), Platform("aarch64", "linux"; libc="glibc")])
 
-cuda_platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
+cuda_platforms = CUDA.supported_platforms(; min_version=MIN_CUDA_VERSION, max_version=MAX_CUDA_VERSION)
 filter!(p -> arch(p) == "x86_64", cuda_platforms)
 
 all_platforms = [cpu_platforms; cuda_platforms]
@@ -70,7 +70,7 @@ dependencies = [
     # Older releases have no artifact where this JLL falls back to its CPU build
     Dependency("UCX_jll"; compat="~1.20.1"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency("NCCL_jll"; compat="=2.28.9", platforms=cuda_platforms),
+    Dependency("NCCL_jll"; compat="~2.32.3", platforms=cuda_platforms),
     CUDA.required_dependencies(all_platforms)...,
 ]
 
@@ -80,9 +80,9 @@ for platform in all_platforms
     build_tarballs(
         ARGS, name, ygg_version, sources,
         script, [platform], products, dependencies;
-        julia_compat = "1.10",
-        preferred_gcc_version = v"11",
-        lazy_artifacts = true,
-        augment_platform_block = CUDA.augment
+        julia_compat="1.10",
+        preferred_gcc_version=v"11",
+        lazy_artifacts=true,
+        augment_platform_block=CUDA.augment
     )
 end

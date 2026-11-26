@@ -1,0 +1,203 @@
+From ef814a03e36d5e71652cf449050311d784a7874e Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Wed, 25 Nov 2026 12:48:57 +0100
+Subject: [PATCH] Clamp memory access alignments to 2^31
+
+InferAlignment can give a load from null an alignment of 2^32. LLVM IR
+permits this, but the translator truncated it to zero in the 32-bit
+SPIR-V Aligned operand. spirv-val rejects the resulting Aligned 0.
+
+Clamp access alignments to the largest power of two that fits. An access
+may safely understate its alignment. When lowering memmove, cap the
+temporary's alignment at 2^31 and use that alignment for the temporary
+operand of each copy.
+
+Alignment decorations of allocations are left alone: the program can
+rely on the alignment of an alloca or global, so it can't be lowered.
+---
+ lib/SPIRV/SPIRVLowerMemmove.cpp   | 13 ++++---
+ lib/SPIRV/SPIRVWriter.cpp         | 22 ++++++++----
+ test/transcoding/max-alignment.ll | 56 +++++++++++++++++++++++++++++++
+ 3 files changed, 81 insertions(+), 10 deletions(-)
+ create mode 100644 test/transcoding/max-alignment.ll
+
+diff --git a/lib/SPIRV/SPIRVLowerMemmove.cpp b/lib/SPIRV/SPIRVLowerMemmove.cpp
+index faf4b7d7..be8c32cf 100644
+--- a/lib/SPIRV/SPIRVLowerMemmove.cpp
++++ b/lib/SPIRV/SPIRVLowerMemmove.cpp
+@@ -72,14 +72,19 @@ void SPIRVLowerMemmoveBase::LowerMemMoveInst(MemMoveInst &I) {
+   auto *AllocaTy =
+       ArrayType::get(IntegerType::getInt8Ty(*Context), Length->getZExtValue());
+   MaybeAlign SrcAlign = I.getSourceAlign();
++  // Cap the temporary's alignment at the largest power of two that fits in an
++  // Alignment decoration.
++  MaybeAlign TmpAlign = SrcAlign;
++  if (TmpAlign)
++    TmpAlign = std::min(*TmpAlign, Align(1u << 31));
+ 
+   AllocaInst *Alloca;
+   {
+     IRBuilderBase::InsertPointGuard IG(Builder);
+     Builder.SetInsertPointPastAllocas(I.getParent()->getParent());
+     Alloca = Builder.CreateAlloca(AllocaTy);
+-    if (SrcAlign.has_value())
+-      Alloca->setAlignment(SrcAlign.value());
++    if (TmpAlign)
++      Alloca->setAlignment(*TmpAlign);
+   }
+ 
+   // FIXME: Do we need to pass the size of alloca here? From LangRef:
+@@ -88,11 +93,11 @@ void SPIRVLowerMemmoveBase::LowerMemMoveInst(MemMoveInst &I) {
+   //
+   // https://llvm.org/docs/LangRef.html#llvm-lifetime-start-intrinsic
+   Builder.CreateLifetimeStart(Alloca);
+-  Builder.CreateMemCpy(Alloca, SrcAlign, I.getRawSource(), SrcAlign, Length,
++  Builder.CreateMemCpy(Alloca, TmpAlign, I.getRawSource(), SrcAlign, Length,
+                        I.isVolatile());
+ 
+   auto *SecondCpy =
+-      Builder.CreateMemCpy(I.getRawDest(), I.getDestAlign(), Alloca, SrcAlign,
++      Builder.CreateMemCpy(I.getRawDest(), I.getDestAlign(), Alloca, TmpAlign,
+                            Length, I.isVolatile());
+   Builder.CreateLifetimeEnd(Alloca);
+ 
+diff --git a/lib/SPIRV/SPIRVWriter.cpp b/lib/SPIRV/SPIRVWriter.cpp
+index a878a788..a55368d5 100644
+--- a/lib/SPIRV/SPIRVWriter.cpp
++++ b/lib/SPIRV/SPIRVWriter.cpp
+@@ -108,6 +108,14 @@ using namespace OCLUtil;
+ 
+ namespace {
+ 
++// SPIR-V encodes memory access alignments as 32-bit literals, but LLVM IR
++// allows up to 2^32 (e.g., InferAlignment gives accesses of null that
++// alignment). An access may understate its alignment, so clamp to the largest
++// power of two that fits.
++static SPIRVWord transMemoryAccessAlignment(Align A) {
++  return std::min(A, Align(1u << 31)).value();
++}
++
+ static SPIRVWord convertFloatToSPIRVWord(float F) {
+   union {
+     float F;
+@@ -2350,7 +2358,7 @@ LLVMToSPIRVBase::transValueWithoutDecoration(Value *V, SPIRVBasicBlock *BB,
+     if (ST->isVolatile())
+       MemoryAccess[0] |= MemoryAccessVolatileMask;
+     MemoryAccess[0] |= MemoryAccessAlignedMask;
+-    MemoryAccess.push_back(ST->getAlign().value());
++    MemoryAccess.push_back(transMemoryAccessAlignment(ST->getAlign()));
+     if (ST->getMetadata(LLVMContext::MD_nontemporal))
+       MemoryAccess[0] |= MemoryAccessNontemporalMask;
+     if (MDNode *AliasingListMD = ST->getMetadata(LLVMContext::MD_alias_scope))
+@@ -2379,7 +2387,7 @@ LLVMToSPIRVBase::transValueWithoutDecoration(Value *V, SPIRVBasicBlock *BB,
+     if (LD->isVolatile())
+       MemoryAccess[0] |= MemoryAccessVolatileMask;
+     MemoryAccess[0] |= MemoryAccessAlignedMask;
+-    MemoryAccess.push_back(LD->getAlign().value());
++    MemoryAccess.push_back(transMemoryAccessAlignment(LD->getAlign()));
+     if (LD->getMetadata(LLVMContext::MD_nontemporal))
+       MemoryAccess[0] |= MemoryAccessNontemporalMask;
+     if (MDNode *AliasingListMD = LD->getMetadata(LLVMContext::MD_alias_scope))
+@@ -4433,7 +4441,7 @@ SPIRVValue *LLVMToSPIRVBase::transIntrinsicInst(IntrinsicInst *II,
+         // value is guaranteed anyway.
+         if (AllowTwoMemAccessMasks) {
+           if (*DestAlignVal != *SourceAlignVal) {
+-            MemoryAccess.push_back(DestAlignVal.valueOrOne().value());
++            MemoryAccess.push_back(transMemoryAccessAlignment(*DestAlignVal));
+             MemoryAccess.push_back(MemoryAccessAlignedMask);
+             AlignVal = *SourceAlignVal;
+           }
+@@ -4441,7 +4449,7 @@ SPIRVValue *LLVMToSPIRVBase::transIntrinsicInst(IntrinsicInst *II,
+           AlignVal = std::min(*DestAlignVal, *SourceAlignVal);
+         }
+       }
+-      MemoryAccess.push_back(AlignVal.value());
++      MemoryAccess.push_back(transMemoryAccessAlignment(AlignVal));
+     }
+     if (MI->isVolatile())
+       MemoryAccess[0] |= MemoryAccessVolatileMask;
+@@ -5377,7 +5385,8 @@ SPIRVValue *LLVMToSPIRVBase::transIntrinsicInst(IntrinsicInst *II,
+     }
+     SPIRVType *Ty = transScavengedType(II);
+     auto *PtrVector = transValue(II->getArgOperand(0), BB);
+-    uint32_t Alignment = II->getParamAlign(0).valueOrOne().value();
++    uint32_t Alignment =
++        transMemoryAccessAlignment(II->getParamAlign(0).valueOrOne());
+     auto *Mask = transValue(II->getArgOperand(1), BB);
+     auto *FillEmpty = transValue(II->getArgOperand(2), BB);
+     std::vector<SPIRVWord> Ops = {PtrVector->getId(), Alignment, Mask->getId(),
+@@ -5396,7 +5405,8 @@ SPIRVValue *LLVMToSPIRVBase::transIntrinsicInst(IntrinsicInst *II,
+     }
+     auto *InputVector = transValue(II->getArgOperand(0), BB);
+     auto *PtrVector = transValue(II->getArgOperand(1), BB);
+-    uint32_t Alignment = II->getParamAlign(1).valueOrOne().value();
++    uint32_t Alignment =
++        transMemoryAccessAlignment(II->getParamAlign(1).valueOrOne());
+     auto *Mask = transValue(II->getArgOperand(2), BB);
+     std::vector<SPIRVWord> Ops = {InputVector->getId(), PtrVector->getId(),
+                                   Alignment, Mask->getId()};
+diff --git a/test/transcoding/max-alignment.ll b/test/transcoding/max-alignment.ll
+new file mode 100644
+index 00000000..35f2479a
+--- /dev/null
++++ b/test/transcoding/max-alignment.ll
+@@ -0,0 +1,56 @@
++; LLVM IR allows alignments up to 2^32, but SPIR-V encodes memory access
++; alignments as 32-bit literals. Check that they are clamped to 2^31 instead of
++; truncated to 0. InferAlignment gives accesses of null that alignment.
++
++; Textual IR, because the bitcode reader drops align 4294967296 attributes.
++; RUN: llvm-spirv %s --spirv-ext=+SPV_INTEL_masked_gather_scatter -o %t.spv
++; RUN: spirv-val %t.spv
++; RUN: llvm-spirv %t.spv -to-text -o - | FileCheck %s --check-prefix=CHECK-SPIRV
++; RUN: llvm-spirv -r %t.spv -o %t.rev.bc
++; RUN: llvm-dis < %t.rev.bc | FileCheck %s --check-prefix=CHECK-LLVM
++
++; Only the temporary of @memmove is decorated.
++; CHECK-SPIRV: Decorate [[#TMP:]] Alignment 2147483648
++; CHECK-SPIRV-NOT: Alignment
++
++target datalayout = "e-i64:64-v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:256-v512:512-v1024:1024-n8:16:32:64"
++target triple = "spir64-unknown-unknown"
++
++; CHECK-SPIRV: Load [[#]] [[#]] [[#]] 2 2147483648
++; CHECK-SPIRV: Store [[#]] [[#]] 2 2147483648
++; CHECK-LLVM: load float, ptr null, align 2147483648
++; CHECK-LLVM: store float %{{.*}}, ptr null, align 2147483648
++define spir_func void @scalar() {
++  %v = load float, ptr null, align 4294967296
++  store float %v, ptr null, align 4294967296
++  ret void
++}
++
++; CHECK-SPIRV: CopyMemorySized [[#]] [[#]] [[#]] 2 2147483648
++; CHECK-SPIRV: CopyMemorySized [[#]] [[#]] [[#]] 2 2147483648 2 4
++; CHECK-LLVM: call void @llvm.memcpy.p1.p1.i64(ptr addrspace(1) align 2147483648 %{{.*}}, ptr addrspace(1) align 2147483648 %{{.*}}, i64 %n, i1 false)
++; CHECK-LLVM: call void @llvm.memcpy.p1.p1.i64(ptr addrspace(1) align 2147483648 %{{.*}}, ptr addrspace(1) align 4 %{{.*}}, i64 %n, i1 false)
++define spir_func void @memcpy(ptr addrspace(1) %dst, ptr addrspace(1) %src, i64 %n) {
++  call void @llvm.memcpy.p1.p1.i64(ptr addrspace(1) align 4294967296 %dst, ptr addrspace(1) align 4294967296 %src, i64 %n, i1 false)
++  call void @llvm.memcpy.p1.p1.i64(ptr addrspace(1) align 4294967296 %dst, ptr addrspace(1) align 4 %src, i64 %n, i1 false)
++  ret void
++}
++
++; The temporary that memmove is lowered to is aligned to 2^31, as accessed.
++; CHECK-SPIRV: Variable [[#]] [[#TMP]] 7
++; CHECK-SPIRV: CopyMemorySized [[#TMP]] [[#]] [[#]] 2 2147483648
++; CHECK-SPIRV: CopyMemorySized [[#]] [[#TMP]] [[#]] 2 2147483648
++define spir_func void @memmove(ptr addrspace(1) %dst, ptr addrspace(1) %src) {
++  call void @llvm.memmove.p1.p1.i64(ptr addrspace(1) align 4294967296 %dst, ptr addrspace(1) align 4294967296 %src, i64 16, i1 false)
++  ret void
++}
++
++; CHECK-SPIRV: MaskedGatherINTEL [[#]] [[#]] [[#]] 2147483648
++; CHECK-SPIRV: MaskedScatterINTEL [[#]] [[#]] 2147483648
++; CHECK-LLVM: call <2 x i32> @llvm.masked.gather.v2i32.v2p1(<2 x ptr addrspace(1)> align 2147483648 %{{.*}}
++; CHECK-LLVM: call void @llvm.masked.scatter.v2i32.v2p1(<2 x i32> %{{.*}}, <2 x ptr addrspace(1)> align 2147483648 %{{.*}}
++define spir_func void @gather_scatter(<2 x ptr addrspace(1)> %p, <2 x i1> %m) {
++  %v = call <2 x i32> @llvm.masked.gather.v2i32.v2p1(<2 x ptr addrspace(1)> align 4294967296 %p, <2 x i1> %m, <2 x i32> zeroinitializer)
++  call void @llvm.masked.scatter.v2i32.v2p1(<2 x i32> %v, <2 x ptr addrspace(1)> align 4294967296 %p, <2 x i1> %m)
++  ret void
++}
+-- 
+2.56.0
+

@@ -90,11 +90,13 @@ agent() = Dict(
 # peaks of concurrent jobs rarely coincide (host memory stayed near half the sum of their peaks).
 # Reserving the peak kept jobs queued on agents with hundreds of GiB free.
 const LARGE_MEMORY_PROJECTS = [
+    "A/AMDGPU_LLVM_Backend",
     "C/cupynumeric",
     "E/Enzyme",
     "L/LLVM",
     "L/LLVMGPU",
     "L/libcxxwrap_julia",
+    "L/libigc",
     "L/libpolymake_julia",
     "O/ONNXRuntime/ONNXRuntime_CUDA",
     "O/OpenCV/OpenCV",
@@ -331,11 +333,13 @@ function render(ps::BB2PackageStep)
 end
 
 # Installs JLLs from the depot that `package_key` uploaded on Julia `julia_version`, next
-# to a fresh `General`, and loads them and their products: with `oldest_only`, only the JLLs whose `julia`
-# compat allows no older Julia (see `oldest_julia()`), otherwise all of them.
+# to a fresh `General`, and loads them and their products: those of `jlls`
+# (`<Name>_jll@<version>`) that, with `oldest_only`, have a `julia` compat that allows no
+# older Julia (see `oldest_julia()`), otherwise all of them.
 struct BB2LoadCheckStep <: AbstractStep
     julia_version::String
     oldest_only::Bool
+    jlls::Vector{String}
     package_key::String
 end
 step_key(ls::BB2LoadCheckStep) = "load-check-bb2-julia-$(safe_name(ls.julia_version))"
@@ -352,7 +356,7 @@ function render(ls::BB2LoadCheckStep)
         :timeout_in_minutes => 60,
         :commands => [
             "buildkite-agent artifact download jll-depot.tar.gz . --step $(ls.package_key)",
-            ".ci/bb2_project/load_check/load_check.sh jll-depot.tar.gz$(ls.oldest_only ? " --oldest-julia-only" : "")",
+            ".ci/bb2_project/load_check/load_check.sh jll-depot.tar.gz$(ls.oldest_only ? " --oldest-julia-only" : "") $(join(ls.jlls, " "))",
         ],
         :env => env(),
     )
