@@ -59,12 +59,14 @@ products = [
 ]
 
 dependencies = [
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
-    Dependency(PackageSpec(name="libblastrampoline_jll", uuid="8e850b90-86db-534c-a0d3-1478176c7d93"); compat="5.4.0"),
+    # Julia 1.10 ships 1.0.5. 1.3.0 is the oldest release with artifacts for
+    # both libgfortran3 and riscv64.
+    Dependency("CompilerSupportLibraries_jll", v"1.3.0"; compat="1.0.5"),
+    Dependency("libblastrampoline_jll"; compat="5.4.0"),
     Dependency("mctc_lib_jll"; compat="0.6.1"),
     Dependency("multicharge_jll"; compat="0.5.0"),
 ]
 
-# libblastrampoline_jll 5.4 requires Julia 1.10
+# multicharge_jll requires Julia 1.10
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
                julia_compat="1.10", preferred_gcc_version=v"9")
