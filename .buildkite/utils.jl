@@ -101,6 +101,7 @@ const LARGE_MEMORY_PROJECTS = [
     "O/ONNXRuntime/ONNXRuntime_CUDA",
     "O/OpenCV/OpenCV",
     "O/OpenCV/OpenCV_CUDA",
+    "V/VTK",
 ]
 
 is_large_memory(project) =

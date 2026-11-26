@@ -6,12 +6,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "VTK"
-version = v"9.7.1"
+version = v"9.7.2"
 
 # No sources, we're just building the testsuite
 sources = [
     ArchiveSource("https://vtk.org/files/release/$(version.major).$(version.minor)/VTK-$(version).tar.gz",
-                  "cae04fd355004cb916a409db79d53a208f1221e975aeacc7540ee67b148ee91a"),
+                  "fecef55df5caec6298ce190024060a90ce3bb515033c0f18968b9ab5c12bf796"),
     DirectorySource("bundled"),
 ]
 
