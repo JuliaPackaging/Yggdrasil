@@ -144,6 +144,13 @@ dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("GLPK_jll"; compat="5.0.2"),
     Dependency("PARI_jll"; compat="~200.1900.100"),
+    # Readline_jll pulls Ncurses_jll, whose 6.6.1 and later builds (BinaryBuilder2)
+    # reference musl 1.2 time64 symbols (`__clock_gettime64` etc.) on 32-bit musl,
+    # which our musl sysroot lacks, so linking icas fails. Build against the
+    # previous Ncurses instead, as H/HDF5 does for XML2. This works at run time on
+    # musl >= 1.2, and fails with an error message otherwise.
+    BuildDependency(PackageSpec(; name="Ncurses_jll", version=v"6.6.0+2");
+                    platforms=filter(p -> Sys.islinux(p) && libc(p) == "musl" && nbits(p) == 32, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
