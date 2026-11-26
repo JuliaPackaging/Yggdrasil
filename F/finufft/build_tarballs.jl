@@ -9,7 +9,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "finufft"
 version = v"2.6.0"
-commit_hash = "287ad85a1b3a466a082d61704ea4848d288376d3" # CURRENT MASTER, NOT 2.6.0
+commit_hash = "9b97edcb9cc48d9f1461f23c8b086c3ffa546ca0" # 2.6.0-rc1
 # GCC >= 13 is recommended for FINUFFT, performance depends on
 # compiler and how well it vectorizes code.
 preferred_gcc_version = v"13"

@@ -13,7 +13,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "cufinufft"
 version = v"2.6.0"
-commit_hash = "287ad85a1b3a466a082d61704ea4848d288376d3" # CURRENT MASTER, NOT 2.6.0
+commit_hash = "9b97edcb9cc48d9f1461f23c8b086c3ffa546ca0" # 2.6.0-rc1
 preferred_gcc_version = v"13" # Will not build otherwise
 julia_compat = "1.9" # = FINUFFT.jl compat
 
@@ -80,6 +80,7 @@ for platform in platforms
     # Build for all major archs supported by SDK
     # See https://en.wikipedia.org/wiki/CUDA
     cuda_ver = VersionNumber(platform["cuda"])
+
     if cuda_ver >= v"13" # 13.0+
         # Build native cubins for major archs from 7.5 (Turing) and up; include 7.5 PTX as a forward-compat fallback
         cuda_archs = "75;80-real;90-real;100-real;110-real;120-real"
@@ -92,6 +93,13 @@ for platform in platforms
     else # < 12.0
         cuda_archs = "50;60;70;80"
     end
+
+    # We can switch to this helper for selecting archs,
+    # at the expense of larger artifact sizes and longer
+    # build times.
+    #archs = CUDA.cuda_gpu_archs(platform)
+    #cuda_archs = join(archs, ";")
+
     arch_line = "export CUDA_ARCHS=\"$cuda_archs\"\n"
     platform_script = arch_line * script
 
