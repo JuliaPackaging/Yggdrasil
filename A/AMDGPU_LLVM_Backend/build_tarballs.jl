@@ -234,7 +234,12 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Zlib_jll"),
+    # At run time this is the zlib that Julia bundles, so build against the oldest
+    # one in `julia_compat` (1.6). Newer headers can bind to symbols older libz
+    # lacks: zlib 1.4's, with LLVM's `_FILE_OFFSET_BITS=64`, turn lld's
+    # `adler32_combine` into `adler32_combine64` on Windows, which the zlib of
+    # most Julia releases does not export, so the library would not load there.
+    Dependency("Zlib_jll"; compat="1.2.11"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script,
