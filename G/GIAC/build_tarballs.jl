@@ -7,13 +7,13 @@
 using BinaryBuilder, Pkg
 
 name = "GIAC"
-version = v"2.0.3"
+version = v"2.1.0"
 
 # Collection of sources required to build GIAC
 # Using the Meson-based fork from https://github.com/JuliaGiac/giac
 sources = [
     GitSource("https://github.com/JuliaGiac/giac.git",
-        "21d9192abc95473579b24e5ed8b8ed8cf750bcf0"),  # v2.0.3: MinGW MPFR parsing fix + GIAC_TYPE_ON_8BITS default
+        "312e89285a1edd56383c057a27378a40e6c2446c"),  # dev: upstream giac 2.1.0, PARI 2.19, upstream's 5-bit type field
 ]
 
 # Bash recipe for building across all platforms
@@ -127,10 +127,13 @@ dependencies = [
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("GLPK_jll"; compat="5.0.2"),
-    Dependency("PARI_jll"; compat="2.17.3"),
+    Dependency("PARI_jll"; compat="~200.1900.100"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # preferred_gcc_version aligned with libgiac_julia_jll's recipe (Giac.jl#22).
+# Since 2.1.0 `gen` uses upstream's 5-bit type bitfield again (the 8-bit
+# type gave wrong integrals from the second call on): libgiac and every
+# consumer must keep being built with the same GCC.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
   clang_use_lld=false, preferred_gcc_version=v"10", julia_compat="1.10")
