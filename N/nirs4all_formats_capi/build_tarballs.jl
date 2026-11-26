@@ -9,12 +9,12 @@
 using BinaryBuilder, Pkg
 
 name = "nirs4all_formats_capi"
-version = v"0.3.0"
+version = v"0.3.1"
 
 sources = [
-    # Commit of the v0.3.0 tag of https://github.com/GBeurier/nirs4all-formats.
+    # Commit of the v0.3.1 tag of https://github.com/GBeurier/nirs4all-formats.
     GitSource("https://github.com/GBeurier/nirs4all-formats.git",
-              "bc5c97f26f64b12ec96d77f6d96b79c23122b2d5"),
+              "89f191396772c71379e7ad788f29f30472369498"),
 ]
 
 script = raw"""
