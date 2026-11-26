@@ -3,38 +3,58 @@
 ![Yggdrasil](https://user-images.githubusercontent.com/1282691/177174254-aa90664e-5c20-4ea3-9938-34de961dc198.png)
 
 This repository contains recipes for building binaries for Julia packages using [BinaryBuilder.jl](https://github.com/JuliaPackaging/BinaryBuilder.jl).
+Each recipe is a `build_tarballs.jl` file, in a directory named after the package under its initial letter, e.g. `Z/Zlib/build_tarballs.jl`.
+When a pull request that changes a recipe is merged, CI builds it for every platform it requests and publishes the result as a JLL package.
 
 ## Contributing
 
-For detailed information about contributing, go to ["CONTRIBUTING.md"](https://github.com/JuliaPackaging/Yggdrasil/blob/master/CONTRIBUTING.md). For a quick overview, continue reading.
+The rules every recipe follows are in [AGENTS.md](AGENTS.md), together with a build script reference and common patterns.
+It is written for AI coding agents, but applies to human contributors too.
+[CONTRIBUTING.md](CONTRIBUTING.md) covers the contribution process: commit messages, special keywords, rebuilds and compat bounds.
+Before opening a pull request, check it against the [review checklist](.agents/skills/reviewing-prs/SKILL.md) maintainers use.
 
-To update the version to build for an existing recipe, simply open a PR to this repository making the required tweaks. This can be as simple as updating the version number and the source (e.g. for github-hosted resources, update the URL and hash for an archive, or the revision for a repository) of the relevant `build_tarballs.jl` file. Note that in some cases more changes may be needed. A real example for updating the version of a github-hosted resource, see [this PR](https://github.com/JuliaPackaging/Yggdrasil/pull/8833). The version number should be easy to find, and the URL + hash can be found by clicking the release, clicking the final commit in the release, and copying the information from the URL bar.
+To build a newer version of an existing recipe, open a pull request that updates `version` and the source in its `build_tarballs.jl`: the commit hash and `tag` of a `GitSource`, or the URL and SHA256 of an `ArchiveSource`.
+Sometimes more changes are needed, such as new dependencies or compat bounds; see [CONTRIBUTING.md](CONTRIBUTING.md#update-version-of-an-existing-recipe).
+[This pull request](https://github.com/JuliaPackaging/Yggdrasil/pull/8833) is a typical version update.
 
-To contribute a new recipe, you can either
-* use `BinaryBuilder.run_wizard()`, which will automatically open a pull request to this repository after a successful build for all requested platforms
-* Copy another build recipe using it as a template, and then open a manual pull request to this repository
+To contribute a new recipe, start from an existing recipe for a similar package, or from one of the `H/HelloWorld*` recipes for your language's toolchain setup.
+`BinaryBuilder.run_wizard()` can also generate a first recipe and open a pull request, but it does not expose every option a hand-written recipe can use.
 
-Yggdrasil builds the tarballs using `master` version of BinaryBuilder.jl, which requires Julia 1.3.0 or later versions.  Note that this BinaryBuilder.jl version has some differences compared to v0.1.4 and the builders generated are slightly different.  You are welcome to contribute builders written for  BinaryBuilder.jl v0.1.4, but they will likely need minor adjustements.
+[Buildkite CI](https://buildkite.com/julialang/yggdrasil) builds every recipe a pull request changes, for all its platforms.
 
-[Buildkite CI](https://buildkite.com/julialang/yggdrasil) is used to test that the builders can successfully produce the tarballs.
+### Building locally
 
-If you prefer to test your manual buildscript before opening the pull request, we suggest installing `BinaryBuilder.jl` on Julia 1.3 or any following release and running `julia --color=yes build_tarballs.jl --verbose --debug` locally.  On MacOS, you will need to have `docker` installed for this to work.
+Builds need an x86_64 host: the build environment consists of x86_64 Linux binaries, which run natively on Linux and under Docker on x86_64 macOS.
+On other hosts, such as Apple silicon Macs, push your branch and let CI build it.
+Use the Julia version named by `julia_version` in the repository's [`Manifest.toml`](Manifest.toml), which is what CI runs, and the repository's root project:
 
-## Using the generated tarballs
+```bash
+julia --project=. -e 'using Pkg; Pkg.instantiate()'
+cd Z/Zlib
+julia --project build_tarballs.jl --verbose --debug x86_64-linux-gnu
+```
 
-### JLL packages
+The trailing triplet builds only that platform; omit it to build all of them.
+`--debug` drops you into the build sandbox when a step fails.
+Before merging, test the generated JLL as the [`testing-jll`](.agents/skills/testing-jll/SKILL.md) skill describes.
 
-The last versions of BinaryBuilder make use of the [`Artifacts` system](https://julialang.github.io/Pkg.jl/dev/artifacts/) shipping in Julia 1.3.  This means that BinaryBuilder no longer generates `build.jl` files that are placed into your Julia package's `deps/` folder, but instead generates whole Julia packages (known colloquially as "jll" packages) that are placed within the [JuliaBinaryWrappers organization](https://github.com/JuliaBinaryWrappers/).  Merged pull requests to Yggdrasil result in new versions of these wrapper packages being generated, uploaded and registered, allowing your client Julia code to simply invoke `using LibFoo_jll` to get ahold of your binaries with no need for a `Pkg.build()` step.  (This will, of course, only be the case for Julia 1.3+).
+## Working with AI coding agents
 
-We encourage Julia developers to use JLL packages for their libraries.  Read the [documention of BinaryBuilder](https://juliapackaging.github.io/BinaryBuilder.jl/dev/jll/) to learn how to use them.
+Yggdrasil is set up for AI coding agents such as Claude Code, Codex and GitHub Copilot:
 
-Here are a few examples of pull requests of Julia packages switching to using JLL package to provide the prebuilt binaries to the users:
+- [AGENTS.md](AGENTS.md) holds the rules for recipes, pull requests and security. Most agents read it automatically; point yours to it if it doesn't.
+- [`.agents/skills/`](.agents/skills) holds topic guidance in the [Agent Skills](https://agentskills.io) format: MPI, CUDA, BLAS, libjulia/CxxWrap, Fortran, Rust, OpenMP, macOS and Windows recipes, JLL versioning, testing and reviewing. AGENTS.md lists when each one applies, and an agent reads the matching ones before working on a recipe.
+- [`.agents/mcp-bb-sandbox/`](.agents/mcp-bb-sandbox) is `bb-sandbox`, an MCP server that gives an agent an interactive BinaryBuilder cross-compilation sandbox. [`.mcp.json`](.mcp.json) registers it for agents that read that file; its [README](.agents/mcp-bb-sandbox/README.md) explains the one-time setup.
+- GitHub Copilot code review follows [`.github/instructions/code-review.instructions.md`](.github/instructions/code-review.instructions.md), which applies the same review checklist.
 
-* [Cairo.jl](https://github.com/JuliaGraphics/Cairo.jl/pull/293)
-* [FFTW.jl](https://github.com/JuliaMath/FFTW.jl/pull/122)
-* [GSL.jl](https://github.com/JuliaMath/GSL.jl/pull/104)
-* [Gtk.jl](https://github.com/JuliaGraphics/Gtk.jl/pull/447)
-* [Rsvg.jl](https://github.com/lobingera/Rsvg.jl/pull/36)
+Before letting an agent work in this repository, read the [Security](AGENTS.md#security) section of AGENTS.md.
+In short: `julia build_tarballs.jl` runs the whole recipe as Julia code on your machine, outside the sandbox, so build only recipes you trust.
+Run an agent that handles other people's pull requests in a VM, container or separate account that holds none of your credentials, give it a fine-grained GitHub token limited to what its task needs, and keep its approval prompts on.
 
-You can read more about the `Artifacts` system and how it is important for reproducibility in this post on Julia's blog "[Pkg + BinaryBuilder -- The Next Generation](https://julialang.org/blog/2019/11/artifacts)".
+Review what your agent writes, and test the JLL before the pull request is merged: a successful build is not enough.
 
+## Using the generated JLL packages
+
+Merging a pull request generates a Julia package (a "JLL package") in the [JuliaBinaryWrappers organization](https://github.com/JuliaBinaryWrappers/) and registers it in the General registry.
+It ships the binaries as [artifacts](https://pkgdocs.julialang.org/v1/artifacts/), so Julia code gets them with `using LibFoo_jll`, with no `Pkg.build()` step.
+Read the [BinaryBuilder documentation](https://docs.binarybuilder.org/stable/jll/) to learn how to use JLL packages, and the blog post "[Pkg + BinaryBuilder -- The Next Generation](https://julialang.org/blog/2019/11/artifacts/)" for the background.
