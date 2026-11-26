@@ -5,7 +5,7 @@ using BinaryBuilder
 name = "GoogleCodeSearch"
 version = v"1.2.0"
 # Adding compat bounds to the JLL of upstream v1.2.0 needed a new JLL version
-ygg_version = v"1.2.1"
+ygg_version = v"1.2.2"
 
 # Collection of sources required to complete build
 sources = [
@@ -17,9 +17,6 @@ script = raw"""
 cd $WORKSPACE/srcdir
 install_license codesearch/LICENSE
 cd codesearch
-# The newest Go shard, 1.23.0, has known stdlib vulnerabilities.
-# Remove this once BinaryBuilderBase has a newer one.
-export GOTOOLCHAIN=go1.27.4
 mkdir -pv "${bindir}"
 go build -o "${bindir}/csearch${exeext}" ./cmd/csearch
 go build -o "${bindir}/cindex${exeext}" ./cmd/cindex
@@ -40,4 +37,4 @@ dependencies = Dependency[
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6", compilers = [:go, :c], preferred_go_version = v"1.23")
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies; julia_compat="1.6", compilers = [:go, :c])
