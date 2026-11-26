@@ -1,26 +1,17 @@
-# BinaryBuilder.jl recipe for smf_jll (Yggdrasil: S/smf/build_tarballs.jl)
 using BinaryBuilder, Pkg
+
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "smf"
 version = v"0.2.1"
 
 sources = [
     GitSource("https://github.com/danlil240/opt_solver.git",
-              "8ffa88d29b6ef82cd613ca3c2486e113f98da895"),
-    FileSource("https://github.com/joseluisq/MacOSX-SDKs/releases/download/15.0/MacOSX15.0.sdk.tar.xz",
-               "9df0293776fdc8a2060281faef929bf2fe1874c1f9368993e7a4ef87b1207f98"),
+              "8ffa88d29b6ef82cd613ca3c2486e113f98da895"; tag="v$(version)"),
 ]
 
 script = raw"""
-if [[ "${target}" == *-apple-darwin* ]]; then
-    # Use MacOSX15.0.sdk for C++20 libc++ support (std::bit_cast, std::span).
-    tar -xf "${WORKSPACE}/srcdir/MacOSX15.0.sdk.tar.xz" -C "${WORKSPACE}/srcdir"
-    apple_sdk_root="${WORKSPACE}/srcdir/MacOSX15.0.sdk"
-    sed -i "s!/opt/${target}/${target}/sys-root!${apple_sdk_root}!" "${CMAKE_TARGET_TOOLCHAIN}"
-    sed -i "s!/opt/${target}/${target}/sys-root!${apple_sdk_root}!" /opt/bin/${bb_full_target}/${target}-clang*
-    export MACOSX_DEPLOYMENT_TARGET=15.0
-fi
-
 cd $WORKSPACE/srcdir/opt_solver
 
 # Let BinaryBuilder's compiler wrappers select the target microarchitecture
@@ -51,6 +42,9 @@ install_license solver/third_party/metis/LICENSE
 install_license solver/third_party/gklib/LICENSE.txt
 """
 
+# libc++ with C++20's std::bit_cast and std::span
+sources, script = require_macos_sdk("15.0", sources, script)
+
 platforms = expand_cxxstring_abis(supported_platforms(; exclude=p -> arch(p) == "i686" || Sys.isfreebsd(p)))
 
 products = [
@@ -59,11 +53,17 @@ products = [
 ]
 
 dependencies = [
-    Dependency("OpenBLAS32_jll"),
-    Dependency("SuiteSparse32_jll"),
-    Dependency("CompilerSupportLibraries_jll"),
-    Dependency("LLVMOpenMP_jll"; platforms=filter(Sys.isapple, platforms)),
+    Dependency("OpenBLAS32_jll"; compat="0.3.34"),
+    # 7.x installs libamd.so.3 and needs Julia 1.11
+    Dependency("SuiteSparse32_jll"; compat="7.12.1"),
+    # libstdc++ and libgomp. Julia 1.11 ships 1.1.1; build against 1.1.2,
+    # the oldest release with a riscv64 build
+    Dependency("CompilerSupportLibraries_jll", v"1.1.2";
+               compat="1.1.1",
+               platforms=filter(!Sys.isapple, platforms)),
+    Dependency("LLVMOpenMP_jll"; compat="23.1.1", platforms=filter(Sys.isapple, platforms)),
 ]
 
+# std::bit_cast needs GCC 11
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               julia_compat="1.10", preferred_gcc_version=v"11")
+               julia_compat="1.11", preferred_gcc_version=v"11")
