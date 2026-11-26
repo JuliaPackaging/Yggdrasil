@@ -3,7 +3,7 @@
 ![Yggdrasil](https://user-images.githubusercontent.com/1282691/177174254-aa90664e-5c20-4ea3-9938-34de961dc198.png)
 
 This repository contains recipes for building binaries for Julia packages using [BinaryBuilder.jl](https://github.com/JuliaPackaging/BinaryBuilder.jl).
-Each recipe is a `build_tarballs.jl` file, in a directory named after the package under its initial letter, e.g. `Z/Zlib/build_tarballs.jl`.
+Each recipe is a `build_tarballs.jl` file, in a directory named after the package under its initial letter, e.g. `B/Bzip2/build_tarballs.jl`.
 When a pull request that changes a recipe is merged, CI builds it for every platform it requests and publishes the result as a JLL package.
 
 ## Contributing
@@ -29,12 +29,13 @@ Use the Julia version named by `julia_version` in the repository's [`Manifest.to
 
 ```bash
 julia --project=. -e 'using Pkg; Pkg.instantiate()'
-cd Z/Zlib
+cd B/Bzip2
 julia --project build_tarballs.jl --verbose --debug x86_64-linux-gnu
 ```
 
 The trailing triplet builds only that platform; omit it to build all of them.
 `--debug` drops you into the build sandbox when a step fails.
+Recipes that start with `using BinaryBuilder2` build with `.ci/bb2_project` instead of the root project.
 Before merging, [test the generated JLL](.agents/skills/testing-jll/SKILL.md) on your own machine: a successful build is not enough.
 
 ### Using an AI coding agent
