@@ -2,4 +2,4 @@ include("../common.jl")
 
 build_harfbuzz(ARGS, "HarfBuzz_ICU")
 
-# build trigger: 3
+# build trigger: 4

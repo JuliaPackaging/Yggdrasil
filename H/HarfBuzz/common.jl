@@ -101,8 +101,6 @@ fi
         Dependency("Graphite2_jll"; compat="1.3.15"),
         Dependency("Libffi_jll"; compat="~3.4.7"),
         BuildDependency("Xorg_xorgproto_jll"),
-        # freetype2.pc requires zlib. Zlib_jll 1.4.1 and later have x86_64 macOS and FreeBSD artifacts only for darwin20 and freebsd14.1, which don't match our targets.
-        BuildDependency(PackageSpec(; name="Zlib_jll", version=v"1.4.0+0")),
     ]
 
     if icu
