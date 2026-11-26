@@ -5,7 +5,7 @@
     },
   },
   "containerEnv": {
-    "JULIA_PROJECT": "${containerWorkspaceFolder}"
+    "JULIA_PROJECT": "${containerWorkspaceFolder}/.ci/bb1_project"
   },
   "hostRequirements": {
     "gpu": "optional"
