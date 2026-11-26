@@ -17,7 +17,8 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/libminizinc
 
-CMAKE_FLAGS=()
+# mimalloc adds -march=armv8.1-a by default on arm64, which BinaryBuilder forbids.
+CMAKE_FLAGS=(-DMI_OPT_ARCH=OFF)
 if [[ "${target}" == *-mingw* ]]; then
     # The tree-sitter grammars mark two symbols __declspec(dllexport), which
     # disables MinGW's automatic export of every other symbol in libmzn.
@@ -29,8 +30,6 @@ cmake -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
-    # mimalloc adds -march=armv8.1-a by default on arm64, which BinaryBuilder forbids.
-    -DMI_OPT_ARCH=OFF \
     "${CMAKE_FLAGS[@]}"
 cmake --build build --parallel ${nproc}
 cmake --install build
