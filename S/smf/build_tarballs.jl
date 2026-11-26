@@ -45,7 +45,7 @@ install_license solver/third_party/gklib/LICENSE.txt
 # libc++ with C++20's std::bit_cast and std::span
 sources, script = require_macos_sdk("15.0", sources, script)
 
-platforms = expand_cxxstring_abis(supported_platforms(; exclude=p -> arch(p) == "i686" || Sys.isfreebsd(p)))
+platforms = expand_cxxstring_abis(supported_platforms())
 
 products = [
     LibraryProduct("libsmf_c", :libsmf_c),
@@ -60,8 +60,8 @@ dependencies = [
     # the oldest release with a riscv64 build
     Dependency("CompilerSupportLibraries_jll", v"1.1.2";
                compat="1.1.1",
-               platforms=filter(!Sys.isapple, platforms)),
-    Dependency("LLVMOpenMP_jll"; compat="23.1.1", platforms=filter(Sys.isapple, platforms)),
+               platforms=filter(!Sys.isbsd, platforms)),
+    Dependency("LLVMOpenMP_jll"; compat="23.1.1", platforms=filter(Sys.isbsd, platforms)),
 ]
 
 # std::bit_cast needs GCC 11
