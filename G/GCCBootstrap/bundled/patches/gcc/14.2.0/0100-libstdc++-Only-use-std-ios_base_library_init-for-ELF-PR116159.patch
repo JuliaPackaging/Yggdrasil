@@ -1,0 +1,57 @@
+From 2003f890b13b8ec35b6112fc13c7e69e61cd9162 Mon Sep 17 00:00:00 2001
+From: Jonathan Wakely <jwakely@redhat.com>
+Date: Tue, 10 Sep 2024 14:36:26 +0100
+Subject: [PATCH] libstdc++: Only use std::ios_base_library_init() for ELF
+ [PR116159]
+
+The undefined std::ios_base_library_init() symbol that is referenced by
+<iostream> is only supposed to be used for targets where symbol
+versioning is supported.
+
+The mingw-w64 target defaults to --enable-symvers=gnu due to using GNU
+ld but doesn't actually support symbol versioning. This means it tries
+to emit references to the std::ios_base_library_init() symbol, which
+isn't really defined in the library. This causes problems when using lld
+to link user binaries.
+
+Disable the undefined symbol reference for non-ELF targets.
+
+libstdc++-v3/ChangeLog:
+
+	PR libstdc++/116159
+	* include/std/iostream (ios_base_library_init): Only define for
+	ELF targets.
+	* src/c++98/ios_init.cc (ios_base_library_init): Likewise.
+
+(cherry picked from commit fc7a1fb0238e379d466316aa219734ac61f4bc0e)
+---
+ libstdc++-v3/include/std/iostream  | 2 +-
+ libstdc++-v3/src/c++98/ios_init.cc | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/libstdc++-v3/include/std/iostream b/libstdc++-v3/include/std/iostream
+index 0c6a2d8a4b301..208fd1d513817 100644
+--- a/libstdc++-v3/include/std/iostream
++++ b/libstdc++-v3/include/std/iostream
+@@ -78,7 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+ #if !(_GLIBCXX_USE_INIT_PRIORITY_ATTRIBUTE \
+       && __has_attribute(__init_priority__))
+   static ios_base::Init __ioinit;
+-#elif defined(_GLIBCXX_SYMVER_GNU)
++#elif defined(_GLIBCXX_SYMVER_GNU) && defined(__ELF__)
+   __extension__ __asm (".globl _ZSt21ios_base_library_initv");
+ #endif
+ 
+diff --git a/libstdc++-v3/src/c++98/ios_init.cc b/libstdc++-v3/src/c++98/ios_init.cc
+index 1422e20d94050..6e2e5014cf0fc 100644
+--- a/libstdc++-v3/src/c++98/ios_init.cc
++++ b/libstdc++-v3/src/c++98/ios_init.cc
+@@ -199,7 +199,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+     return __ret;
+   }
+ 
+-#ifdef _GLIBCXX_SYMVER_GNU
++#if defined(_GLIBCXX_SYMVER_GNU) && defined(__ELF__)
+ #pragma GCC diagnostic ignored "-Wattribute-alias"
+ 
+   void ios_base_library_init (void)
