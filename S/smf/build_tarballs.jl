@@ -14,6 +14,11 @@ sources = [
 script = raw"""
 cd $WORKSPACE/srcdir/opt_solver
 
+if [[ ${target} == *-freebsd* ]]; then
+    # FreeBSD has no MAP_NORESERVE, which on Linux only skips reserving swap
+    export CXXFLAGS="-DMAP_NORESERVE=0"
+fi
+
 # Let BinaryBuilder's compiler wrappers select the target microarchitecture
 # (do not force x86-64-v3 on generic x86_64 platforms).
 cmake -S solver -B build -G Ninja \
