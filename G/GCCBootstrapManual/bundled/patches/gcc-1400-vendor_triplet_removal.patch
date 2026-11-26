@@ -1,0 +1,74 @@
+commit d0cb29d5af2726e0d2b8e087278c30fa8c4d3bd4
+Author: Elliot Saba <staticfloat@gmail.com>
+Date:   Fri Jul 12 10:48:47 2024 +0000
+
+    Do not require vendor tags in triplets
+    
+    This fixes some autodetection gone wrong when we ask GCC to build
+    `aarch64-linux-gnu`, when it's expecting something more like
+    `aarch64-unknown-linux-gnu`.
+
+diff --git a/gcc/config.host b/gcc/config.host
+index f640029b5b5..caf1bbbd451 100644
+--- a/gcc/config.host
++++ b/gcc/config.host
+@@ -99,8 +99,8 @@ case ${host} in
+ esac
+ 
+ case ${host} in
+-  aarch64*-*-freebsd* | aarch64*-*-linux* | aarch64*-*-fuchsia* |\
+-  aarch64*-*-darwin*)
++  aarch64*-*freebsd* | aarch64*-*linux* | aarch64*-*fuchsia* |\
++  aarch64*-*darwin*)
+     case ${target} in
+       aarch64*-*-*)
+ 	host_extra_gcc_objs="driver-aarch64.o"
+@@ -108,15 +108,15 @@ case ${host} in
+ 	;;
+     esac
+     ;;
+-  arm*-*-freebsd* | arm*-*-netbsd* | arm*-*-linux* | arm*-*-fuchsia*)
++  arm*-*freebsd* | arm*-*netbsd* | arm*-*linux* | arm*-*fuchsia*)
+     case ${target} in
+-      arm*-*-*)
++      arm*-*)
+ 	host_extra_gcc_objs="driver-arm.o"
+ 	host_xmake_file="${host_xmake_file} arm/x-arm"
+ 	;;
+     esac
+     ;;
+-  alpha*-*-linux*)
++  alpha*-*linux*)
+     case ${target} in
+       alpha*-*-linux*)
+ 	host_extra_gcc_objs="driver-alpha.o"
+@@ -134,9 +134,9 @@ case ${host} in
+ 	;;
+     esac
+     ;;
+-  mips*-*-linux*)
++  mips*-*linux*)
+     case ${target} in
+-      mips*-*-linux*)
++      mips*-*linux*)
+ 	host_extra_gcc_objs="driver-native.o"
+ 	host_xmake_file="${host_xmake_file} mips/x-native"
+       ;;
+@@ -152,7 +152,7 @@ case ${host} in
+         ;;
+     esac
+     case ${host} in
+-      *-*-linux* | *-*-freebsd*)
++      *-*linux* | *-*freebsd*)
+ 	if test "${GCC}:${ac_cv_sizeof_long}" = yes:4; then
+ 	  # On powerpc*-*-linux* use -Wl,--relax to link cc1,
+ 	  # if ld is new enough, otherwise force -O1 in CFLAGS.
+@@ -267,7 +267,7 @@ case ${host} in
+     out_host_hook_obj=host-solaris.o
+     host_xmake_file="${host_xmake_file} x-solaris"
+     ;;
+-  *-*-linux*)
++  *-*linux*)
+     out_host_hook_obj=host-linux.o
+     host_xmake_file="${host_xmake_file} x-linux"
+     ;;
