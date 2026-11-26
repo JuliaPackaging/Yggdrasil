@@ -9,7 +9,8 @@ version = v"2.11.0"
 sources = [
     GitSource(
         "https://github.com/MiniZinc/libminizinc.git",
-        "aac81d56847356090a4d915576e8719d196a1395",
+        "aac81d56847356090a4d915576e8719d196a1395";
+        tag="$(version)",
     ),
 ]
 
@@ -28,6 +29,8 @@ cmake -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
+    # mimalloc adds -march=armv8.1-a by default on arm64, which BinaryBuilder forbids.
+    -DMI_OPT_ARCH=OFF \
     "${CMAKE_FLAGS[@]}"
 cmake --build build --parallel ${nproc}
 cmake --install build
@@ -47,8 +50,7 @@ platforms = expand_cxxstring_abis(platforms)
 
 dependencies = [
     Dependency("CompilerSupportLibraries_jll"),
-    # Use an exact version for HiGHS. @odow has observed segfaults with
-    # HiGHS_jll v1.5.3 when libminizinc compiled with v1.5.1.
+    # Use an exact version for HiGHS.
     Dependency("HiGHS_jll"; compat="=1.16.0"),
 ]
 
