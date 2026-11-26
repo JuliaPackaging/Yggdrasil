@@ -34,6 +34,10 @@ install_license LICENSE LICENSING.md LICENSES/CeCILL-2.1.txt LICENSES/AGPL-3.0-o
 """
 
 platforms = supported_platforms()
+# The C sources of zstd-sys and liblzma-sys (compression codecs of the HDF5 and
+# archive readers) fail to compile for i686, armv6l, armv7l and riscv64
+# ("failed to run custom build command for zstd-sys" in the Yggdrasil CI log).
+filter!(p -> nbits(p) == 64 && arch(p) != "riscv64", platforms)
 
 products = [
     LibraryProduct(["libnirs4all_formats_capi", "nirs4all_formats_capi"], :libnirs4all_formats_capi),
