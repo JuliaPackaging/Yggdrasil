@@ -461,28 +461,50 @@ function cuda_gpu_archs(cuda_ver)
     return supported_archs
 end
 
-"""
-    cuda_gpu_archs_cmake(platform::Platform)
-
-Returns `CMAKE_CUDA_ARCHITECTURES` (or `CUDAARCHS`) for `cuda_gpu_archs(platform)`:
-machine code for each architecture, and PTX for the newest, so newer GPUs can run it.
-"""
-function cuda_gpu_archs_cmake(platform::Platform)
-    archs = cuda_gpu_archs(platform)
-    newest = maximum(parse.(Int, archs))
-    return join([parse(Int, a) == newest ? a : "$(a)-real" for a in archs], ";")
+# `sm_90a` etc.: arch-specific machine code, which runs only on its own architecture; such features exist from sm_90
+function cuda_gpu_arch_name(arch, min_specific_arch)
+    min_specific_arch === nothing && return arch
+    parse(Int, min_specific_arch) >= 90 || error("Arch-specific features exist from sm_90, not sm_$(min_specific_arch)")
+    return parse(Int, arch) >= parse(Int, min_specific_arch) ? "$(arch)a" : arch
 end
 
 """
-    cuda_gpu_archs_nvcc(platform::Platform)
+    cuda_gpu_archs_cmake(platform::Platform; min_specific_arch=nothing)
+    cuda_gpu_archs_cmake(archs; min_specific_arch=nothing)
 
-Returns `nvcc` `-gencode` flags for `cuda_gpu_archs(platform)`:
+Returns `CMAKE_CUDA_ARCHITECTURES` (or `CUDAARCHS`) for `archs`, by default `cuda_gpu_archs(platform)`:
 machine code for each architecture, and PTX for the newest, so newer GPUs can run it.
+
+With `min_specific_arch`, e.g. `"90"`, the machine code for that architecture and newer ones is
+arch-specific (`90a`), for code using features that exist only on those architectures, e.g.
+Hopper's `wgmma`. Arch-specific code runs only on its own architecture, so the PTX stays portable.
+Leave architectures out of `archs` only below `min_specific_arch`: `sm_100a` code does not run on
+sm_103, and the PTX for a newer architecture cannot run on it either. CMake accepts arch-specific
+entries from version 3.25.
 """
-function cuda_gpu_archs_nvcc(platform::Platform)
-    archs = cuda_gpu_archs(platform)
-    newest = maximum(parse.(Int, archs))
-    flags = ["-gencode=arch=compute_$(sm),code=sm_$(sm)" for sm in archs]
+cuda_gpu_archs_cmake(platform::Platform; min_specific_arch=nothing) =
+    cuda_gpu_archs_cmake(cuda_gpu_archs(platform); min_specific_arch)
+function cuda_gpu_archs_cmake(archs::AbstractVector{<:AbstractString}; min_specific_arch=nothing)
+    newest = archs[argmax(parse.(Int, archs))]
+    entries = ["$(cuda_gpu_arch_name(a, min_specific_arch))-real" for a in archs]
+    push!(entries, "$(newest)-virtual")
+    return join(entries, ";")
+end
+
+"""
+    cuda_gpu_archs_nvcc(platform::Platform; min_specific_arch=nothing)
+    cuda_gpu_archs_nvcc(archs; min_specific_arch=nothing)
+
+Returns `nvcc` `-gencode` flags for `archs`, by default `cuda_gpu_archs(platform)`:
+machine code for each architecture, and PTX for the newest, so newer GPUs can run it.
+`min_specific_arch` is as for [`cuda_gpu_archs_cmake`](@ref).
+"""
+cuda_gpu_archs_nvcc(platform::Platform; min_specific_arch=nothing) =
+    cuda_gpu_archs_nvcc(cuda_gpu_archs(platform); min_specific_arch)
+function cuda_gpu_archs_nvcc(archs::AbstractVector{<:AbstractString}; min_specific_arch=nothing)
+    newest = archs[argmax(parse.(Int, archs))]
+    names = [cuda_gpu_arch_name(a, min_specific_arch) for a in archs]
+    flags = ["-gencode=arch=compute_$(sm),code=sm_$(sm)" for sm in names]
     push!(flags, "-gencode=arch=compute_$(newest),code=compute_$(newest)")
     return join(flags, " ")
 end
