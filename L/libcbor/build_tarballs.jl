@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "libcbor"
-version = v"0.12.0"
+version = v"0.15.0"
 
 sources = [
     GitSource("https://github.com/PJK/libcbor.git",
-              "ae000f44e8d2a69e1f72a738f7c0b6b4b7cc4fbf")
+              "cf5bd4bd293ce730b9455fa9cd822166c3dc4599"; tag="v$(version)")
 ]
 
 script = raw"""
@@ -15,8 +15,6 @@ options=(
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN}
     -DCMAKE_PREFIX_PATH=${prefix}
     -DCMAKE_INSTALL_PREFIX=${prefix}
-    -DCMAKE_INSTALL_LIBDIR=${libdir}
-    -DCMAKE_INSTALL_INCLUDEDIR=${includedir}
     -DBUILD_SHARED_LIBS=ON
     -DWITH_EXAMPLES=OFF
 )
@@ -33,6 +31,7 @@ cmake -S .. -B . ${options[@]}
 
 make -j${nproc}
 make -j${nproc} install
+install_license ../LICENSE.md
 """
 
 platforms = supported_platforms()
