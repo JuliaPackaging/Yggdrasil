@@ -1,0 +1,22 @@
+Pass a lambda instead of a std::sort specialization, which the macOS 10.15 SDK's libc++ cannot deduce.
+See https://github.com/PDAL/PDAL/issues/4817
+
+diff --git a/pdal/PointView.cpp b/pdal/PointView.cpp
+index 9fada4705..9c48c4ede 100644
+--- a/pdal/PointView.cpp
++++ b/pdal/PointView.cpp
+@@ -102,12 +102,12 @@ void PointView::sort(Dimension::Id dim)
+     {
+         return compare(dim, id1, id2);
+     };
+-    basic_sort(std::sort<std::vector<PointId>::iterator, PointView::Compare>, comp);
++    basic_sort([](auto first, auto last, Compare c) { std::sort(first, last, c); }, comp);
+ }
+ 
+ void PointView::sort(Compare comp)
+ {
+-    basic_sort(std::sort<std::vector<PointId>::iterator, PointView::Compare>, comp);
++    basic_sort([](auto first, auto last, Compare c) { std::sort(first, last, c); }, comp);
+ }
+ 
+ void PointView::stableSort(Dimension::Id dim)

@@ -3,23 +3,24 @@
 using BinaryBuilder, Pkg
 
 name = "X13as"
-version = v"1.1.60"
+version = v"1.1.62"
+version_string = "v$(version.major)-$(version.minor)-b$(version.patch)"
 
 # Collection of sources required to complete build
 sources = [
     DirectorySource("./bundled"),
-    ArchiveSource("https://www2.census.gov/software/x-13arima-seats/x13as/unix-linux/program-archives/x13as_asciisrc-v1-1-b60.tar.gz", "2bd53953a1bdd238a128b89e95e8e5fc14f33aa4a9e4c7f0fc3fe7323b73131c", unpack_target="./x13as_asciisrc"),
-    ArchiveSource("https://www2.census.gov/software/x-13arima-seats/x13as/unix-linux/program-archives/x13as_htmlsrc-v1-1-b60.tar.gz", "642f6b6a969c5c311252ca83845ea391ab8c3d59840c4dc2508f9c86095c7757", unpack_target="./x13as_htmlsrc"),
-    ArchiveSource("https://www2.census.gov/software/x-13arima-seats/x13as/unix-linux/program-archives/x13as_ascii-v1-1-b60.tar.gz", "593e6b63024181c9550c281587bfeb28b2dcf1658f4495d42eb8933c6868ee36"),
-    ArchiveSource("https://www2.census.gov/software/x-13arima-seats/x13as/unix-linux/program-archives/x13as_html-v1-1-b60.tar.gz", "a9f55329373092c33ed5b1908094c0dc037cc05bf8789bd4f7156abcaa2200ed"),
+    ArchiveSource("https://www2.census.gov/software/x-13arima-seats/x13as/unix-linux/program-archives/x13as_asciisrc-$(version_string).tar.gz", "82796c84b54891474df1a6ffb16be7bf7bd4a992e3679158645c888e6cddda12"),
+    ArchiveSource("https://www2.census.gov/software/x-13arima-seats/x13as/unix-linux/program-archives/x13as_htmlsrc-$(version_string).tar.gz", "b033b05a00f3b0af9e866ce261f437f348967ccea34bc3003fd59c477f663859"),
+    ArchiveSource("https://www2.census.gov/software/x-13arima-seats/x13as/unix-linux/program-archives/x13as_ascii-$(version_string).tar.gz", "a91d37bb2fef46237e1eadd7d9b4f1c00a422d58f6b286c9bfe485289e8ac6f5"),
+    ArchiveSource("https://www2.census.gov/software/x-13arima-seats/x13as/unix-linux/program-archives/x13as_html-$(version_string).tar.gz", "96a82b100270f5b4645b3d6b5806e4446f79402ae73adc15beb39a93b7ac9170"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd $WORKSPACE/srcdir
 ########## First, build and install the ascii version
-pushd x13as_asciisrc
-###  Fix a bug in adpdrg.f in x13as_asciisrc v1.1.b60
+pushd x13as_asciisrc-*
+###  Remove the stray T argument in the CRLF source.
 sed -i -e "s|'\,T|'|" adpdrg.f
 if [[ "${target}" == *-apple-* ]]
 then
@@ -33,7 +34,7 @@ mkdir -p ${bindir}
 install -Dvm 755 "x13as_ascii${exeext}" "${bindir}/x13as_ascii${exeext}"
 popd
 ########## Second, build and install the html version
-pushd x13as_htmlsrc
+pushd x13as_htmlsrc-*
 ###  They left the debug flags here for some reason
 sed -e "s/FFLAGS.*/FFLAGS=-O2/" -i makefile.gf
 if [[ "${target}" == *-apple-* ]]
@@ -50,7 +51,7 @@ popd
 docsdir="${prefix}/docs"
 mkdir -p "${docsdir}"
 install -Dvm 644 "x13as/testairline.spc" "${docsdir}/testairline.spc"
-install -Dvm 644 "x13as/docs/docx13as.pdf" "${docsdir}/docx13as.pdf"
+install -Dvm 644 "x13as/docs/docX13AS.pdf" "${docsdir}/docx13as.pdf"
 install -Dvm 644 "x13as/docs/qrefX13ASunix.pdf" "${docsdir}/qrefX13ASunix.pdf"
 install -Dvm 644 "x13as/docs/docX13ASHTML.pdf" "${docsdir}/docX13ASHTML.pdf"
 install -Dvm 644 "x13as/docs/qrefX13ASHTMLunix.pdf" "${docsdir}/qrefX13ASHTMLunix.pdf"
@@ -76,7 +77,7 @@ products = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = Dependency[
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"); compat="0.5, 1"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

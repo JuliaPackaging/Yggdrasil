@@ -3,7 +3,7 @@
 using BinaryBuilder, Pkg
 
 name = "LSODA"
-version = v"0.1.2"
+version = v"0.1.3"
 
 # Collection of sources required to complete build
 sources = [

@@ -1,0 +1,248 @@
+--- a/c/parallel.v2/src/hostjit/libnvcc/CMakeLists.txt
++++ b/c/parallel.v2/src/hostjit/libnvcc/CMakeLists.txt
+@@ -26,75 +26,136 @@
+   )
+ endif()
+ 
+-if (DEFINED HOSTJIT_LLVM_VERSION AND NOT DEFINED LIBNVCC_LLVM_VERSION)
+-  set(_libnvcc_llvm_version_default "${HOSTJIT_LLVM_VERSION}")
++# LIBNVCC_LLVM_PREFIX selects a prebuilt LLVM/Clang/LLD installation (with static
++# libraries and CMake package files) instead of fetching and building LLVM.
++set(LIBNVCC_LLVM_PREFIX "" CACHE PATH "Prebuilt LLVM/Clang/LLD installation to link against")
++
++if (LIBNVCC_LLVM_PREFIX)
++  find_package(LLVM REQUIRED CONFIG PATHS "${LIBNVCC_LLVM_PREFIX}/lib/cmake/llvm" NO_DEFAULT_PATH)
++  find_package(Clang REQUIRED CONFIG PATHS "${LIBNVCC_LLVM_PREFIX}/lib/cmake/clang" NO_DEFAULT_PATH)
++  find_package(LLD REQUIRED CONFIG PATHS "${LIBNVCC_LLVM_PREFIX}/lib/cmake/lld" NO_DEFAULT_PATH)
++  set(_libnvcc_llvm_include_dirs ${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS} ${LLD_INCLUDE_DIRS})
++
++  # An LLVM built with LLVM_LINK_LLVM_DYLIB exports Clang and LLD libraries that link
++  # against the LLVM shared library. libnvcc must not: in a process that already loaded
++  # another LLVM, the dynamic linker would bind libnvcc to that one's symbols. Point
++  # those dependencies at the static component libraries instead.
++  set(_libnvcc_llvm_static_libs "")
++  foreach (_lib IN LISTS LLVM_AVAILABLE_LIBS)
++    if (TARGET ${_lib})
++      # (skipping the few, like LLVMOptDriver, that themselves link the shared library)
++      get_target_property(_type ${_lib} TYPE)
++      get_target_property(_deps ${_lib} INTERFACE_LINK_LIBRARIES)
++      if (_type STREQUAL "STATIC_LIBRARY" AND NOT "LLVM" IN_LIST _deps)
++        list(APPEND _libnvcc_llvm_static_libs ${_lib})
++      endif()
++    endif()
++  endforeach()
++  foreach (_target IN LISTS CLANG_EXPORTED_TARGETS LLD_EXPORTED_TARGETS)
++    if (TARGET ${_target})
++      get_target_property(_deps ${_target} INTERFACE_LINK_LIBRARIES)
++      if (_deps)
++        list(TRANSFORM _deps REPLACE "^LLVM$" "${_libnvcc_llvm_static_libs}")
++        set_target_properties(${_target} PROPERTIES INTERFACE_LINK_LIBRARIES "${_deps}")
++      endif()
++    endif()
++  endforeach()
++  set(_libnvcc_clang_resource_dir "${LIBNVCC_LLVM_PREFIX}/lib/clang/${LLVM_VERSION_MAJOR}")
++  set(_libnvcc_clang_headers_dir "${_libnvcc_clang_resource_dir}/include")
+ else()
+-  set(_libnvcc_llvm_version_default "llvmorg-22.1.1")
+-endif()
+-set(
+-  LIBNVCC_LLVM_VERSION
+-  "${_libnvcc_llvm_version_default}"
+-  CACHE STRING
+-  "LLVM git tag to fetch"
+-)
+-
+-# List options must be set before CPMAddPackage
+-set(LLVM_ENABLE_PROJECTS "clang;lld" CACHE STRING "" FORCE)
+-set(LLVM_TARGETS_TO_BUILD "X86;NVPTX" CACHE STRING "" FORCE)
+-
+-CPMAddPackage(
+-  NAME llvm_project
+-  GIT_REPOSITORY https://github.com/llvm/llvm-project.git
+-  GIT_TAG ${LIBNVCC_LLVM_VERSION}
+-  GIT_SHALLOW ON
+-  SOURCE_SUBDIR llvm
+-  EXCLUDE_FROM_ALL YES
+-  OPTIONS
+-    "LLVM_BUILD_LLVM_C_DYLIB OFF"
+-    "LLVM_BUILD_TOOLS OFF"
+-    "LLVM_BUILD_UTILS OFF"
+-    "LLVM_BUILD_RUNTIME OFF"
+-    "LLVM_BUILD_RUNTIMES OFF"
+-    "LLVM_INCLUDE_BENCHMARKS OFF"
+-    "LLVM_INCLUDE_DOCS OFF"
+-    "LLVM_INCLUDE_EXAMPLES OFF"
+-    "LLVM_INCLUDE_RUNTIMES OFF"
+-    "LLVM_INCLUDE_TESTS OFF"
+-    "LLVM_INCLUDE_TOOLS ON"
+-    "LLVM_INCLUDE_UTILS OFF"
+-    "LLVM_ENABLE_ZLIB OFF"
+-    "LLVM_ENABLE_ZSTD OFF"
+-    "LLVM_ENABLE_TERMINFO OFF"
+-    "LLVM_ENABLE_BINDINGS OFF"
+-    "CLANG_BUILD_TOOLS OFF"
+-    "CLANG_ENABLE_ARCMT OFF"
+-    "CLANG_ENABLE_STATIC_ANALYZER OFF"
+-)
++  if (DEFINED HOSTJIT_LLVM_VERSION AND NOT DEFINED LIBNVCC_LLVM_VERSION)
++    set(_libnvcc_llvm_version_default "${HOSTJIT_LLVM_VERSION}")
++  else()
++    set(_libnvcc_llvm_version_default "llvmorg-22.1.1")
++  endif()
++  set(
++    LIBNVCC_LLVM_VERSION
++    "${_libnvcc_llvm_version_default}"
++    CACHE STRING
++    "LLVM git tag to fetch"
++  )
+ 
+-# Ensure the clang resource directory exists
+-file(
+-  MAKE_DIRECTORY "${llvm_project_BINARY_DIR}/lib/clang/${LLVM_VERSION_MAJOR}"
+-)
++  # List options must be set before CPMAddPackage
++  set(LLVM_ENABLE_PROJECTS "clang;lld" CACHE STRING "" FORCE)
++  set(LLVM_TARGETS_TO_BUILD "X86;NVPTX" CACHE STRING "" FORCE)
++
++  CPMAddPackage(
++    NAME llvm_project
++    GIT_REPOSITORY https://github.com/llvm/llvm-project.git
++    GIT_TAG ${LIBNVCC_LLVM_VERSION}
++    GIT_SHALLOW ON
++    SOURCE_SUBDIR llvm
++    EXCLUDE_FROM_ALL YES
++    OPTIONS
++      "LLVM_BUILD_LLVM_C_DYLIB OFF"
++      "LLVM_BUILD_TOOLS OFF"
++      "LLVM_BUILD_UTILS OFF"
++      "LLVM_BUILD_RUNTIME OFF"
++      "LLVM_BUILD_RUNTIMES OFF"
++      "LLVM_INCLUDE_BENCHMARKS OFF"
++      "LLVM_INCLUDE_DOCS OFF"
++      "LLVM_INCLUDE_EXAMPLES OFF"
++      "LLVM_INCLUDE_RUNTIMES OFF"
++      "LLVM_INCLUDE_TESTS OFF"
++      "LLVM_INCLUDE_TOOLS ON"
++      "LLVM_INCLUDE_UTILS OFF"
++      "LLVM_ENABLE_ZLIB OFF"
++      "LLVM_ENABLE_ZSTD OFF"
++      "LLVM_ENABLE_TERMINFO OFF"
++      "LLVM_ENABLE_BINDINGS OFF"
++      "CLANG_BUILD_TOOLS OFF"
++      "CLANG_ENABLE_ARCMT OFF"
++      "CLANG_ENABLE_STATIC_ANALYZER OFF"
++  )
+ 
+-add_library(libnvcc SHARED compiler.cpp)
++  # Ensure the clang resource directory exists
++  file(
++    MAKE_DIRECTORY "${llvm_project_BINARY_DIR}/lib/clang/${LLVM_VERSION_MAJOR}"
++  )
+ 
+-target_include_directories(
+-  libnvcc
+-  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+-  PRIVATE
++  set(
++    _libnvcc_llvm_include_dirs
+     ${llvm_project_SOURCE_DIR}/llvm/include
+     ${llvm_project_BINARY_DIR}/include
+     ${llvm_project_SOURCE_DIR}/clang/include
+     ${llvm_project_BINARY_DIR}/tools/clang/include
+     ${llvm_project_SOURCE_DIR}/lld/include
+     ${llvm_project_BINARY_DIR}/tools/lld/include
++  )
++  set(_libnvcc_clang_resource_dir "${llvm_project_BINARY_DIR}/lib/clang/${LLVM_VERSION_MAJOR}")
++  set(_libnvcc_clang_headers_dir "${llvm_project_SOURCE_DIR}/clang/lib/Headers")
++endif()
++
++add_library(libnvcc SHARED compiler.cpp)
++
++if (LIBNVCC_LLVM_PREFIX)
++  # lld's driver initializes every target of the LLVM it was built with, which links in
++  # all of their back-ends. libnvcc only uses X86 and NVPTX, so turn the entry points of
++  # the others into no-ops (hidden, like the rest of the statically linked LLVM).
++  set(_libnvcc_target_stubs "")
++  foreach (_target IN LISTS LLVM_TARGETS_TO_BUILD)
++    if (NOT _target MATCHES "^(X86|NVPTX)$")
++      foreach (_part TargetInfo Target TargetMC AsmPrinter AsmParser Disassembler)
++        string(APPEND _libnvcc_target_stubs
++          "extern \"C\" __attribute__((visibility(\"hidden\"))) void LLVMInitialize${_target}${_part}() {}\n")
++      endforeach()
++    endif()
++  endforeach()
++  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/unused_targets.cpp" "${_libnvcc_target_stubs}")
++  target_sources(libnvcc PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/unused_targets.cpp")
++endif()
++
++target_include_directories(
++  libnvcc
++  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
++  PRIVATE ${_libnvcc_llvm_include_dirs}
+ )
+ 
+ target_compile_definitions(
+   libnvcc
+   PRIVATE
+-    CLANG_RESOURCE_DIR="${llvm_project_BINARY_DIR}/lib/clang/${LLVM_VERSION_MAJOR}"
+-    CLANG_HEADERS_DIR="${llvm_project_SOURCE_DIR}/clang/lib/Headers"
++    CLANG_RESOURCE_DIR="${_libnvcc_clang_resource_dir}"
++    CLANG_HEADERS_DIR="${_libnvcc_clang_headers_dir}"
+     HOSTJIT_INCLUDE_DIR="${_hostjit_include_dir}"
+ )
+ 
+@@ -217,6 +278,9 @@
+   # from the static LLVM/Clang/LLD archives so libnvcc exports only its own
+   # libnvcc* C API and all of its LLVM references bind internally.
+   target_link_options(libnvcc PRIVATE LINKER:--exclude-libs,ALL)
++  # The LLVM templates instantiated in libnvcc's own sources (e.g. pass manager
++  # destructors) are still exported as weak symbols; bind those internally too.
++  target_link_options(libnvcc PRIVATE LINKER:-Bsymbolic)
+ endif()
+ 
+ set_target_properties(
+@@ -267,12 +331,12 @@
+ # copies in cuda_minimal/ replace them.
+ set(
+   _clang_cuda_headers_needed
+-  "${llvm_project_SOURCE_DIR}/clang/lib/Headers/__clang_cuda_math_forward_declares.h"
+-  "${llvm_project_SOURCE_DIR}/clang/lib/Headers/__clang_cuda_builtin_vars.h"
+-  "${llvm_project_SOURCE_DIR}/clang/lib/Headers/__clang_cuda_cmath.h"
+-  "${llvm_project_SOURCE_DIR}/clang/lib/Headers/__clang_cuda_intrinsics.h"
+-  "${llvm_project_SOURCE_DIR}/clang/lib/Headers/__clang_cuda_complex_builtins.h"
+-  "${llvm_project_SOURCE_DIR}/clang/lib/Headers/__clang_cuda_texture_intrinsics.h"
++  "${_libnvcc_clang_headers_dir}/__clang_cuda_math_forward_declares.h"
++  "${_libnvcc_clang_headers_dir}/__clang_cuda_builtin_vars.h"
++  "${_libnvcc_clang_headers_dir}/__clang_cuda_cmath.h"
++  "${_libnvcc_clang_headers_dir}/__clang_cuda_intrinsics.h"
++  "${_libnvcc_clang_headers_dir}/__clang_cuda_complex_builtins.h"
++  "${_libnvcc_clang_headers_dir}/__clang_cuda_texture_intrinsics.h"
+ )
+ install(
+   FILES ${_clang_cuda_headers_needed}
+@@ -282,17 +346,17 @@
+ # Clang builtin C headers needed by our stubs and CUDA toolkit headers.
+ file(
+   GLOB _clang_stddef_headers
+-  "${llvm_project_SOURCE_DIR}/clang/lib/Headers/__stddef_*.h"
++  "${_libnvcc_clang_headers_dir}/__stddef_*.h"
+ )
+ set(
+   _clang_c_headers
+-  "${llvm_project_SOURCE_DIR}/clang/lib/Headers/limits.h"
+-  "${llvm_project_SOURCE_DIR}/clang/lib/Headers/stddef.h"
+-  "${llvm_project_SOURCE_DIR}/clang/lib/Headers/stdint.h"
+-  "${llvm_project_SOURCE_DIR}/clang/lib/Headers/__stddef_header_macro.h"
+-  "${llvm_project_SOURCE_DIR}/clang/lib/Headers/float.h"
+-  "${llvm_project_SOURCE_DIR}/clang/lib/Headers/__float_header_macro.h"
+-  "${llvm_project_SOURCE_DIR}/clang/lib/Headers/inttypes.h"
++  "${_libnvcc_clang_headers_dir}/limits.h"
++  "${_libnvcc_clang_headers_dir}/stddef.h"
++  "${_libnvcc_clang_headers_dir}/stdint.h"
++  "${_libnvcc_clang_headers_dir}/__stddef_header_macro.h"
++  "${_libnvcc_clang_headers_dir}/float.h"
++  "${_libnvcc_clang_headers_dir}/__float_header_macro.h"
++  "${_libnvcc_clang_headers_dir}/inttypes.h"
+   ${_clang_stddef_headers}
+ )
+ install(

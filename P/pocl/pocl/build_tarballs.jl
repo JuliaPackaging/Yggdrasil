@@ -99,6 +99,9 @@ for platform in platforms
     should_build_platform(triplet(platform)) || continue
 
     platform_sources = deepcopy(sources)
+    if needs_aarch64_isel_fix(platform)
+        push!(platform_sources, aarch64_isel_fix_source)
+    end
     platform_dependencies = deepcopy(dependencies)
 
     # On Windows we now link PoCL with the Clang/lld toolchain, but still build against this
@@ -140,3 +143,5 @@ for (i,build) in enumerate(builds)
                    # bundles since 1.8; 1.10 is the oldest version the users of these JLLs support
                    julia_compat="1.10", init_block=init_block())
 end
+
+# Build trigger: 2

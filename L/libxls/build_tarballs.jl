@@ -2,11 +2,11 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 name = "libxls"
-version = v"1.6.3"
+version = v"1.6.4"
 
 sources = [
     ArchiveSource("https://github.com/libxls/libxls/releases/download/v$version/libxls-$version.tar.gz",
-                  "b2fb836ea0b5253a352fb5ca55742e29f06f94f9421c5b8eeccef2e5d43f622c"),
+                  "064ee1da6cf3d481d8af4a936e0e0ce0190114e468fb7dfef5a81610746081e0"),
 ]
 
 # Bash recipe for building across all platforms

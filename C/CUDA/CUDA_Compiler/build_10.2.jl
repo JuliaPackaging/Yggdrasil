@@ -13,6 +13,9 @@ rm -rf ${prefix}/*
 # license
 install_license EULA.txt
 
+# the toolkit does not separate the runtime and CCCL headers from those of its libraries
+cp -rL include ${prefix}
+
 # binaries
 mkdir -p ${bindir} ${libdir} ${prefix}/lib ${prefix}/share ${prefix}/nvvm
 if [[ ${target} == *-linux-gnu ]]; then
@@ -48,6 +51,7 @@ fi
 get_products() = [
     FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
     FileProduct("nvvm/libdevice/libdevice.10.bc", :libdevice),
+    FileProduct("include", :cuda_include_dir),
     LibraryProduct(["libnvvm", "nvvm64_33_0"], :libnvvm, ["nvvm/lib64", "nvvm/bin"]),
     LibraryProduct(["libnvrtc", "nvrtc64_102_0"], :libnvrtc),
     LibraryProduct(["libnvrtc-builtins", "nvrtc-builtins64_102"], :libnvrtc_builtins),

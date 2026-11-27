@@ -7,12 +7,12 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "UCX"
-version = v"1.20.0"
+version = v"1.20.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/openucx/ucx.git",
-                  "4b7a6ca8410f9cea0e15857233ecfeefdd863dde"),
+              "d8e50df6651b9ea5b76f23aee0aefbf053a4137a"; tag="v$(version)"),
     ]
 
 # Bash recipe for building across all platforms
@@ -37,23 +37,33 @@ FLAGS+=(--enable-frame-pointer)
 FLAGS+=(--enable-cma)
 FLAGS+=(--with-rdmacm=${prefix})
 
+if [[ "${bb_full_target}" == *-cuda+[0-9]* ]]; then
+    FLAGS+=(--with-cuda=${prefix}/cuda)
+    export CUDA_HOME=${prefix}/cuda
+    export PATH=$PATH:$CUDA_HOME/bin
+    export CUDACXX=$CUDA_HOME/bin/nvcc
+    export CUDA_LIB=${CUDA_HOME}/lib
+fi
+
+./configure ${FLAGS[@]}
+
+# For a bug in `src/uct/sm/cma/Makefile` that I did't have the time to look
+# into, we have to build with `V=1`
+make -j${nproc} V=1
+make install
+
+install_license LICENSE
 """
 
 MIN_CUDA_VERSION = v"12.2"
 MAX_CUDA_VERSION = v"13.0.999" 
 
-cpu_platforms = [Platform("x86_64", "linux"; libc="glibc"), Platform("aarch64", "linux"; libc="glibc")]
+cpu_platforms = CUDA.cpu_platforms([Platform("x86_64", "linux"; libc="glibc"), Platform("aarch64", "linux"; libc="glibc")])
 
 cuda_platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
 filter!(p -> arch(p) == "x86_64", cuda_platforms) # ARM+CUDA+UCX should work, but not gonna do that today
 
 all_platforms = [cpu_platforms; cuda_platforms]
-
-for platform in all_platforms
-    if CUDA.is_supported(platform) && !haskey(platform, "cuda")
-        platform["cuda"] = "none"
-    end
-end
 
 # The products that we will ensure are always built
 products = [
@@ -80,49 +90,18 @@ dependencies = [
     Dependency("NUMA_jll"),
     Dependency("rdma_core_jll"),
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    CUDA.required_dependencies(all_platforms)...,
 ]
 
-
 for platform in all_platforms
-
     should_build_platform(triplet(platform)) || continue
 
-    platform_deps = BinaryBuilder.AbstractDependency[dependencies...]
-    platform_script = deepcopy(script)
-
-    if haskey(platform, "cuda") && platform["cuda"] != "none" 
-        append!(platform_deps, CUDA.required_dependencies(platform))
-
-        platform_script *= "\n"
-        platform_script *= raw"""
-            FLAGS+=(--with-cuda=${prefix}/cuda)
-            export CUDA_HOME=${prefix}/cuda;
-            export PATH=$PATH:$CUDA_HOME/bin
-            export CUDACXX=$CUDA_HOME/bin/nvcc
-            export CUDA_LIB=${CUDA_HOME}/lib
-        """
-
-    end
-
-    platform_script *= "\n"
-    platform_script *= raw"""
-        ./configure ${FLAGS[@]}
-
-        # For a bug in `src/uct/sm/cma/Makefile` that I did't have the time to look
-        # into, we have to build with `V=1`
-        make -j${nproc} V=1
-        make install
-
-        install_license LICENSE
-        """
-
     build_tarballs(
-        ARGS, name, version, sources, 
-        platform_script, [platform], products, platform_deps;
-        julia_compat = "1.10", 
+        ARGS, name, version, sources,
+        script, [platform], products, dependencies;
+        julia_compat = "1.10",
         preferred_gcc_version = v"7",
         lazy_artifacts = true,
         augment_platform_block = CUDA.augment
     )
-
 end

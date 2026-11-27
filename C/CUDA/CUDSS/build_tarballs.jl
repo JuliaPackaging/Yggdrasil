@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDSS"
-version = v"0.8.0"
-full_version = "0.8.0.10"
+version = v"1.0.0"
+full_version = "1.0.0.35"
 
 script = raw"""
 mkdir -p ${libdir} ${prefix}/include
@@ -19,6 +19,7 @@ if [[ ${target} == *-linux-gnu ]]; then
 
     cd libcudss-*
     install_license LICENSE
+    # Only the shared libraries; this skips libcudss_static.a and lib/cmake.
     mv lib/libcudss*.so* ${libdir}
     mv include/* ${prefix}/include
 
@@ -43,6 +44,8 @@ products = [
     # LibraryProduct("libcudss_mtlayer_gomp", :libcudss_mtlayer),
 ]
 
+# libcudss 1.x also needs libnvrtc (and libnvrtc-builtins) at load time, next to
+# libcublas. Both are provided by CUDA_Runtime_jll.
 dependencies = [
     Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae"));
     RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll", uuid="76a88914-d11a-5bdc-97e0-2f5a05c973a2"))

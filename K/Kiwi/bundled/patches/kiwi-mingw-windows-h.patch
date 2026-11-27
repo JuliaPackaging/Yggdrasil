@@ -1,0 +1,13 @@
+Include <windows.h> in lowercase, the spelling mingw-w64 ships, so cross-compiling on a case-sensitive file system works.
+
+--- a/include/kiwi/Mmap.h
++++ b/include/kiwi/Mmap.h
+@@ -5,7 +5,7 @@
+ 
+ #ifdef _WIN32
+ #define NOMINMAX
+-#include <Windows.h>
++#include <windows.h>
+ namespace kiwi
+ {
+ 	namespace utils

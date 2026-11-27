@@ -3,11 +3,14 @@
 using BinaryBuilder
 
 name = "gmsh"
-version = v"4.15.2"
+upstream_version = v"4.15.2"
+# Different version number: 4.15.3 changed a compat bound, and 4.15.4 adds the private API,
+# so dependents (getdp) can require it. In the future we can go back to follow upstream.
+version = v"4.15.4"
 
 # Collection of sources required to build Gmsh
 sources = [
-    ArchiveSource("https://gmsh.info/src/gmsh-$(version)-source.tgz",
+    ArchiveSource("https://gmsh.info/src/gmsh-$(upstream_version)-source.tgz",
                   "be3f66f225d27ba9fa014f07e83169285da8a051b0e8ab7103d88066b39bdd3e"),
     DirectorySource("./bundled")
     ]
@@ -18,18 +21,25 @@ cd ${WORKSPACE}/srcdir/gmsh-*
 if [[ "${target}" == *linux* ]] || [[ "${target}" == *freebsd* ]]; then
     OPENGL_FLAGS="-DOpenGL_GL_PREFERENCE=LEGACY"
 fi
+if [[ "${target}" == *-mingw* ]]; then
+    # Public dllexport declarations suppress MinGW's automatic private API exports.
+    GMSH_SHARED_FLAGS="-DCMAKE_SHARED_LINKER_FLAGS=-Wl,--export-all-symbols"
+fi
 
 # remove -static linker option from mingw builds, otherwise linker errors with "cannot find -lpng", "cannot find -lfontconfig" 
 atomic_patch -p1 "${WORKSPACE}/srcdir/patches/CMakeLists.txt.patch" 
 
 mkdir build
 cd build
+# GetDP needs Gmsh's private headers and symbols.
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_BUILD_TYPE=Release \
     -DENABLE_BUILD_DYNAMIC=1 \
+    -DENABLE_PRIVATE_API=1 \
     -DDEFAULT=1 \
+    ${GMSH_SHARED_FLAGS} \
     ${OPENGL_FLAGS}
 make -j${nproc}
 make install
@@ -38,6 +48,7 @@ sed ${prefix}/lib/gmsh.jl.bak \
   -e 's/^\(import Libdl\)/#\1/g' \
   -e 's/^\(const lib.*\)/#\1/g' \
   -e 's/^\(module gmsh\)$/\1\nusing gmsh_jll: libgmsh\nconst lib = libgmsh/g' \
+  -e 's/ierr\[\] != 0 && error("Could not get last error")/ierr[] != 0 \&\& Base.error("Could not get last error")/g' \
   > ${prefix}/lib/gmsh.jl
 install_license ../LICENSE.txt
 """
@@ -65,7 +76,7 @@ dependencies = [
     Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("GLU_jll"; platforms=x11_platforms),
     Dependency("GMP_jll"; compat="6.2"),
-    Dependency("HDF5_jll"; compat="~2.1.2"),
+    Dependency("HDF5_jll"; compat="2.2.1"),
     Dependency("JpegTurbo_jll"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("libpng_jll"),
@@ -83,4 +94,4 @@ dependencies = [
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6", preferred_gcc_version=v"9")
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.10", preferred_gcc_version=v"9")

@@ -1,8 +1,30 @@
 [deps]
 BinaryBuilder2 = "12aac903-9f7c-5d81-afc2-d9565ea332af"
 BinaryBuilderAuditor = "53524979-5234-6e31-4220-6120654b694c"
+BinaryBuilderGitUtils = "654d7472-7548-7361-4832-74694762694c"
+BinaryBuilderPlatformExtensions = "213f2928-4d72-6f46-7461-4c705f634367"
+BinaryBuilderProducts = "21737265-7a69-6e4f-4974-6375646f7270"
+BinaryBuilderSources = "316c416d-4527-6863-7465-466137743047"
+BinaryBuilderToolchains = "33566f4c-336c-3150-6d30-4374274e6143"
+JLLGenerator = "73536572-7074-4e69-5270-206c4c6a2061"
+KeywordArgumentExtraction = "45533465-3150-2073-4772-41774b207255"
+LazyJLLWrappers = "21706172-204c-4d4f-5420-656854206f44"
+MultiHashParsing = "73786568-6863-756d-6873-6168796e616d"
+ScratchSpaceGarbageCollector = "2b218182-314f-4389-a4eb-69d351d2272a"
+TreeArchival = "216c6a2e-6c61-7669-6863-726165657274"
 YAML = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
 
 [sources]
 BinaryBuilder2 = {rev = "main", url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"}
 BinaryBuilderAuditor = {rev = "main", subdir = "BinaryBuilderAuditor.jl", url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"}
+BinaryBuilderGitUtils = {rev = "main", subdir = "BinaryBuilderGitUtils.jl", url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"}
+BinaryBuilderPlatformExtensions = {rev = "main", subdir = "BinaryBuilderPlatformExtensions.jl", url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"}
+BinaryBuilderProducts = {rev = "main", subdir = "BinaryBuilderProducts.jl", url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"}
+BinaryBuilderSources = {rev = "main", subdir = "BinaryBuilderSources.jl", url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"}
+BinaryBuilderToolchains = {rev = "main", subdir = "BinaryBuilderToolchains.jl", url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"}
+JLLGenerator = {rev = "main", subdir = "JLLGenerator.jl", url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"}
+KeywordArgumentExtraction = {rev = "main", subdir = "KeywordArgumentExtraction.jl", url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"}
+LazyJLLWrappers = {rev = "main", subdir = "LazyJLLWrappers.jl", url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"}
+MultiHashParsing = {rev = "main", subdir = "MultiHashParsing.jl", url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"}
+ScratchSpaceGarbageCollector = {rev = "main", subdir = "ScratchSpaceGarbageCollector.jl", url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"}
+TreeArchival = {rev = "main", subdir = "TreeArchival.jl", url = "https://github.com/JuliaPackaging/BinaryBuilder2.jl.git"}

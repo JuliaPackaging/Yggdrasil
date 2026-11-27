@@ -2,37 +2,24 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
 
-const YGGDRASIL_DIR = "../.."
-include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
-
 name = "FFMPEG"
-version_string = "9.0.2" # when patch number is zero, they use X.Y format
+version_string = "9.1" # when patch number is zero, they use X.Y format
 version = VersionNumber(version_string)
 
 # Collection of sources required to build FFMPEG
-macos_sdk_version = "10.13"
 sources = [
     ArchiveSource(
         "https://ffmpeg.org/releases/ffmpeg-$(version_string).tar.xz",
-        "8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e",
+        "1a4d394ae63d190a526cd052eb4415c156b5c5e2df37efab41a7de0b8fde2433",
     ),
-    DirectorySource("../bundled"),
-    get_macos_sdk_sources(macos_sdk_version)...
 ]
 
 # Bash recipe for building across all platforms
 # TODO: Theora once it's available
 function script(; ffplay=false, gpl=true)
-    "FFPLAY=$(ffplay)\nGPL=$(gpl)\n" * get_macos_sdk_script(macos_sdk_version) * raw"""
+    "FFPLAY=$(ffplay)\nGPL=$(gpl)\n" * raw"""
 cd $WORKSPACE/srcdir
 cd ffmpeg-*/
-
-if [[ "${target}" == x86_64-apple-darwin* ]]; then
-    # AVMediaType is declared as NSString by the SDK and as enum by FFMPEG. Avoid the conflict.
-    # This only happens on x86_64, it does not happen on aarch64.
-    # Maybe our choice to build for darwin14 is the culprit? We're building for darwin20 on aarch64.
-    atomic_patch -p1 $WORKSPACE/srcdir/patches/avfoundation.patch
-fi
 
 sed -i 's/-lflite"/-lflite -lasound"/' configure
 
@@ -73,6 +60,11 @@ if [[ "${target}" == *-darwin* ]]; then
     EXTRA_FLAGS+=(--objcc="${CC} -x objective-c")
     # Enable VideoToolbox hardware acceleration on macOS
     EXTRA_FLAGS+=("--enable-videotoolbox")
+fi
+if [[ "${target}" == x86_64-apple-darwin* ]]; then
+    # `__builtin_available(macOS 11.0, *)` needs `__isPlatformVersionAtLeast` when targeting older
+    # macOS versions, but our x86_64 macOS toolchain doesn't link compiler-rt. Remove this when it does.
+    EXTRA_FLAGS+=(--extra-libs="${libdir}/darwin/libclang_rt.osx.a")
 fi
 if [[ "${FFPLAY}" == "true" ]]; then
     EXTRA_FLAGS+=("--enable-ffplay")
@@ -158,4 +150,5 @@ end
 # platforms are passed in on the command line
 platforms = supported_platforms()
 
-preferred_gcc_version = v"8"
+# x265_jll 4.2 is built with GCC 12, and its libx265 needs libstdc++ symbols (GLIBCXX_3.4.29) that GCC 8 lacks
+preferred_gcc_version = v"12"

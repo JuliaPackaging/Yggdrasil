@@ -16,7 +16,7 @@ version = v"1.4.0"
 
 sources = [
     GitSource("https://github.com/SciML/AudioPlugins.jl.git",
-              "9c23dbc3929da0ad920e5cc26372e5042e59bf99"),
+              "db936e2e3f2e855a20944c19ff7adac21c176037"),
 ]
 
 script = raw"""

@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: julia-actions/setup-julia@fa02766e078afaaf09b14210362cee14137e6a32 # v3.0.2
+      - uses: julia-actions/setup-julia@da908477b5db94c10ffce8cfea9f2b3b9d5db687 # v3.0.3
         with:
           version: '1.13.2' # Use the version of Julia used on the build machine
           arch: x64
@@ -34,11 +34,40 @@ jobs:
         id: commit_message
       - name: Show git status
         run: git status
-      - uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+      - uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8.1.3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           delete-branch: true
           branch: 'gha/update-manifest'
+          commit-message: ${{ env.commit_message }}
+          title: ${{ env.commit_title }}
+          body: ${{ env.commit_body }}
+          labels: |
+            meta :deciduous_tree:
+
+  # The BinaryBuilder2 environment gets its own pull request, so that its updates (which follow
+  # BinaryBuilder2.jl's `main` branch) can be reviewed and merged independently.
+  update_bb2_manifest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: julia-actions/setup-julia@da908477b5db94c10ffce8cfea9f2b3b9d5db687 # v3.0.3
+        with:
+          version: '1.13.2' # The Julia version that `.ci/bb2_project/Manifest.toml` is resolved with
+          arch: x64
+      - uses: julia-actions/cache@9353db09a0f2bbbdec6f41791918c75d37391b36 # v3.5.0
+        with:
+          cache-registries: "true"
+      - name: Update the manifest and generate commit message
+        run: julia --project=.ci/bb2_project --color=yes .ci/bb2_project/update_manifest.jl
+      - name: Show git status
+        run: git status
+      - uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8.1.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          delete-branch: true
+          branch: 'gha/update-bb2-manifest'
           commit-message: ${{ env.commit_message }}
           title: ${{ env.commit_title }}
           body: ${{ env.commit_body }}

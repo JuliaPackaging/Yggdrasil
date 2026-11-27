@@ -27,7 +27,9 @@ fi
 
 # `--with-pic` isn't enough; we really really need -fPIC and -DPIC everywhere...
 # everywhere, especially on FreeBSD. In the end, isn't FreeBSD all that matters?
-./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic CFLAGS="${CFLAGS} -DPIC -fPIC -g -O2" CXXFLAGS="${CXXFLAGS} -DPIC -fPIC -g -O2"
+# Unwinding through libuv with only `.debug_frame` makes each `@profile` sample on aarch64 scan
+# all of `/proc/self/maps`, so emit `.eh_frame` too.
+./configure --prefix=${prefix} --build=${MACHTYPE} --host=${target} --with-pic CFLAGS="${CFLAGS} -DPIC -fPIC -g -O2 -fasynchronous-unwind-tables" CXXFLAGS="${CXXFLAGS} -DPIC -fPIC -g -O2"
 make -j${nproc} V=1
 make install
 """

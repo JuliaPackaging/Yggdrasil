@@ -3,13 +3,16 @@
 using BinaryBuilder, Pkg
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+# Note: Different minor versions of `OpenEXR_jll` are not ABI compatible.
+# All downstream packages know this and use explicit compat bounds.
 
 name = "OpenColorIO"
-version = v"2.5.0"
+version = v"2.6.0"
 
 # Collection of sources required to complete build
 sources = [
-    GitSource("https://github.com/AcademySoftwareFoundation/OpenColorIO", "592a122b37467c3376f2387fbbdbe7b571fad39f"),
+    GitSource("https://github.com/AcademySoftwareFoundation/OpenColorIO", "10a43ec1df03d072ca9a9e2fb3f26e454b0900d8";
+              tag="v$(version)"),
     DirectorySource("bundled"),
 ]
 
@@ -29,6 +32,7 @@ args=(
     -DOCIO_BUILD_GPU_TESTS=OFF
     -DOCIO_BUILD_PYTHON=OFF
     -DOCIO_BUILD_TESTS=OFF
+    -DOCIO_DIRECTX_ENABLED=OFF
     -DOCIO_USE_HEADLESS=ON
 )
 if [[ ${target} == *darwin* ]]; then
@@ -60,17 +64,17 @@ products = [
     ExecutableProduct("ociowrite"       , :ociowrite       ),
     ExecutableProduct("ociolutimage"    , :ociolutimage    ),
     ExecutableProduct("ocioconvert"     , :ocioconvert     ),
-    LibraryProduct(["libOpenColorIO", "libOpenColorIO_2_5"], :libOpenColorIO),
+    LibraryProduct(["libOpenColorIO", "libOpenColorIO_2_6"], :libOpenColorIO),
 ]
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
     # minizip-ng
-    Dependency("Expat_jll"; compat="2.7.3"),
-    Dependency("Imath_jll"; compat="3.2.2"),
-    Dependency("OpenEXR_jll"; compat="3.4.4"),
+    Dependency("Expat_jll"; compat="2.8.4"),
+    Dependency("Imath_jll"; compat="~3.2.2"),
+    Dependency("OpenEXR_jll"; compat="~3.5.2"),
     Dependency("Zlib_jll"),
-    Dependency("yaml_cpp_jll"; compat="0.8.1"),
+    Dependency("yaml_cpp_jll"; compat="0.9.0"),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

@@ -1,17 +1,19 @@
-using BinaryBuilder
+using BinaryBuilder2
 
 name = "Bzip2"
-version = v"1.0.9" # Building v1.0.8, version bump to pick up riscv
+version = v"1.0.8"
+ygg_version = v"1.0.9"  # version bump to pick up riscv
 
 
 # Collection of sources required to build bzip2
 sources = [
-    GitSource("git://sourceware.org/git/bzip2.git",
-              "6a8690fc8d26c815e798c588f796eabe9d684cf0"),
+    GitSource("https://sourceware.org/git/bzip2.git",
+              "6a8690fc8d26c815e798c588f796eabe9d684cf0";
+              tag="bzip2-$(version)"),
 ]
 
 # Bash recipe for building across all platforms
-script = "VERSION=$(version)\n" * raw"""
+script = "VERSION=$(ygg_version)\n" * raw"""
 cd $WORKSPACE/srcdir/bzip2*/
 
 # Welp, auto-patching an include because otherwise win32/64 bzip2 won't cross-compile
@@ -21,26 +23,37 @@ sed -i 's/sys\\stat\.h/sys\/stat\.h/g' bzip2.c
 CFLAGS="-Wall -Winline -O2 -g -D_FILE_OFFSET_BITS=64 -fPIC"
 OBJS="blocksort.o huffman.o crctable.o randtable.o compress.o decompress.o bzlib.o"
 make CC=${CC} CFLAGS="${CFLAGS}" -j${nproc} ${OBJS}
+# The Makefile is broken on Windows: `make install` copies `bzip2` and `bzip2recover`, but there the
+# linker writes `bzip2.exe` and `bzip2recover.exe`.  Build the programs and give them the plain names.
+if [[ "${target}" == *-mingw* ]]; then
+    make CC=${CC} CFLAGS="${CFLAGS}" bzip2 bzip2recover
+    install -vm 755 bzip2.exe bzip2
+    install -vm 755 bzip2recover.exe bzip2recover
+fi
 make CC=${CC} CFLAGS="${CFLAGS}" PREFIX=${prefix} install
 
-# Build dynamic library
+# Build and install the dynamic library, with its symlinks.
 if [[ "${target}" == *-darwin* ]]; then
     cc -shared -current_version "${VERSION}" -compatibility_version 1.0 -o "libbz2.${VERSION}.dylib" ${OBJS}
     install_name_tool -id libbz2.1.0.dylib "libbz2.${VERSION}.dylib"
-    ln -s libbz2.${VERSION}.dylib libbz2.1.0.dylib
-    ln -s libbz2.${VERSION}.dylib libbz2.1.dylib
-    ln -s libbz2.${VERSION}.dylib libbz2.dylib
+    install -Dvm 755 "libbz2.${VERSION}.dylib" ${libdir}/"libbz2.${VERSION}.dylib"
+    ln -sv libbz2.${VERSION}.dylib ${libdir}/libbz2.1.0.dylib
+    ln -sv libbz2.${VERSION}.dylib ${libdir}/libbz2.1.dylib
+    ln -sv libbz2.${VERSION}.dylib ${libdir}/libbz2.dylib
 elif [[ "${target}" == *-mingw* ]]; then
+    # BinaryBuilder2's ${libdir} is ${prefix}/lib on Windows too, but DLLs must be in ${bindir}
     cc -shared -o libbz2-1.dll ${OBJS}
-    ln -s libbz2-1.dll libbz2.dll
+    install -Dvm 755 libbz2-1.dll ${bindir}/libbz2-1.dll
+    ln -sv libbz2-1.dll ${bindir}/libbz2.dll
 else
     cc -shared -Wl,-soname -Wl,libbz2.so.1.0 -o "libbz2.so.${VERSION}" ${OBJS}
-    ln -s "libbz2.so.${VERSION}" libbz2.so.1.0
-    ln -s "libbz2.so.${VERSION}" libbz2.so.1
-    ln -s "libbz2.so.${VERSION}" libbz2.so
+    install -Dvm 755 "libbz2.so.${VERSION}" ${libdir}/"libbz2.so.${VERSION}"
+    ln -sv "libbz2.so.${VERSION}" ${libdir}/libbz2.so.1.0
+    ln -sv "libbz2.so.${VERSION}" ${libdir}/libbz2.so.1
+    ln -sv "libbz2.so.${VERSION}" ${libdir}/libbz2.so
 fi
-mkdir -p ${libdir}
-mv -v libbz2*.${dlext}* ${libdir}/.
+
+install_license LICENSE
 
 # Add pkg-config file
 mkdir -p ${prefix}/lib/pkgconfig
@@ -70,8 +83,13 @@ products = [
     LibraryProduct("libbz2", :libbzip2),
 ]
 
-# Dependencies that must be installed before this package can be built
-dependencies = Dependency[
-]
-
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; julia_compat="1.6")
+build_tarballs(;
+    src_name = name,
+    src_version = version,
+    version_series = ygg_version,
+    sources,
+    script,
+    platforms,
+    products,
+    julia_compat = "1.6",
+)

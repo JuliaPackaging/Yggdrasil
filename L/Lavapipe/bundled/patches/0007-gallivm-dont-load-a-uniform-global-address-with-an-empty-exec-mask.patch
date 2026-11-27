@@ -1,0 +1,55 @@
+gallivm: don't load a uniform global address with an empty exec mask
+
+visit_load_global() loads a uniform address once, as a scalar, without
+looking at the exec mask. That is only safe while some invocation is
+active, and gallivm does not jump over every branch that no invocation
+takes: lp_should_flatten_cf_list() lets a branch of one block with fewer
+than eight instructions run under the exec mask. So a compute shader
+such as
+
+    prev = group_id == 0 ? init : prefixes[group_id - 1];
+
+loads the element before `prefixes` in group 0, and faults when that
+lies on an unmapped page. Load from the zeroed qword instead when no
+invocation is active, as ssbo_base_pointer() already does for a buffer
+descriptor with an empty exec mask.
+
+--- a/src/gallium/auxiliary/gallivm/lp_bld_nir_soa.c
++++ b/src/gallium/auxiliary/gallivm/lp_bld_nir_soa.c
+@@ -4689,9 +4689,34 @@
+    if (!lp_value_is_divergent(addr)) {
+       addr = global_addr_to_ptr(gallivm, addr, instr->def.bit_size);
+ 
++      /* A uniform address is loaded once, without the exec mask.  gallivm does not
++       * skip every branch that no invocation takes (see lp_should_flatten_cf_list),
++       * so this load can run for an address no invocation would have used, such as
++       * index -1 of an array behind a branch on the index.  When no invocation is
++       * active, load from a zeroed qword instead.
++       */
++      LLVMValueRef any_active = NULL;
++      if (!lp_exec_mask_is_nz(bld)) {
++         LLVMValueRef exec_mask = mask_vec_with_helpers(bld);
++         LLVMValueRef bitmask = LLVMBuildICmp(builder, LLVMIntNE, exec_mask,
++                                              uint_bld->zero, "");
++         bitmask = LLVMBuildBitCast(builder, bitmask,
++                                    LLVMIntTypeInContext(gallivm->context, uint_bld->type.length), "");
++         any_active = LLVMBuildICmp(builder, LLVMIntNE, bitmask,
++                                    LLVMConstNull(LLVMTypeOf(bitmask)), "any_active");
++      }
++
+       for (unsigned c = 0; c < instr->def.num_components; c++) {
+-         result[c] = lp_build_pointer_get2(builder, res_bld->elem_type,
+-                                           addr, lp_build_const_int32(gallivm, c));
++         LLVMValueRef chan = lp_build_const_int32(gallivm, c);
++         if (any_active) {
++            LLVMValueRef ptr = LLVMBuildGEP2(builder, res_bld->elem_type, addr, &chan, 1, "");
++            LLVMValueRef null_ptr = LLVMBuildBitCast(builder, bld->null_qword_ptr,
++                                                     LLVMTypeOf(ptr), "");
++            ptr = LLVMBuildSelect(builder, any_active, ptr, null_ptr, "");
++            result[c] = LLVMBuildLoad2(builder, res_bld->elem_type, ptr, "");
++         } else {
++            result[c] = lp_build_pointer_get2(builder, res_bld->elem_type, addr, chan);
++         }
+       }
+       return;
+    }

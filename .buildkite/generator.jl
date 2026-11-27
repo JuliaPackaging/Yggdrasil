@@ -37,6 +37,17 @@ include("utils.jl")
 # Give a warning if the pkgserver is too far behind
 check_pkgserver_latency()
 
+# Projects whose unchanged platforms reuse the tarballs of the previous release instead of
+# being rebuilt, see `.ci/bb1_project/plan_reuse.jl`.
+const REUSE_TARBALLS = Set{String}([
+    "C/CUDA/CUDA_Compiler",
+    "C/CUDA/CUDA_Runtime",
+    "L/LLVM/Clang_unified",
+    "L/LLVM/LLD_unified",
+    "L/LLVM/LLVM_unified",
+    "L/LLVM/LLVM_utils_unified",
+])
+
 # If there are scary projects we need to exclude, we list them here. (Used to contain `LLVM`)
 EXCLUDED_NAMES = Set{String}([])
 
@@ -47,9 +58,6 @@ filter!(PROJECTS) do project
     end
     return true
 end
-
-# Clear out any old `.meta.json` files in the Yggdrasil root
-cleanup_metadata!()
 
 # Immediately read in all projects, and ensure that they are either all BB2 projects, or none of them are:
 bb2_projects = String[]
@@ -67,6 +75,7 @@ function bb1_build_steps!(group_steps, project)
     # named `LLVM`, which is what registration needs to find them.
     project_basename = basename(project)
     jll_name = first(split(project_basename, "@"))
+    cleanup_metadata!(project_basename)
 
     # We always invoke a `build_tarballs.jl` file from its own directory to generate the platform list
     cd(project) do
@@ -75,11 +84,19 @@ function bb1_build_steps!(group_steps, project)
         julia(`--compile=min ./build_tarballs.jl --meta-json="$(json_path)"`; julia_project = bb1_julia_project)
 
         # Generate platforms
-        julia(`$(bb1_julia_project)/generate_platforms.jl "$(json_path)" $(YGGDRASIL_BASE)/$(project_basename).platforms.list`)
+        platforms_path = "$(YGGDRASIL_BASE)/$(project_basename).platforms.list"
+        julia(`$(bb1_julia_project)/generate_platforms.jl "$(json_path)" $(platforms_path)`)
+
+        if project in REUSE_TARBALLS && !contains(COMMIT_MSG, SKIP_BUILD_COOKIE)
+            println("[$(project)] Determining which tarballs can be reused...")
+            plan_path = "$(YGGDRASIL_BASE)/$(project_basename).reuse.json"
+            julia(`$(bb1_julia_project)/plan_reuse.jl $(project) $(jll_name) $(json_path) $(platforms_path) $(plan_path)`)
+        end
     end
 
     platforms = split(readchomp(joinpath(YGGDRASIL_BASE, "$(project_basename).platforms.list")))
-    if isempty(platforms)
+    all_reused = isempty(platforms) && isfile(joinpath(YGGDRASIL_BASE, "$(project_basename).reuse.json"))
+    if isempty(platforms) && !all_reused
         @error("Unable to determine the proper platforms", project_basename)
         exit(1)
     end
@@ -123,36 +140,136 @@ function bb2_build_steps!(group_steps, projects)
     julia(`$(bb2_julia_project)/scheduler.jl $(projects)`; julia_project=bb2_julia_project, stdout=io)
     groups = YAML.load(String(take!(io)))
 
-    # We will create one group per packaging project, and each build will belong to one of those 
+    # We will create one group per project, holding that project's builds
+    build_steps = Dict{String,Vector{BB2BuildStep}}()
     for (group_name, group) in groups
-        builds = []
-        steps = []
+        builds = BB2BuildStep[]
         for build in group["builds"]
-            bs = BB2BuildStep(
+            push!(builds, BB2BuildStep(
                 build["name"],
                 group_name,
                 build["platform"],
                 build["build_hash"],
                 build["dependencies"],
-            )
-            push!(builds, bs)
-            push!(steps, render(bs))
+            ))
         end
+        build_steps[group_name] = builds
+        if !isempty(builds)
+            push!(group_steps, group_step(group_name, render.(builds)))
+        end
+    end
 
-        for packaging in (SHOULD_REGISTER ? group["packagings"] : [])
-            deps = vcat(
-                # Other packages that must be registered
-                packaging["dependencies"],
-                # Our own builds
-                builds,
-            )
-            rs = BB2RegisterStep(packaging["name"], group_name, deps)
-            push!(steps, render(rs))
-        end
-        push!(group_steps, group_step(group_name, steps))
+    bb2_load_check_steps!(group_steps, groups, build_steps)
+    SHOULD_REGISTER || return
+
+    # `register_package.jl` registers every package that a project's `build_tarballs.jl`
+    # builds, so all packages of a project share one registration step, as do all projects
+    # that build the same package (e.g. `G/Glibc/Glibc@2.17` and `Glibc@2.19`).  The step
+    # registers its projects one after another, in dependency order and lowest version
+    # first, so that the JLLs stack on top of each other in their repositories and in a
+    # chain of registry PRs.
+    for (name, packagings) in bb2_registration_groups(groups)
+        names = Set(p["name"] for (_, p) in packagings)
+        projects = registration_order(packagings)
+        deps = vcat(
+            # The registrations of other packages that must be registered first
+            unique([bb2_register_key(bb2_registration_name(groups, dep))
+                    for (_, p) in packagings for dep in p["dependencies"] if dep ∉ names]),
+            # The builds of every project that this step registers
+            [bs for project in projects for bs in build_steps[project]],
+        )
+        push!(group_steps, render(BB2RegisterStep(name, projects, deps)))
     end
 end
 
+# The BinaryBuilder2 packages of `groups` (the output of `scheduler.jl`), partitioned into
+# the sets that must be registered by a single step: packages built by the same project, and
+# projects that build the same package, belong together.  Returns `name => packagings` pairs,
+# sorted by name, where `packagings` holds `(project, packaging)` pairs and `name` joins the
+# set's package names with `+`.
+function bb2_registration_groups(groups)
+    packagings = [(project, p) for (project, group) in groups for p in group["packagings"]]
+    # Union-find over projects and package names
+    parent = Dict{String,String}()
+    find(x) = (p = get!(parent, x, x); p == x ? x : (parent[x] = find(p)))
+    for (project, p) in packagings
+        parent[find("project:$(project)")] = find("package:$(p["name"])")
+    end
+    sets = Dict{String,Vector{Tuple{String,Dict}}}()
+    for (project, p) in packagings
+        push!(get!(sets, find("package:$(p["name"])"), []), (project, p))
+    end
+    named = [join(sort(unique(p["name"] for (_, p) in set)), "+") => set for set in values(sets)]
+    return sort(named; by = first)
+end
+
+# The name of the registration step (see `bb2_registration_groups()`) that registers `package`
+function bb2_registration_name(groups, package::AbstractString)
+    for (name, packagings) in bb2_registration_groups(groups)
+        any(((_, p),) -> p["name"] == package, packagings) && return name
+    end
+    error("No registration step registers $(package)")
+end
+
+# The oldest Julia version (as `major.minor`) that the `julia` compat specifier allows, but
+# at least v1.3, the oldest that JLLs with artifacts can support.  `load_jlls.jl` selects
+# the JLLs to check on the oldest Julia versions the same way.
+function oldest_julia(julia_compat::AbstractString)
+    spec = Pkg.Types.semver_spec(julia_compat)
+    oldest = max(minimum(VersionNumber(r.lower.t...) for r in spec.ranges), v"1.3")
+    return "$(oldest.major).$(oldest.minor)"
+end
+
+# The projects that build `packagings` (`(project, packaging)` pairs), ordered so that each
+# package comes after the packages of this build that it depends on.
+function registration_order(packagings)
+    names = Set(p["name"] for (_, p) in packagings)
+    done = Set{String}()
+    order = String[]
+    remaining = sort(collect(packagings); by = ((_, p),) -> (p["name"], VersionNumber(p["version"])))
+    while !isempty(remaining)
+        idx = findfirst(((_, p),) -> all(d -> d ∈ done || d ∉ names || d == p["name"], p["dependencies"]), remaining)
+        if idx === nothing
+            error("Cyclic dependencies between the packages of this build: $(join([p["name"] for (_, p) in remaining], ", "))")
+        end
+        project, packaging = popat!(remaining, idx)
+        if !any(((_, p),) -> p["name"] == packaging["name"], remaining)
+            push!(done, packaging["name"])
+        end
+        project ∈ order || push!(order, project)
+    end
+    return order
+end
+
+# On every build, pull requests and `master` alike, all packages are also registered,
+# without deploying them, into a local universe, whose JLLs, with their artifacts and its
+# registry, become a depot uploaded as an artifact.  Then the JLLs are installed from that
+# depot and loaded.  These steps form the group "Package Tests", which doesn't hold up the
+# registration on `master`.  Only the JLLs with an artifact that the load-check agents can
+# load are checked (see `loadable_on_load_check_agent()` in `scheduler.jl`); if there are
+# none, e.g. for a Windows-only build, there are no such steps.
+function bb2_load_check_steps!(group_steps, groups, build_steps)
+    packagings = [(group_name, p) for (group_name, group) in groups for p in group["packagings"]]
+    checked = filter(((_, p),) -> p["load_check"], packagings)
+    isempty(checked) && return
+
+    # Every package is registered, as the checked JLLs may depend on the others
+    ps = BB2PackageStep(
+        registration_order(packagings),
+        [bs for builds in values(build_steps) for bs in builds],
+    )
+    steps = [render(ps)]
+
+    # Each JLL version is checked on the oldest Julia its `julia` compat allows, and every
+    # JLL version on the latest Julia release.
+    jlls = ["$(p["name"])_jll@$(p["version"])" for (_, p) in checked]
+    oldest_julias = unique(oldest_julia(p["julia_compat"]) for (_, p) in checked)
+    for julia_version in sort(oldest_julias; by=VersionNumber)
+        push!(steps, render(BB2LoadCheckStep(julia_version, true, jlls, step_key(ps))))
+    end
+    push!(steps, render(BB2LoadCheckStep("1", false, jlls, step_key(ps))))
+    push!(group_steps, group_step("Package Tests", steps))
+end
 
 function build_steps!(group_steps, bb1_projects, bb2_projects)
     if !isempty(bb1_projects)
@@ -165,7 +282,9 @@ function build_steps!(group_steps, bb1_projects, bb2_projects)
         end
     end
 
-    if !isempty(bb2_projects)
+    if !isempty(bb2_projects) && VERSION != VersionNumber(BB2_JULIA_VERSION)
+        push!(group_steps, bb2_schedule_step(bb2_projects))
+    elseif !isempty(bb2_projects)
         # Ensure BB2 is instantiated
         julia(`-e "import Pkg; Pkg.instantiate(); Pkg.precompile()"`; julia_project=bb2_julia_project)
 

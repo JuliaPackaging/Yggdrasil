@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "P4est"
 p4est_version = v"2.8.7"
-version = v"2.8.9"
+version = v"2.8.10"
 
 # Collection of sources required to complete build
 sources = [
@@ -41,15 +41,18 @@ export LIBS="-lm"
 FLAGS=()
 if [[ "${target}" == *-mingw* ]]; then
   # Set linker flags only at build time (see https://docs.binarybuilder.org/v0.3/troubleshooting/#Windows)
-  FLAGS+=(LDFLAGS="$LDFLAGS -no-undefined")
+  # Link MS-MPI's import library, under a name libtool accepts. Linked directly against msmpi.dll,
+  # ld auto-imports MPIR_Dup_fn as data, and its 32-bit pseudo relocation fails at load time when
+  # msmpi.dll is more than 2 GB away.
+  mkdir -pv ${WORKSPACE}/msmpi
+  cp -v ${prefix}/lib/msmpi.lib ${WORKSPACE}/msmpi/libmsmpi.dll.a
+  FLAGS+=(LDFLAGS="-L${WORKSPACE}/msmpi $LDFLAGS -no-undefined")
   # Configure does not find the correct Fortran compiler
   export F77="f77"
   # Link against ws2_32 to use the htonl function from winsock2.h
   export LIBS="-lmsmpi -lws2_32"
   # Disable MPI I/O on Windows since it causes p4est to crash
   mpiopts="--enable-mpi --disable-mpiio"
-  # Linker looks for libmsmpi instead of msmpi, copy existing symlink
-  cp -d ${libdir}/msmpi.dll ${libdir}/libmsmpi.dll
 else
   # Use MPI including MPI I/O on all other platforms
   export MPITRAMPOLINE_CC=${CC}

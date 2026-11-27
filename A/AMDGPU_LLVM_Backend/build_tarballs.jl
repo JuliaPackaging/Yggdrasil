@@ -3,8 +3,8 @@
 using BinaryBuilder
 
 name = "AMDGPU_LLVM_Backend"
-version = v"23.1.3"
-llvm_version = v"23.1.3"
+version = v"23.1.6"
+llvm_version = v"23.1.6"
 
 # This JLL ships `libamdgpu`, a shared library exposing a small, typed C API (see
 # bundled/libamdgpu.h) over a statically linked, symbol-hidden LLVM AMDGPU
@@ -16,10 +16,11 @@ llvm_version = v"23.1.3"
 # LLVM ships a single monorepo source archive (`llvm-project-X.Y.Z.src.tar.xz`).
 sources = [
     ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-$(llvm_version)/llvm-project-$(llvm_version).src.tar.xz",
-                  "c44186a7762ed28954be72e5ff6df9808e0779d4f1bf014ecc4e7e211d31ee34"),
-    # ROCm's fork, for the device libraries (TheRock 10.0).
+                  "d3b86ab29cfb4445a6652e5c2642ccc75e04e38084dde3701d323320f35a31da"),
+    # ROCm's fork, for the device libraries (TheRock 10.2).
     GitSource("https://github.com/ROCm/llvm-project",
-              "8f497e0992fb7513f7f78a6f6b6f1056c375e961"),
+              "bdc35841c97ff51400273b91d7bc05c96e19c2d9";
+              tag="therock-10.2"),
     DirectorySource("./bundled"),
 ]
 
@@ -38,10 +39,15 @@ script = raw"""
 #   arguments land at the offsets HIP/clang expect.
 # - 215829-amdgpu-fix-si-pre-emit-peephole-scc: llvm/llvm-project#215829,
 #   miscompile fix in si-pre-emit-peephole.
-# - 229471-amdgpu-fix-usub-sat-lds-flat: llvm/llvm-project#229471 (not merged
-#   yet, backported from its head cef234bcb436), expand `atomicrmw usub_sat`
+# - 229471-amdgpu-fix-usub-sat-lds-flat: llvm/llvm-project#229471 (merged for
+#   LLVM 24), expand `atomicrmw usub_sat`
 #   to a cmpxchg loop on LDS and flat where the target lacks the instruction,
 #   instead of failing to select it (llvm/llvm-project#229442).
+# - 239163-amdgpu-endpgm-divergent: llvm/llvm-project#239163 (not merged yet),
+#   lower `llvm.amdgcn.endpgm` like a trap without a trap handler, splitting its
+#   block when the call does not end it, as in divergent code, where its
+#   S_ENDPGM was followed by branches. That malformed code crashed branch
+#   relaxation in large kernels.
 # - amdgpu-i128-abi-name (not upstream): the ABI name "i128:64" selects an
 #   AMDGPU datalayout that aligns i128 to 64 bits, for hosts whose ABI does
 #   (Julia before 1.12); libamdgpu sets it from the module's datalayout.
@@ -228,7 +234,12 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("Zlib_jll"),
+    # At run time this is the zlib that Julia bundles, so build against the oldest
+    # one in `julia_compat` (1.6). Newer headers can bind to symbols older libz
+    # lacks: zlib 1.4's, with LLVM's `_FILE_OFFSET_BITS=64`, turn lld's
+    # `adler32_combine` into `adler32_combine64` on Windows, which the zlib of
+    # most Julia releases does not export, so the library would not load there.
+    Dependency("Zlib_jll"; compat="1.2.11"),
 ]
 
 build_tarballs(ARGS, name, version, sources, script,

@@ -138,7 +138,22 @@ function insert_compiler_shard(name, version, hash, archive_type; platform=host_
     bind_artifact!(artifacts_toml, BinaryBuilderBase.artifact_name(cs), hash; platform=platform, download_info=download_info, lazy=true, force=true)
 end
 
+# Pkg hashes a symlink by the character count of its target, git and Tar.jl by the byte count
+# (JuliaLang/Pkg.jl#4707). The Pkg server verifies artifacts with Tar.jl, so it never serves a
+# shard with a non-ASCII symlink target.
+function check_symlink_targets(hash::Base.SHA1)
+    path = artifact_path(hash)
+    for (root, dirs, files) in walkdir(path), name in vcat(dirs, files)
+        link = joinpath(root, name)
+        if islink(link) && !isascii(readlink(link))
+            error("Symlink with a non-ASCII target: $(relpath(link, path)) -> $(readlink(link))")
+        end
+    end
+end
+
 function upload_and_insert_shards(repo, name, version, unpacked_hash, squashfs_hash, platform; target=nothing)
+    check_symlink_targets(unpacked_hash)
+
     # Upload them both to GH releases on Yggdrasil
     unpacked_dl_info = nothing
     squashfs_dl_info = nothing

@@ -1,0 +1,917 @@
+From 673081ed7665c8d621ae4037002a0a20de0e78f5 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Mon, 12 Oct 2026 15:58:37 +0200
+Subject: [PATCH] [SPIR-V] Lower llvm.minimum/maximum instead of selecting
+ fmin/fmax (#225667)
+
+Fixes #225665. The SPIRV-LLVM-Translator equivalent is
+KhronosGroup/SPIRV-LLVM-Translator#4032.
+
+`G_FMINIMUM`/`G_FMAXIMUM` were legal and selected to `fmin`/`fmax`
+(`NMin`/`NMax`), which neither propagate NaNs nor order signed zeros.
+This expands `llvm.minimum`/`llvm.maximum` in `SPIRVPrepareFunctions`,
+with the same code the translator uses in `SPIRVRegularizeLLVM`, so that
+both produce the same OpenCL SPIR-V:
+
+```llvm
+%m     = call float @llvm.minnum.f32(float %x, float %y)
+; unless nsz: for non-NaN operands, the result has the sign of %x if that is
+; set (maximum: clear), and the sign of %y otherwise
+%xsign = call float @llvm.copysign.f32(float 1.0, float %x)
+%xneg  = fcmp olt float %xsign, 0.0
+%s     = select i1 %xneg, float %x, float %y
+%m.s   = call float @llvm.copysign.f32(float %m, float %s)
+; unless nnan
+%uno   = fcmp uno float %x, %y
+%r     = select i1 %uno, float 0x7FF8000000000000, float %m.s
+```
+
+The `copysign` on the result only changes a zero of the wrong sign. A
+`nnan nsz` call still compiles to a single `fmin`/`fmax`.
+
+`ExpandReductions` already turns `vector.reduce.fminimum`/`fmaximum` on
+power-of-two vectors into `llvm.minimum`/`maximum` calls. The remaining
+reductions are expanded into a chain of them, as the legalizer did
+before. `G_FMINIMUM`/`G_FMAXIMUM` are no longer legal.
+
+The expansion is done in IR because there the floating-point type is
+exact. An earlier version of this PR used
+`LegalizerHelper::lowerFMinimumMaximum`, and a later one a custom
+legalization. Both had to give SPIR-V types to the registers they
+create. The LLT does not distinguish `bfloat` from `half`, and the
+registers created while widening vectors or expanding reductions have no
+SPIR-V type to recover it from, so `bfloat` crashed in instruction
+selection.
+
+Two more changes were needed, each in its own commit with its own test:
+
+- `fcmp ord`/`uno` in shaders were selected to
+`OpOrdered`/`OpUnordered`. Those require the `Kernel` capability, so any
+`fcmp ord`/`uno` in a Vulkan module was already invalid. In shaders they
+are now selected via `OpIsNan`.
+- With `SPV_EXT_long_vector`, `fcmp` and `copysign` on vectors whose
+length isn't a power of two (e.g. `<5 x float>`) failed to legalize.
+They are now widened like the other floating-point operations.
+
+GLSL.std.450 has no `copysign`, so in shaders it is lowered to integer
+operations, which makes `half`/`double` need `Int16`/`Int64`, the same
+as `llvm.copysign` already does. `nsz` avoids this.
+
+This supersedes the draft #180797, which used the generic lowering but
+didn't handle the untyped `G_IS_FPCLASS` source (its CI fails on it) or
+shaders, and had no tests. `minimumnum`/`maximumnum` are handled
+separately in #218641.
+
+Assisted by: Opus 5.5
+# Conflicts:
+#	llvm/lib/Target/SPIRV/SPIRVLegalizerInfo.cpp
+#	llvm/test/CodeGen/SPIRV/extensions/SPV_EXT_long_vector/llvm-vector-reduce/fmaximum.ll
+#	llvm/test/CodeGen/SPIRV/extensions/SPV_EXT_long_vector/llvm-vector-reduce/fminimum.ll
+---
+ lib/Target/SPIRV/SPIRVInstructionSelector.cpp |  38 ++-
+ lib/Target/SPIRV/SPIRVLegalizerInfo.cpp       |  15 +-
+ lib/Target/SPIRV/SPIRVPrepareFunctions.cpp    |  78 ++++++
+ .../bfloat16-fminimum-fmaximum.ll             |  63 +++++
+ .../SPIRV/instructions/fcmp-ord-uno-shader.ll |  68 ++++++
+ .../llvm-intrinsics/fminimum-fmaximum.ll      | 227 ++++++++++++++++++
+ .../SPIRV/llvm-intrinsics/fp-intrinsics.ll    |  10 +-
+ .../llvm-vector-reduce/fmaximum.ll            |  72 +++++-
+ .../llvm-vector-reduce/fminimum.ll            |  72 +++++-
+ 9 files changed, 614 insertions(+), 29 deletions(-)
+ create mode 100644 llvm/test/CodeGen/SPIRV/extensions/SPV_INTEL_bfloat16_arithmetic/bfloat16-fminimum-fmaximum.ll
+ create mode 100644 llvm/test/CodeGen/SPIRV/instructions/fcmp-ord-uno-shader.ll
+ create mode 100644 llvm/test/CodeGen/SPIRV/llvm-intrinsics/fminimum-fmaximum.ll
+
+diff --git a/lib/Target/SPIRV/SPIRVInstructionSelector.cpp b/lib/Target/SPIRV/SPIRVInstructionSelector.cpp
+index 6a93c9f4c72a..0065c9d28420 100644
+--- a/lib/Target/SPIRV/SPIRVInstructionSelector.cpp
++++ b/lib/Target/SPIRV/SPIRVInstructionSelector.cpp
+@@ -1166,10 +1166,8 @@ bool SPIRVInstructionSelector::spvSelect(Register ResVReg,
+     return selectExtInst(ResVReg, ResType, I, CL::s_abs, GL::SAbs);
+ 
+   case TargetOpcode::G_FMINNUM:
+-  case TargetOpcode::G_FMINIMUM:
+     return selectExtInst(ResVReg, ResType, I, CL::fmin, GL::NMin);
+   case TargetOpcode::G_FMAXNUM:
+-  case TargetOpcode::G_FMAXIMUM:
+     return selectExtInst(ResVReg, ResType, I, CL::fmax, GL::NMax);
+ 
+   case TargetOpcode::G_FCOPYSIGN:
+@@ -4478,7 +4476,41 @@ Register SPIRVInstructionSelector::buildI32ConstantInEntryBlock(
+ bool SPIRVInstructionSelector::selectFCmp(Register ResVReg,
+                                           SPIRVTypeInst ResType,
+                                           MachineInstr &I) const {
+-  unsigned CmpOp = getFCmpOpcode(I.getOperand(1).getPredicate());
++  auto Pred = I.getOperand(1).getPredicate();
++  // OpOrdered and OpUnordered require the Kernel capability. For shaders,
++  // express them as uno(a, b) = isnan(a) || isnan(b), ord(a, b) = !uno(a, b).
++  if (STI.isShader() &&
++      (Pred == CmpInst::FCMP_ORD || Pred == CmpInst::FCMP_UNO)) {
++    MachineBasicBlock &BB = *I.getParent();
++    Register ResTypeID = GR.getSPIRVTypeID(ResType);
++    Register IsNan[2];
++    for (unsigned Idx = 0; Idx < 2; ++Idx) {
++      IsNan[Idx] = createVirtualRegister(ResType, &GR, MRI, *I.getMF());
++      BuildMI(BB, I, I.getDebugLoc(), TII.get(SPIRV::OpIsNan))
++          .addDef(IsNan[Idx])
++          .addUse(ResTypeID)
++          .addUse(I.getOperand(2 + Idx).getReg())
++          .constrainAllUses(TII, TRI, RBI);
++    }
++    Register UnoReg =
++        Pred == CmpInst::FCMP_UNO
++            ? ResVReg
++            : createVirtualRegister(ResType, &GR, MRI, *I.getMF());
++    BuildMI(BB, I, I.getDebugLoc(), TII.get(SPIRV::OpLogicalOr))
++        .addDef(UnoReg)
++        .addUse(ResTypeID)
++        .addUse(IsNan[0])
++        .addUse(IsNan[1])
++        .constrainAllUses(TII, TRI, RBI);
++    if (Pred == CmpInst::FCMP_ORD)
++      BuildMI(BB, I, I.getDebugLoc(), TII.get(SPIRV::OpLogicalNot))
++          .addDef(ResVReg)
++          .addUse(ResTypeID)
++          .addUse(UnoReg)
++          .constrainAllUses(TII, TRI, RBI);
++    return true;
++  }
++  unsigned CmpOp = getFCmpOpcode(Pred);
+   return selectCmp(ResVReg, ResType, CmpOp, I);
+ }
+ 
+diff --git a/lib/Target/SPIRV/SPIRVLegalizerInfo.cpp b/lib/Target/SPIRV/SPIRVLegalizerInfo.cpp
+index 2d36717a978d..33bb828bcf4e 100644
+--- a/lib/Target/SPIRV/SPIRVLegalizerInfo.cpp
++++ b/lib/Target/SPIRV/SPIRVLegalizerInfo.cpp
+@@ -439,9 +439,10 @@ SPIRVLegalizerInfo::SPIRVLegalizerInfo(const SPIRVSubtarget &ST) {
+       .customIf(all(typeInSet(0, allBoolScalarsAndVectors),
+                     typeInSet(1, allPtrsScalarsAndVectors)));
+ 
+-  getActionDefinitionsBuilder(G_FCMP).legalIf(
+-      all(typeInSet(0, allBoolScalarsAndVectors),
+-          typeInSet(1, allFloatScalarsAndVectors)));
++  getActionDefinitionsBuilder(G_FCMP)
++      .legalIf(all(typeInSet(0, allBoolScalarsAndVectors),
++                   typeInSet(1, allFloatScalarsAndVectors)))
++      .moreElementsToNextPow2(1);
+ 
+   getActionDefinitionsBuilder({G_ATOMICRMW_OR, G_ATOMICRMW_ADD, G_ATOMICRMW_AND,
+                                G_ATOMICRMW_MAX, G_ATOMICRMW_MIN,
+@@ -528,8 +529,6 @@ SPIRVLegalizerInfo::SPIRVLegalizerInfo(const SPIRVSubtarget &ST) {
+                                G_FNEARBYINT,
+                                G_INTRINSIC_ROUND,
+                                G_INTRINSIC_TRUNC,
+-                               G_FMINIMUM,
+-                               G_FMAXIMUM,
+                                G_INTRINSIC_ROUNDEVEN})
+       .legalFor(allFloatScalars)
+       .legalFor(allowedFloatVectorTypes)
+@@ -541,7 +540,11 @@ SPIRVLegalizerInfo::SPIRVLegalizerInfo(const SPIRVSubtarget &ST) {
+ 
+   getActionDefinitionsBuilder(G_FCOPYSIGN)
+       .legalForCartesianProduct(allFloatScalarsAndVectors,
+-                                allFloatScalarsAndVectors);
++                                allFloatScalarsAndVectors)
++      .fewerElementsIf(vectorElementCountIsGreaterThan(0, MaxVectorSize),
++                       LegalizeMutations::changeElementCountTo(
++                           0, ElementCount::getFixed(MaxVectorSize)))
++      .moreElementsToNextPow2(0);
+ 
+   getActionDefinitionsBuilder(G_FPOWI).legalForCartesianProduct(
+       allFloatScalarsAndVectors, allIntScalarsAndVectors);
+diff --git a/lib/Target/SPIRV/SPIRVPrepareFunctions.cpp b/lib/Target/SPIRV/SPIRVPrepareFunctions.cpp
+index 2b07f23e717d..22ccb9edba4e 100644
+--- a/lib/Target/SPIRV/SPIRVPrepareFunctions.cpp
++++ b/lib/Target/SPIRV/SPIRVPrepareFunctions.cpp
+@@ -449,6 +449,74 @@ lowerConstrainedFmuladd(IntrinsicInst *II,
+   EraseFromParent.push_back(II);
+ }
+ 
++// llvm.minimum/llvm.maximum return NaN if either operand is NaN and order -0.0
++// before +0.0, whereas OpenCL.std fmin/fmax and GLSL.std.450 NMin/NMax return
++// the other operand for a NaN and may return either zero. Expand them like
++// SPIRV-LLVM-Translator does, so that both produce the same OpenCL SPIR-V. For
++// llvm.minimum (llvm.maximum is symmetrical):
++//   %m = call @llvm.minnum(%x, %y)
++//   ; unless nsz: for non-NaN operands, the result has the sign of %x if that
++//   ; is set (maximum: clear), and the sign of %y otherwise. This only changes
++//   ; %m if it is a zero of the wrong sign.
++//   %xsign = call @llvm.copysign(1.0, %x)
++//   %xneg = fcmp olt %xsign, 0.0
++//   %s = select %xneg, %x, %y
++//   %m.s = call @llvm.copysign(%m, %s)
++//   ; unless nnan
++//   %uno = fcmp uno %x, %y
++//   %res = select %uno, NaN, %m.s
++static Value *expandFMinimumMaximum(IRBuilderBase &Builder, bool IsMax,
++                                    Value *X, Value *Y, FastMathFlags FMF) {
++  Type *Ty = X->getType();
++  Value *Res = Builder.CreateIntrinsic(
++      IsMax ? Intrinsic::maxnum : Intrinsic::minnum, {Ty}, {X, Y}, FMF);
++  if (!FMF.noSignedZeros()) {
++    Value *XSign = Builder.CreateCopySign(ConstantFP::get(Ty, 1.0), X);
++    Value *XNeg = Builder.CreateFCmpOLT(XSign, ConstantFP::getZero(Ty));
++    Value *Sign = IsMax ? Builder.CreateSelect(XNeg, Y, X)
++                        : Builder.CreateSelect(XNeg, X, Y);
++    Res = Builder.CreateCopySign(Res, Sign);
++  }
++  if (!FMF.noNaNs()) {
++    Value *Uno = Builder.CreateFCmpUNO(X, Y);
++    Res = Builder.CreateSelect(Uno, ConstantFP::getQNaN(Ty), Res);
++  }
++  return Res;
++}
++
++static void lowerFMinimumMaximum(IntrinsicInst *II,
++                                 SmallVector<Instruction *> &EraseFromParent) {
++  IRBuilder<> Builder(II);
++  Value *Res = expandFMinimumMaximum(
++      Builder, II->getIntrinsicID() == Intrinsic::maximum, II->getArgOperand(0),
++      II->getArgOperand(1), II->getFastMathFlags());
++  Res->takeName(II);
++  II->replaceAllUsesWith(Res);
++  EraseFromParent.push_back(II);
++}
++
++// ExpandReductions only expands llvm.vector.reduce.fminimum/fmaximum on vectors
++// with a power-of-two number of elements. Expand the others into a chain of
++// llvm.minimum/llvm.maximum, expanded as above.
++static void
++lowerVectorReduceFMinimumMaximum(IntrinsicInst *II,
++                                 SmallVector<Instruction *> &EraseFromParent) {
++  bool IsMax = II->getIntrinsicID() == Intrinsic::vector_reduce_fmaximum;
++  Value *Vec = II->getArgOperand(0);
++  unsigned NumElts = cast<FixedVectorType>(Vec->getType())->getNumElements();
++  IRBuilder<> Builder(II);
++  SmallVector<Value *> Elts;
++  for (unsigned I = 0; I < NumElts; ++I)
++    Elts.push_back(Builder.CreateExtractElement(Vec, I));
++  Value *Res = Elts[0];
++  for (Value *Elt : drop_begin(Elts))
++    Res =
++        expandFMinimumMaximum(Builder, IsMax, Res, Elt, II->getFastMathFlags());
++  Res->takeName(II);
++  II->replaceAllUsesWith(Res);
++  EraseFromParent.push_back(II);
++}
++
+ // Substitutes calls to LLVM intrinsics with either calls to SPIR-V intrinsics
+ // or calls to proper generated functions. Returns True if F was modified.
+ bool SPIRVPrepareFunctionsImpl::substituteIntrinsicCalls(Function *F) {
+@@ -478,6 +546,16 @@ bool SPIRVPrepareFunctionsImpl::substituteIntrinsicCalls(Function *F) {
+         lowerFunnelShifts(II);
+         Changed = true;
+         break;
++      case Intrinsic::minimum:
++      case Intrinsic::maximum:
++        lowerFMinimumMaximum(II, EraseFromParent);
++        Changed = true;
++        break;
++      case Intrinsic::vector_reduce_fminimum:
++      case Intrinsic::vector_reduce_fmaximum:
++        lowerVectorReduceFMinimumMaximum(II, EraseFromParent);
++        Changed = true;
++        break;
+       case Intrinsic::assume:
+       case Intrinsic::expect:
+         if (STI.canUseExtension(SPIRV::Extension::SPV_KHR_expect_assume))
+diff --git a/test/CodeGen/SPIRV/extensions/SPV_INTEL_bfloat16_arithmetic/bfloat16-fminimum-fmaximum.ll b/test/CodeGen/SPIRV/extensions/SPV_INTEL_bfloat16_arithmetic/bfloat16-fminimum-fmaximum.ll
+new file mode 100644
+index 000000000000..f18bfe22a35c
+--- /dev/null
++++ b/test/CodeGen/SPIRV/extensions/SPV_INTEL_bfloat16_arithmetic/bfloat16-fminimum-fmaximum.ll
+@@ -0,0 +1,63 @@
++; RUN: llc -verify-machineinstrs -O0 -mtriple=spirv64-unknown-unknown --spirv-ext=+SPV_INTEL_bfloat16_arithmetic,+SPV_KHR_bfloat16 %s -o - | FileCheck %s
++
++; The expansion of llvm.minimum/llvm.maximum must use bfloat types and
++; constants.
++
++; CHECK-DAG: %[[#Ext:]] = OpExtInstImport "OpenCL.std"
++; CHECK-DAG: %[[#BF16:]] = OpTypeFloat 16 0
++; CHECK-DAG: %[[#V4BF16:]] = OpTypeVector %[[#BF16]] 4
++; CHECK-DAG: %[[#One:]] = OpConstant %[[#BF16]] 16256
++; CHECK-DAG: %[[#NaN:]] = OpConstant %[[#BF16]] 32704
++; CHECK-DAG: %[[#V4One:]] = OpConstantComposite %[[#V4BF16]] %[[#One]] %[[#One]] %[[#One]] %[[#One]]
++; CHECK-DAG: %[[#V4NaN:]] = OpConstantComposite %[[#V4BF16]] %[[#NaN]] %[[#NaN]] %[[#NaN]] %[[#NaN]]
++
++; CHECK-LABEL: Begin function minimum_bf16
++; CHECK: %[[#A:]] = OpFunctionParameter %[[#BF16]]
++; CHECK: %[[#B:]] = OpFunctionParameter %[[#BF16]]
++; CHECK: %[[#M:]] = OpExtInst %[[#BF16]] %[[#Ext]] fmin %[[#A]] %[[#B]]
++; CHECK: %[[#ASign:]] = OpExtInst %[[#BF16]] %[[#Ext]] copysign %[[#One]] %[[#A]]
++; CHECK: %[[#ANeg:]] = OpFOrdLessThan %[[#]] %[[#ASign]] %[[#]]
++; CHECK: %[[#Sign:]] = OpSelect %[[#BF16]] %[[#ANeg]] %[[#A]] %[[#B]]
++; CHECK: %[[#Signed:]] = OpExtInst %[[#BF16]] %[[#Ext]] copysign %[[#M]] %[[#Sign]]
++; CHECK: %[[#Uno:]] = OpUnordered %[[#]] %[[#A]] %[[#B]]
++; CHECK: %[[#Res:]] = OpSelect %[[#BF16]] %[[#Uno]] %[[#NaN]] %[[#Signed]]
++; CHECK: OpReturnValue %[[#Res]]
++define bfloat @minimum_bf16(bfloat %a, bfloat %b) {
++  %r = call bfloat @llvm.minimum.bf16(bfloat %a, bfloat %b)
++  ret bfloat %r
++}
++
++; CHECK-LABEL: Begin function maximum_v4bf16
++; CHECK: %[[#A:]] = OpFunctionParameter %[[#V4BF16]]
++; CHECK: %[[#B:]] = OpFunctionParameter %[[#V4BF16]]
++; CHECK: %[[#M:]] = OpExtInst %[[#V4BF16]] %[[#Ext]] fmax %[[#A]] %[[#B]]
++; CHECK: %[[#ASign:]] = OpExtInst %[[#V4BF16]] %[[#Ext]] copysign %[[#V4One]] %[[#A]]
++; CHECK: %[[#ANeg:]] = OpFOrdLessThan %[[#]] %[[#ASign]] %[[#]]
++; CHECK: %[[#Sign:]] = OpSelect %[[#V4BF16]] %[[#ANeg]] %[[#B]] %[[#A]]
++; CHECK: %[[#Signed:]] = OpExtInst %[[#V4BF16]] %[[#Ext]] copysign %[[#M]] %[[#Sign]]
++; CHECK: %[[#Uno:]] = OpUnordered %[[#]] %[[#A]] %[[#B]]
++; CHECK: %[[#Res:]] = OpSelect %[[#V4BF16]] %[[#Uno]] %[[#V4NaN]] %[[#Signed]]
++; CHECK: OpReturnValue %[[#Res]]
++define <4 x bfloat> @maximum_v4bf16(<4 x bfloat> %a, <4 x bfloat> %b) {
++  %r = call <4 x bfloat> @llvm.maximum.v4bf16(<4 x bfloat> %a, <4 x bfloat> %b)
++  ret <4 x bfloat> %r
++}
++
++; Reductions on vectors whose length is not a power of two are expanded into a
++; chain of llvm.minimum.
++; CHECK-LABEL: Begin function reduce_fminimum_v3bf16
++; CHECK: %[[#V:]] = OpFunctionParameter %[[#]]
++; CHECK: %[[#E0:]] = OpCompositeExtract %[[#BF16]] %[[#V]] 0
++; CHECK: %[[#E1:]] = OpCompositeExtract %[[#BF16]] %[[#V]] 1
++; CHECK: %[[#E2:]] = OpCompositeExtract %[[#BF16]] %[[#V]] 2
++; CHECK: %[[#M1:]] = OpExtInst %[[#BF16]] %[[#Ext]] fmin %[[#E0]] %[[#E1]]
++; CHECK: OpExtInst %[[#BF16]] %[[#Ext]] copysign %[[#One]] %[[#E0]]
++; CHECK: %[[#R1:]] = OpSelect %[[#BF16]] %[[#]] %[[#NaN]] %[[#]]
++; CHECK: %[[#M2:]] = OpExtInst %[[#BF16]] %[[#Ext]] fmin %[[#R1]] %[[#E2]]
++; CHECK: OpExtInst %[[#BF16]] %[[#Ext]] copysign %[[#One]] %[[#R1]]
++; CHECK: %[[#R2:]] = OpSelect %[[#BF16]] %[[#]] %[[#NaN]] %[[#]]
++; CHECK: OpReturnValue %[[#R2]]
++define bfloat @reduce_fminimum_v3bf16(<3 x bfloat> %v) {
++  %r = call bfloat @llvm.vector.reduce.fminimum.v3bf16(<3 x bfloat> %v)
++  ret bfloat %r
++}
+diff --git a/test/CodeGen/SPIRV/instructions/fcmp-ord-uno-shader.ll b/test/CodeGen/SPIRV/instructions/fcmp-ord-uno-shader.ll
+new file mode 100644
+index 000000000000..e57d1518e0ce
+--- /dev/null
++++ b/test/CodeGen/SPIRV/instructions/fcmp-ord-uno-shader.ll
+@@ -0,0 +1,68 @@
++; RUN: llc -verify-machineinstrs -O0 -mtriple=spirv-unknown-vulkan %s -o - | FileCheck %s
++; RUN: %if spirv-tools %{ llc -O0 -mtriple=spirv-unknown-vulkan %s -o - -filetype=obj | spirv-val %}
++
++; OpOrdered and OpUnordered require the Kernel capability, so shaders use
++; OpIsNan instead.
++
++; CHECK-DAG: OpName [[ORD:%.*]] "test_ord"
++; CHECK-DAG: OpName [[UNO:%.*]] "test_uno"
++; CHECK-DAG: OpName [[v4ORD:%.*]] "test_v4_ord"
++; CHECK-DAG: OpName [[v4UNO:%.*]] "test_v4_uno"
++
++; CHECK:      [[ORD]] = OpFunction
++; CHECK-NEXT: [[A:%.*]] = OpFunctionParameter
++; CHECK-NEXT: [[B:%.*]] = OpFunctionParameter
++; CHECK-NEXT: OpLabel
++; CHECK-NEXT: [[NANA:%.*]] = OpIsNan [[BOOL:%.+]] [[A]]
++; CHECK-NEXT: [[NANB:%.*]] = OpIsNan [[BOOL]] [[B]]
++; CHECK-NEXT: [[UNOR:%.*]] = OpLogicalOr [[BOOL]] [[NANA]] [[NANB]]
++; CHECK-NEXT: [[R:%.*]] = OpLogicalNot [[BOOL]] [[UNOR]]
++; CHECK-NEXT: OpReturnValue [[R]]
++; CHECK-NEXT: OpFunctionEnd
++define i1 @test_ord(float %a, float %b) {
++  %r = fcmp ord float %a, %b
++  ret i1 %r
++}
++
++; CHECK:      [[UNO]] = OpFunction
++; CHECK-NEXT: [[A:%.*]] = OpFunctionParameter
++; CHECK-NEXT: [[B:%.*]] = OpFunctionParameter
++; CHECK-NEXT: OpLabel
++; CHECK-NEXT: [[NANA:%.*]] = OpIsNan [[BOOL]] [[A]]
++; CHECK-NEXT: [[NANB:%.*]] = OpIsNan [[BOOL]] [[B]]
++; CHECK-NEXT: [[R:%.*]] = OpLogicalOr [[BOOL]] [[NANA]] [[NANB]]
++; CHECK-NEXT: OpReturnValue [[R]]
++; CHECK-NEXT: OpFunctionEnd
++define i1 @test_uno(float %a, float %b) {
++  %r = fcmp uno float %a, %b
++  ret i1 %r
++}
++
++; CHECK:      [[v4ORD]] = OpFunction
++; CHECK-NEXT: [[A:%.*]] = OpFunctionParameter
++; CHECK-NEXT: [[B:%.*]] = OpFunctionParameter
++; CHECK-NEXT: OpLabel
++; CHECK-NEXT: [[NANA:%.*]] = OpIsNan [[V4BOOL:%.+]] [[A]]
++; CHECK-NEXT: [[NANB:%.*]] = OpIsNan [[V4BOOL]] [[B]]
++; CHECK-NEXT: [[UNOR:%.*]] = OpLogicalOr [[V4BOOL]] [[NANA]] [[NANB]]
++; CHECK-NEXT: [[R:%.*]] = OpLogicalNot [[V4BOOL]] [[UNOR]]
++; CHECK-NEXT: OpReturnValue [[R]]
++; CHECK-NEXT: OpFunctionEnd
++define <4 x i1> @test_v4_ord(<4 x float> %a, <4 x float> %b) {
++  %r = fcmp ord <4 x float> %a, %b
++  ret <4 x i1> %r
++}
++
++; CHECK:      [[v4UNO]] = OpFunction
++; CHECK-NEXT: [[A:%.*]] = OpFunctionParameter
++; CHECK-NEXT: [[B:%.*]] = OpFunctionParameter
++; CHECK-NEXT: OpLabel
++; CHECK-NEXT: [[NANA:%.*]] = OpIsNan [[V4BOOL]] [[A]]
++; CHECK-NEXT: [[NANB:%.*]] = OpIsNan [[V4BOOL]] [[B]]
++; CHECK-NEXT: [[R:%.*]] = OpLogicalOr [[V4BOOL]] [[NANA]] [[NANB]]
++; CHECK-NEXT: OpReturnValue [[R]]
++; CHECK-NEXT: OpFunctionEnd
++define <4 x i1> @test_v4_uno(<4 x float> %a, <4 x float> %b) {
++  %r = fcmp uno <4 x float> %a, %b
++  ret <4 x i1> %r
++}
+diff --git a/test/CodeGen/SPIRV/llvm-intrinsics/fminimum-fmaximum.ll b/test/CodeGen/SPIRV/llvm-intrinsics/fminimum-fmaximum.ll
+new file mode 100644
+index 000000000000..136614253b1d
+--- /dev/null
++++ b/test/CodeGen/SPIRV/llvm-intrinsics/fminimum-fmaximum.ll
+@@ -0,0 +1,227 @@
++; RUN: llc -verify-machineinstrs -O0 -mtriple=spirv64-unknown-unknown %s -o - | FileCheck %s --check-prefixes=CHECK,CL
++; RUN: llc -verify-machineinstrs -O0 -mtriple=spirv32-unknown-unknown %s -o - | FileCheck %s --check-prefixes=CHECK,CL
++; RUN: llc -verify-machineinstrs -O0 -mtriple=spirv-unknown-vulkan %s -o - | FileCheck %s --check-prefixes=CHECK,VK
++; RUN: %if spirv-tools %{ llc -O0 -mtriple=spirv64-unknown-unknown %s -o - -filetype=obj | spirv-val %}
++; RUN: %if spirv-tools %{ llc -O0 -mtriple=spirv32-unknown-unknown %s -o - -filetype=obj | spirv-val %}
++; RUN: %if spirv-tools %{ llc -O0 -mtriple=spirv-unknown-vulkan %s -o - -filetype=obj | spirv-val %}
++
++; llvm.minimum/llvm.maximum propagate NaNs and order -0.0 before +0.0, whereas
++; OpenCL.std fmin/fmax and GLSL.std.450 NMin/NMax return the non-NaN operand and
++; may return either zero. Check that the missing NaN propagation and signed-zero
++; handling are added, and dropped again under nnan and nsz. The expansion matches
++; the one in SPIRV-LLVM-Translator. In shaders, copysign is lowered to integer
++; operations.
++
++; CL-DAG: %[[#Ext:]] = OpExtInstImport "OpenCL.std"
++; VK-DAG: %[[#Ext:]] = OpExtInstImport "GLSL.std.450"
++; CHECK-DAG: %[[#Bool:]] = OpTypeBool
++; CHECK-DAG: %[[#F16:]] = OpTypeFloat 16
++; CHECK-DAG: %[[#F32:]] = OpTypeFloat 32
++; CHECK-DAG: %[[#F64:]] = OpTypeFloat 64
++; CHECK-DAG: %[[#V2F32:]] = OpTypeVector %[[#F32]] 2
++; CHECK-DAG: %[[#V3F32:]] = OpTypeVector %[[#F32]] 3
++; CHECK-DAG: %[[#V4F32:]] = OpTypeVector %[[#F32]] 4
++; CHECK-DAG: %[[#V4Bool:]] = OpTypeVector %[[#Bool]] 4
++; CHECK-DAG: %[[#NaN16:]] = OpConstant %[[#F16]] 32256
++; CHECK-DAG: %[[#NaN32:]] = OpConstant %[[#F32]] 0x1.8p+128
++; (LLVM 23 prints the immediate of 64-bit constants as if they were 32-bit)
++; CHECK-DAG: %[[#NaN64:]] = OpConstant %[[#F64]] 0x1.8p+128
++; CHECK-DAG: %[[#One32:]] = OpConstant %[[#F32]] 1{{$}}
++; CL-DAG: %[[#Zero32:]] = OpConstantNull %[[#F32]]
++; VK-DAG: %[[#Zero32:]] = OpConstant %[[#F32]] 0{{$}}
++
++; CHECK-LABEL: Begin function minimum_f32
++; CHECK: %[[#A:]] = OpFunctionParameter %[[#F32]]
++; CHECK: %[[#B:]] = OpFunctionParameter %[[#F32]]
++; CL: %[[#M:]] = OpExtInst %[[#F32]] %[[#Ext]] fmin %[[#A]] %[[#B]]
++; CL: %[[#ASign:]] = OpExtInst %[[#F32]] %[[#Ext]] copysign %[[#One32]] %[[#A]]
++; VK: %[[#M:]] = OpExtInst %[[#F32]] %[[#Ext]] NMin %[[#A]] %[[#B]]
++; VK: %[[#ASign:]] = OpBitcast %[[#F32]]
++; CHECK: %[[#ANeg:]] = OpFOrdLessThan %[[#Bool]] %[[#ASign]] %[[#Zero32]]
++; CHECK: %[[#Sign:]] = OpSelect %[[#F32]] %[[#ANeg]] %[[#A]] %[[#B]]
++; CL: %[[#Signed:]] = OpExtInst %[[#F32]] %[[#Ext]] copysign %[[#M]] %[[#Sign]]
++; VK: %[[#Signed:]] = OpBitcast %[[#F32]]
++; CL: %[[#Uno:]] = OpUnordered %[[#Bool]] %[[#A]] %[[#B]]
++; VK: %[[#NaNA:]] = OpIsNan %[[#Bool]] %[[#A]]
++; VK: %[[#NaNB:]] = OpIsNan %[[#Bool]] %[[#B]]
++; VK: %[[#Uno:]] = OpLogicalOr %[[#Bool]] %[[#NaNA]] %[[#NaNB]]
++; CHECK: %[[#Res:]] = OpSelect %[[#F32]] %[[#Uno]] %[[#NaN32]] %[[#Signed]]
++; CHECK-NEXT: OpReturnValue %[[#Res]]
++define float @minimum_f32(float %a, float %b) {
++  %r = call float @llvm.minimum.f32(float %a, float %b)
++  ret float %r
++}
++
++; CHECK-LABEL: Begin function maximum_f32
++; CHECK: %[[#A:]] = OpFunctionParameter %[[#F32]]
++; CHECK: %[[#B:]] = OpFunctionParameter %[[#F32]]
++; CL: %[[#M:]] = OpExtInst %[[#F32]] %[[#Ext]] fmax %[[#A]] %[[#B]]
++; CL: %[[#ASign:]] = OpExtInst %[[#F32]] %[[#Ext]] copysign %[[#One32]] %[[#A]]
++; VK: %[[#M:]] = OpExtInst %[[#F32]] %[[#Ext]] NMax %[[#A]] %[[#B]]
++; VK: %[[#ASign:]] = OpBitcast %[[#F32]]
++; CHECK: %[[#ANeg:]] = OpFOrdLessThan %[[#Bool]] %[[#ASign]] %[[#Zero32]]
++; CHECK: %[[#Sign:]] = OpSelect %[[#F32]] %[[#ANeg]] %[[#B]] %[[#A]]
++; CL: %[[#Signed:]] = OpExtInst %[[#F32]] %[[#Ext]] copysign %[[#M]] %[[#Sign]]
++; VK: %[[#Signed:]] = OpBitcast %[[#F32]]
++; CL: %[[#Uno:]] = OpUnordered %[[#Bool]] %[[#A]] %[[#B]]
++; VK: %[[#NaNA:]] = OpIsNan %[[#Bool]] %[[#A]]
++; VK: %[[#NaNB:]] = OpIsNan %[[#Bool]] %[[#B]]
++; VK: %[[#Uno:]] = OpLogicalOr %[[#Bool]] %[[#NaNA]] %[[#NaNB]]
++; CHECK: %[[#Res:]] = OpSelect %[[#F32]] %[[#Uno]] %[[#NaN32]] %[[#Signed]]
++; CHECK-NEXT: OpReturnValue %[[#Res]]
++define float @maximum_f32(float %a, float %b) {
++  %r = call float @llvm.maximum.f32(float %a, float %b)
++  ret float %r
++}
++
++; With nnan, only the signed-zero handling remains.
++; CHECK-LABEL: Begin function minimum_f32_nnan
++; CHECK: %[[#A:]] = OpFunctionParameter %[[#F32]]
++; CHECK: %[[#B:]] = OpFunctionParameter %[[#F32]]
++; CL: %[[#M:]] = OpExtInst %[[#F32]] %[[#Ext]] fmin %[[#A]] %[[#B]]
++; VK: %[[#M:]] = OpExtInst %[[#F32]] %[[#Ext]] NMin %[[#A]] %[[#B]]
++; CHECK: %[[#ANeg:]] = OpFOrdLessThan %[[#Bool]] %[[#]] %[[#Zero32]]
++; CHECK: %[[#Sign:]] = OpSelect %[[#F32]] %[[#ANeg]] %[[#A]] %[[#B]]
++; CL: %[[#Res:]] = OpExtInst %[[#F32]] %[[#Ext]] copysign %[[#M]] %[[#Sign]]
++; VK: %[[#Res:]] = OpBitcast %[[#F32]]
++; CHECK-NOT: OpUnordered
++; CHECK-NOT: OpIsNan
++; CHECK: OpReturnValue %[[#Res]]
++define float @minimum_f32_nnan(float %a, float %b) {
++  %r = call nnan float @llvm.minimum.f32(float %a, float %b)
++  ret float %r
++}
++
++; With nsz, only the NaN propagation remains.
++; CHECK-LABEL: Begin function minimum_f32_nsz
++; CHECK: %[[#A:]] = OpFunctionParameter %[[#F32]]
++; CHECK: %[[#B:]] = OpFunctionParameter %[[#F32]]
++; CL: %[[#M:]] = OpExtInst %[[#F32]] %[[#Ext]] fmin %[[#A]] %[[#B]]
++; CL-NEXT: %[[#Uno:]] = OpUnordered %[[#Bool]] %[[#A]] %[[#B]]
++; VK: %[[#M:]] = OpExtInst %[[#F32]] %[[#Ext]] NMin %[[#A]] %[[#B]]
++; VK: %[[#Uno:]] = OpLogicalOr %[[#Bool]]
++; CHECK-NEXT: %[[#Res:]] = OpSelect %[[#F32]] %[[#Uno]] %[[#NaN32]] %[[#M]]
++; CHECK-NEXT: OpReturnValue %[[#Res]]
++define float @minimum_f32_nsz(float %a, float %b) {
++  %r = call nsz float @llvm.minimum.f32(float %a, float %b)
++  ret float %r
++}
++
++; With nnan and nsz, fmin/fmax (NMin/NMax) is enough.
++; CHECK-LABEL: Begin function minimum_f32_nnan_nsz
++; CHECK: %[[#A:]] = OpFunctionParameter %[[#F32]]
++; CHECK: %[[#B:]] = OpFunctionParameter %[[#F32]]
++; CHECK-NEXT: OpLabel
++; CL-NEXT: %[[#Res:]] = OpExtInst %[[#F32]] %[[#Ext]] fmin %[[#A]] %[[#B]]
++; VK-NEXT: %[[#Res:]] = OpExtInst %[[#F32]] %[[#Ext]] NMin %[[#A]] %[[#B]]
++; CHECK-NEXT: OpReturnValue %[[#Res]]
++define float @minimum_f32_nnan_nsz(float %a, float %b) {
++  %r = call nnan nsz float @llvm.minimum.f32(float %a, float %b)
++  ret float %r
++}
++
++; CHECK-LABEL: Begin function maximum_f32_nnan_nsz
++; CHECK: %[[#A:]] = OpFunctionParameter %[[#F32]]
++; CHECK: %[[#B:]] = OpFunctionParameter %[[#F32]]
++; CHECK-NEXT: OpLabel
++; CL-NEXT: %[[#Res:]] = OpExtInst %[[#F32]] %[[#Ext]] fmax %[[#A]] %[[#B]]
++; VK-NEXT: %[[#Res:]] = OpExtInst %[[#F32]] %[[#Ext]] NMax %[[#A]] %[[#B]]
++; CHECK-NEXT: OpReturnValue %[[#Res]]
++define float @maximum_f32_nnan_nsz(float %a, float %b) {
++  %r = call fast float @llvm.maximum.f32(float %a, float %b)
++  ret float %r
++}
++
++; CHECK-LABEL: Begin function minimum_f16
++; CL: %[[#M:]] = OpExtInst %[[#F16]] %[[#Ext]] fmin
++; CL: OpExtInst %[[#F16]] %[[#Ext]] copysign
++; VK: %[[#M:]] = OpExtInst %[[#F16]] %[[#Ext]] NMin
++; CHECK: OpFOrdLessThan
++; CHECK: OpSelect %[[#F16]]
++; CL: %[[#Signed:]] = OpExtInst %[[#F16]] %[[#Ext]] copysign %[[#M]] %[[#]]
++; VK: %[[#Signed:]] = OpBitcast %[[#F16]]
++; CHECK: %[[#Res:]] = OpSelect %[[#F16]] %[[#]] %[[#NaN16]] %[[#Signed]]
++; CHECK-NEXT: OpReturnValue %[[#Res]]
++define half @minimum_f16(half %a, half %b) {
++  %r = call half @llvm.minimum.f16(half %a, half %b)
++  ret half %r
++}
++
++; CHECK-LABEL: Begin function maximum_f64
++; CL: %[[#M:]] = OpExtInst %[[#F64]] %[[#Ext]] fmax
++; CL: OpExtInst %[[#F64]] %[[#Ext]] copysign
++; VK: %[[#M:]] = OpExtInst %[[#F64]] %[[#Ext]] NMax
++; CHECK: OpFOrdLessThan
++; CHECK: OpSelect %[[#F64]]
++; CL: %[[#Signed:]] = OpExtInst %[[#F64]] %[[#Ext]] copysign %[[#M]] %[[#]]
++; VK: %[[#Signed:]] = OpBitcast %[[#F64]]
++; CHECK: %[[#Res:]] = OpSelect %[[#F64]] %[[#]] %[[#NaN64]] %[[#Signed]]
++; CHECK-NEXT: OpReturnValue %[[#Res]]
++define double @maximum_f64(double %a, double %b) {
++  %r = call double @llvm.maximum.f64(double %a, double %b)
++  ret double %r
++}
++
++; CHECK-LABEL: Begin function minimum_v2f32
++; CL: %[[#M:]] = OpExtInst %[[#V2F32]] %[[#Ext]] fmin
++; CL: OpExtInst %[[#V2F32]] %[[#Ext]] copysign
++; VK: %[[#M:]] = OpExtInst %[[#V2F32]] %[[#Ext]] NMin
++; CHECK: OpFOrdLessThan
++; CHECK: OpSelect %[[#V2F32]]
++; CL: %[[#Signed:]] = OpExtInst %[[#V2F32]] %[[#Ext]] copysign %[[#M]] %[[#]]
++; VK: %[[#Signed:]] = OpBitcast %[[#V2F32]]
++; CHECK: %[[#Res:]] = OpSelect %[[#V2F32]] %[[#]] %[[#]] %[[#Signed]]
++; CHECK-NEXT: OpReturnValue %[[#Res]]
++define <2 x float> @minimum_v2f32(<2 x float> %a, <2 x float> %b) {
++  %r = call <2 x float> @llvm.minimum.v2f32(<2 x float> %a, <2 x float> %b)
++  ret <2 x float> %r
++}
++
++; CHECK-LABEL: Begin function maximum_v3f32
++; CL: %[[#M:]] = OpExtInst %[[#V3F32]] %[[#Ext]] fmax
++; CL: OpExtInst %[[#V3F32]] %[[#Ext]] copysign
++; VK: %[[#M:]] = OpExtInst %[[#V3F32]] %[[#Ext]] NMax
++; CHECK: OpFOrdLessThan
++; CHECK: OpSelect %[[#V3F32]]
++; CL: %[[#Signed:]] = OpExtInst %[[#V3F32]] %[[#Ext]] copysign %[[#M]] %[[#]]
++; VK: %[[#Signed:]] = OpBitcast %[[#V3F32]]
++; CHECK: %[[#Res:]] = OpSelect %[[#V3F32]] %[[#]] %[[#]] %[[#Signed]]
++; CHECK-NEXT: OpReturnValue %[[#Res]]
++define <3 x float> @maximum_v3f32(<3 x float> %a, <3 x float> %b) {
++  %r = call <3 x float> @llvm.maximum.v3f32(<3 x float> %a, <3 x float> %b)
++  ret <3 x float> %r
++}
++
++; CHECK-LABEL: Begin function minimum_v4f32
++; CHECK: %[[#A:]] = OpFunctionParameter %[[#V4F32]]
++; CHECK: %[[#B:]] = OpFunctionParameter %[[#V4F32]]
++; CL: %[[#M:]] = OpExtInst %[[#V4F32]] %[[#Ext]] fmin %[[#A]] %[[#B]]
++; CL: %[[#ASign:]] = OpExtInst %[[#V4F32]] %[[#Ext]] copysign %[[#]] %[[#A]]
++; VK: %[[#M:]] = OpExtInst %[[#V4F32]] %[[#Ext]] NMin %[[#A]] %[[#B]]
++; VK: %[[#ASign:]] = OpBitcast %[[#V4F32]]
++; CHECK: %[[#ANeg:]] = OpFOrdLessThan %[[#V4Bool]] %[[#ASign]] %[[#]]
++; CHECK: %[[#Sign:]] = OpSelect %[[#V4F32]] %[[#ANeg]] %[[#A]] %[[#B]]
++; CL: %[[#Signed:]] = OpExtInst %[[#V4F32]] %[[#Ext]] copysign %[[#M]] %[[#Sign]]
++; VK: %[[#Signed:]] = OpBitcast %[[#V4F32]]
++; CL: %[[#Uno:]] = OpUnordered %[[#V4Bool]] %[[#A]] %[[#B]]
++; VK: %[[#NaNA:]] = OpIsNan %[[#V4Bool]] %[[#A]]
++; VK: %[[#NaNB:]] = OpIsNan %[[#V4Bool]] %[[#B]]
++; VK: %[[#Uno:]] = OpLogicalOr %[[#V4Bool]] %[[#NaNA]] %[[#NaNB]]
++; CHECK: %[[#Res:]] = OpSelect %[[#V4F32]] %[[#Uno]] %[[#]] %[[#Signed]]
++; CHECK-NEXT: OpReturnValue %[[#Res]]
++define <4 x float> @minimum_v4f32(<4 x float> %a, <4 x float> %b) {
++  %r = call <4 x float> @llvm.minimum.v4f32(<4 x float> %a, <4 x float> %b)
++  ret <4 x float> %r
++}
++
++; CHECK-LABEL: Begin function maximum_v4f32_nnan_nsz
++; CHECK: %[[#A:]] = OpFunctionParameter %[[#V4F32]]
++; CHECK: %[[#B:]] = OpFunctionParameter %[[#V4F32]]
++; CHECK-NEXT: OpLabel
++; CL-NEXT: %[[#Res:]] = OpExtInst %[[#V4F32]] %[[#Ext]] fmax %[[#A]] %[[#B]]
++; VK-NEXT: %[[#Res:]] = OpExtInst %[[#V4F32]] %[[#Ext]] NMax %[[#A]] %[[#B]]
++; CHECK-NEXT: OpReturnValue %[[#Res]]
++define <4 x float> @maximum_v4f32_nnan_nsz(<4 x float> %a, <4 x float> %b) {
++  %r = call nnan nsz <4 x float> @llvm.maximum.v4f32(<4 x float> %a, <4 x float> %b)
++  ret <4 x float> %r
++}
+diff --git a/test/CodeGen/SPIRV/llvm-intrinsics/fp-intrinsics.ll b/test/CodeGen/SPIRV/llvm-intrinsics/fp-intrinsics.ll
+index 34116643e2e6..32e2ac1b9c06 100644
+--- a/test/CodeGen/SPIRV/llvm-intrinsics/fp-intrinsics.ll
++++ b/test/CodeGen/SPIRV/llvm-intrinsics/fp-intrinsics.ll
+@@ -211,7 +211,10 @@ declare float @llvm.maxnum.f32(float, float)
+ ; CHECK: OpFunction
+ ; CHECK: %[[#x:]] = OpFunctionParameter %[[#]]
+ ; CHECK: %[[#y:]] = OpFunctionParameter %[[#]]
+-; CHECK: %[[#res:]] = OpExtInst %[[#]] %[[#]] fmin %[[#x]] %[[#y]]
++; CHECK: %[[#minmax:]] = OpExtInst %[[#var1]] %[[#extinst_id]] fmin %[[#x]] %[[#y]]
++; CHECK: %[[#signed:]] = OpExtInst %[[#var1]] %[[#extinst_id]] copysign %[[#minmax]] %[[#]]
++; CHECK: %[[#uno:]] = OpUnordered %[[#]] %[[#x]] %[[#y]]
++; CHECK: %[[#res:]] = OpSelect %[[#var1]] %[[#uno]] %[[#]] %[[#signed]]
+ ; CHECK: OpReturnValue %[[#res]]
+ 
+ define spir_func float @TestMinimum(float %x, float %y) {
+@@ -225,7 +228,10 @@ declare float @llvm.minimum.f32(float, float)
+ ; CHECK: OpFunction
+ ; CHECK: %[[#x:]] = OpFunctionParameter %[[#]]
+ ; CHECK: %[[#y:]] = OpFunctionParameter %[[#]]
+-; CHECK: %[[#res:]] = OpExtInst %[[#]] %[[#]] fmax %[[#x]] %[[#y]]
++; CHECK: %[[#minmax:]] = OpExtInst %[[#var1]] %[[#extinst_id]] fmax %[[#x]] %[[#y]]
++; CHECK: %[[#signed:]] = OpExtInst %[[#var1]] %[[#extinst_id]] copysign %[[#minmax]] %[[#]]
++; CHECK: %[[#uno:]] = OpUnordered %[[#]] %[[#x]] %[[#y]]
++; CHECK: %[[#res:]] = OpSelect %[[#var1]] %[[#uno]] %[[#]] %[[#signed]]
+ ; CHECK: OpReturnValue %[[#res]]
+ 
+ define spir_func float @TestMaximum(float %x, float %y) {
+diff --git a/test/CodeGen/SPIRV/llvm-intrinsics/llvm-vector-reduce/fmaximum.ll b/test/CodeGen/SPIRV/llvm-intrinsics/llvm-vector-reduce/fmaximum.ll
+index d28f26cd62aa..c8bbc8598abb 100644
+--- a/test/CodeGen/SPIRV/llvm-intrinsics/llvm-vector-reduce/fmaximum.ll
++++ b/test/CodeGen/SPIRV/llvm-intrinsics/llvm-vector-reduce/fmaximum.ll
+@@ -18,7 +18,13 @@ target triple = "spir64-unknown-unknown"
+ ; CHECK: OpFunction
+ ; CHECK: %[[ParamVec2Half:.*]] = OpFunctionParameter %[[HalfVec2]]
+ ; CHECK: %[[Vec2HalfShuf:.*]] = OpVectorShuffle %[[HalfVec2]] %[[ParamVec2Half]] %[[#]] 1 0xFFFFFFFF
+-; CHECK: %[[Vec2HalfR1:.*]] = OpExtInst %[[HalfVec2]] %[[#]] fmax %[[ParamVec2Half]] %[[Vec2HalfShuf]]
++; CHECK: %[[Vec2HalfR1MinMax:.*]] = OpExtInst %[[HalfVec2]] %[[#]] fmax %[[ParamVec2Half]] %[[Vec2HalfShuf]]
++; CHECK: %[[Vec2HalfR1XSign:.*]] = OpExtInst %[[HalfVec2]] %[[#]] copysign %[[#]] %[[ParamVec2Half]]
++; CHECK: %[[Vec2HalfR1XNeg:.*]] = OpFOrdLessThan %[[#]] %[[Vec2HalfR1XSign]] %[[#]]
++; CHECK: %[[Vec2HalfR1Sign:.*]] = OpSelect %[[HalfVec2]] %[[Vec2HalfR1XNeg]] %[[Vec2HalfShuf]] %[[ParamVec2Half]]
++; CHECK: %[[Vec2HalfR1Signed:.*]] = OpExtInst %[[HalfVec2]] %[[#]] copysign %[[Vec2HalfR1MinMax]] %[[Vec2HalfR1Sign]]
++; CHECK: %[[Vec2HalfR1Uno:.*]] = OpUnordered %[[#]] %[[ParamVec2Half]] %[[Vec2HalfShuf]]
++; CHECK: %[[Vec2HalfR1:.*]] = OpSelect %[[HalfVec2]] %[[Vec2HalfR1Uno]] %[[#]] %[[Vec2HalfR1Signed]]
+ ; CHECK: %[[Vec2HalfR2:.*]] = OpCompositeExtract %[[Half]] %[[Vec2HalfR1]] 0
+ ; CHECK: OpReturnValue %[[Vec2HalfR2]]
+ ; CHECK: OpFunctionEnd
+@@ -28,15 +34,33 @@ target triple = "spir64-unknown-unknown"
+ ; CHECK: %[[Vec3HalfItem0:.*]] = OpCompositeExtract %[[Half]] %[[ParamVec3Half]] 0
+ ; CHECK: %[[Vec3HalfItem1:.*]] = OpCompositeExtract %[[Half]] %[[ParamVec3Half]] 1
+ ; CHECK: %[[Vec3HalfItem2:.*]] = OpCompositeExtract %[[Half]] %[[ParamVec3Half]] 2
+-; CHECK: %[[Vec3HalfR1:.*]] = OpExtInst %[[Half]] %[[#]] fmax %[[Vec3HalfItem0]] %[[Vec3HalfItem1]]
+-; CHECK: %[[Vec3HalfR2:.*]] = OpExtInst %[[Half]] %[[#]] fmax %[[Vec3HalfR1]] %[[Vec3HalfItem2]]
++; CHECK: %[[Vec3HalfR1MinMax:.*]] = OpExtInst %[[Half]] %[[#]] fmax %[[Vec3HalfItem0]] %[[Vec3HalfItem1]]
++; CHECK: %[[Vec3HalfR1XSign:.*]] = OpExtInst %[[Half]] %[[#]] copysign %[[#]] %[[Vec3HalfItem0]]
++; CHECK: %[[Vec3HalfR1XNeg:.*]] = OpFOrdLessThan %[[#]] %[[Vec3HalfR1XSign]] %[[#]]
++; CHECK: %[[Vec3HalfR1Sign:.*]] = OpSelect %[[Half]] %[[Vec3HalfR1XNeg]] %[[Vec3HalfItem1]] %[[Vec3HalfItem0]]
++; CHECK: %[[Vec3HalfR1Signed:.*]] = OpExtInst %[[Half]] %[[#]] copysign %[[Vec3HalfR1MinMax]] %[[Vec3HalfR1Sign]]
++; CHECK: %[[Vec3HalfR1Uno:.*]] = OpUnordered %[[#]] %[[Vec3HalfItem0]] %[[Vec3HalfItem1]]
++; CHECK: %[[Vec3HalfR1:.*]] = OpSelect %[[Half]] %[[Vec3HalfR1Uno]] %[[#]] %[[Vec3HalfR1Signed]]
++; CHECK: %[[Vec3HalfR2MinMax:.*]] = OpExtInst %[[Half]] %[[#]] fmax %[[Vec3HalfR1]] %[[Vec3HalfItem2]]
++; CHECK: %[[Vec3HalfR2XSign:.*]] = OpExtInst %[[Half]] %[[#]] copysign %[[#]] %[[Vec3HalfR1]]
++; CHECK: %[[Vec3HalfR2XNeg:.*]] = OpFOrdLessThan %[[#]] %[[Vec3HalfR2XSign]] %[[#]]
++; CHECK: %[[Vec3HalfR2Sign:.*]] = OpSelect %[[Half]] %[[Vec3HalfR2XNeg]] %[[Vec3HalfItem2]] %[[Vec3HalfR1]]
++; CHECK: %[[Vec3HalfR2Signed:.*]] = OpExtInst %[[Half]] %[[#]] copysign %[[Vec3HalfR2MinMax]] %[[Vec3HalfR2Sign]]
++; CHECK: %[[Vec3HalfR2Uno:.*]] = OpUnordered %[[#]] %[[Vec3HalfR1]] %[[Vec3HalfItem2]]
++; CHECK: %[[Vec3HalfR2:.*]] = OpSelect %[[Half]] %[[Vec3HalfR2Uno]] %[[#]] %[[Vec3HalfR2Signed]]
+ ; CHECK: OpReturnValue %[[Vec3HalfR2]]
+ ; CHECK: OpFunctionEnd
+ 
+ ; CHECK: OpFunction
+ ; CHECK: %[[ParamVec2Float:.*]] = OpFunctionParameter %[[FloatVec2]]
+ ; CHECK: %[[Vec2FloatShuf:.*]] = OpVectorShuffle %[[FloatVec2]] %[[ParamVec2Float]] %[[#]] 1 0xFFFFFFFF
+-; CHECK: %[[Vec2FloatR1:.*]] = OpExtInst %[[FloatVec2]] %[[#]] fmax %[[ParamVec2Float]] %[[Vec2FloatShuf]]
++; CHECK: %[[Vec2FloatR1MinMax:.*]] = OpExtInst %[[FloatVec2]] %[[#]] fmax %[[ParamVec2Float]] %[[Vec2FloatShuf]]
++; CHECK: %[[Vec2FloatR1XSign:.*]] = OpExtInst %[[FloatVec2]] %[[#]] copysign %[[#]] %[[ParamVec2Float]]
++; CHECK: %[[Vec2FloatR1XNeg:.*]] = OpFOrdLessThan %[[#]] %[[Vec2FloatR1XSign]] %[[#]]
++; CHECK: %[[Vec2FloatR1Sign:.*]] = OpSelect %[[FloatVec2]] %[[Vec2FloatR1XNeg]] %[[Vec2FloatShuf]] %[[ParamVec2Float]]
++; CHECK: %[[Vec2FloatR1Signed:.*]] = OpExtInst %[[FloatVec2]] %[[#]] copysign %[[Vec2FloatR1MinMax]] %[[Vec2FloatR1Sign]]
++; CHECK: %[[Vec2FloatR1Uno:.*]] = OpUnordered %[[#]] %[[ParamVec2Float]] %[[Vec2FloatShuf]]
++; CHECK: %[[Vec2FloatR1:.*]] = OpSelect %[[FloatVec2]] %[[Vec2FloatR1Uno]] %[[#]] %[[Vec2FloatR1Signed]]
+ ; CHECK: %[[Vec2FloatR2:.*]] = OpCompositeExtract %[[Float]] %[[Vec2FloatR1]] 0
+ ; CHECK: OpReturnValue %[[Vec2FloatR2]]
+ ; CHECK: OpFunctionEnd
+@@ -46,15 +70,33 @@ target triple = "spir64-unknown-unknown"
+ ; CHECK: %[[Vec3FloatItem0:.*]] = OpCompositeExtract %[[Float]] %[[ParamVec3Float]] 0
+ ; CHECK: %[[Vec3FloatItem1:.*]] = OpCompositeExtract %[[Float]] %[[ParamVec3Float]] 1
+ ; CHECK: %[[Vec3FloatItem2:.*]] = OpCompositeExtract %[[Float]] %[[ParamVec3Float]] 2
+-; CHECK: %[[Vec3FloatR1:.*]] = OpExtInst %[[Float]] %[[#]] fmax %[[Vec3FloatItem0]] %[[Vec3FloatItem1]]
+-; CHECK: %[[Vec3FloatR2:.*]] = OpExtInst %[[Float]] %[[#]] fmax %[[Vec3FloatR1]] %[[Vec3FloatItem2]]
++; CHECK: %[[Vec3FloatR1MinMax:.*]] = OpExtInst %[[Float]] %[[#]] fmax %[[Vec3FloatItem0]] %[[Vec3FloatItem1]]
++; CHECK: %[[Vec3FloatR1XSign:.*]] = OpExtInst %[[Float]] %[[#]] copysign %[[#]] %[[Vec3FloatItem0]]
++; CHECK: %[[Vec3FloatR1XNeg:.*]] = OpFOrdLessThan %[[#]] %[[Vec3FloatR1XSign]] %[[#]]
++; CHECK: %[[Vec3FloatR1Sign:.*]] = OpSelect %[[Float]] %[[Vec3FloatR1XNeg]] %[[Vec3FloatItem1]] %[[Vec3FloatItem0]]
++; CHECK: %[[Vec3FloatR1Signed:.*]] = OpExtInst %[[Float]] %[[#]] copysign %[[Vec3FloatR1MinMax]] %[[Vec3FloatR1Sign]]
++; CHECK: %[[Vec3FloatR1Uno:.*]] = OpUnordered %[[#]] %[[Vec3FloatItem0]] %[[Vec3FloatItem1]]
++; CHECK: %[[Vec3FloatR1:.*]] = OpSelect %[[Float]] %[[Vec3FloatR1Uno]] %[[#]] %[[Vec3FloatR1Signed]]
++; CHECK: %[[Vec3FloatR2MinMax:.*]] = OpExtInst %[[Float]] %[[#]] fmax %[[Vec3FloatR1]] %[[Vec3FloatItem2]]
++; CHECK: %[[Vec3FloatR2XSign:.*]] = OpExtInst %[[Float]] %[[#]] copysign %[[#]] %[[Vec3FloatR1]]
++; CHECK: %[[Vec3FloatR2XNeg:.*]] = OpFOrdLessThan %[[#]] %[[Vec3FloatR2XSign]] %[[#]]
++; CHECK: %[[Vec3FloatR2Sign:.*]] = OpSelect %[[Float]] %[[Vec3FloatR2XNeg]] %[[Vec3FloatItem2]] %[[Vec3FloatR1]]
++; CHECK: %[[Vec3FloatR2Signed:.*]] = OpExtInst %[[Float]] %[[#]] copysign %[[Vec3FloatR2MinMax]] %[[Vec3FloatR2Sign]]
++; CHECK: %[[Vec3FloatR2Uno:.*]] = OpUnordered %[[#]] %[[Vec3FloatR1]] %[[Vec3FloatItem2]]
++; CHECK: %[[Vec3FloatR2:.*]] = OpSelect %[[Float]] %[[Vec3FloatR2Uno]] %[[#]] %[[Vec3FloatR2Signed]]
+ ; CHECK: OpReturnValue %[[Vec3FloatR2]]
+ ; CHECK: OpFunctionEnd
+ 
+ ; CHECK: OpFunction
+ ; CHECK: %[[ParamVec2Double:.*]] = OpFunctionParameter %[[DoubleVec2]]
+ ; CHECK: %[[Vec2DoubleShuf:.*]] = OpVectorShuffle %[[DoubleVec2]] %[[ParamVec2Double]] %[[#]] 1 0xFFFFFFFF
+-; CHECK: %[[Vec2DoubleR1:.*]] = OpExtInst %[[DoubleVec2]] %[[#]] fmax %[[ParamVec2Double]] %[[Vec2DoubleShuf]]
++; CHECK: %[[Vec2DoubleR1MinMax:.*]] = OpExtInst %[[DoubleVec2]] %[[#]] fmax %[[ParamVec2Double]] %[[Vec2DoubleShuf]]
++; CHECK: %[[Vec2DoubleR1XSign:.*]] = OpExtInst %[[DoubleVec2]] %[[#]] copysign %[[#]] %[[ParamVec2Double]]
++; CHECK: %[[Vec2DoubleR1XNeg:.*]] = OpFOrdLessThan %[[#]] %[[Vec2DoubleR1XSign]] %[[#]]
++; CHECK: %[[Vec2DoubleR1Sign:.*]] = OpSelect %[[DoubleVec2]] %[[Vec2DoubleR1XNeg]] %[[Vec2DoubleShuf]] %[[ParamVec2Double]]
++; CHECK: %[[Vec2DoubleR1Signed:.*]] = OpExtInst %[[DoubleVec2]] %[[#]] copysign %[[Vec2DoubleR1MinMax]] %[[Vec2DoubleR1Sign]]
++; CHECK: %[[Vec2DoubleR1Uno:.*]] = OpUnordered %[[#]] %[[ParamVec2Double]] %[[Vec2DoubleShuf]]
++; CHECK: %[[Vec2DoubleR1:.*]] = OpSelect %[[DoubleVec2]] %[[Vec2DoubleR1Uno]] %[[#]] %[[Vec2DoubleR1Signed]]
+ ; CHECK: %[[Vec2DoubleR2:.*]] = OpCompositeExtract %[[Double]] %[[Vec2DoubleR1]] 0
+ ; CHECK: OpReturnValue %[[Vec2DoubleR2]]
+ ; CHECK: OpFunctionEnd
+@@ -64,8 +106,20 @@ target triple = "spir64-unknown-unknown"
+ ; CHECK: %[[Vec3DoubleItem0:.*]] = OpCompositeExtract %[[Double]] %[[ParamVec3Double]] 0
+ ; CHECK: %[[Vec3DoubleItem1:.*]] = OpCompositeExtract %[[Double]] %[[ParamVec3Double]] 1
+ ; CHECK: %[[Vec3DoubleItem2:.*]] = OpCompositeExtract %[[Double]] %[[ParamVec3Double]] 2
+-; CHECK: %[[Vec3DoubleR1:.*]] = OpExtInst %[[Double]] %[[#]] fmax %[[Vec3DoubleItem0]] %[[Vec3DoubleItem1]]
+-; CHECK: %[[Vec3DoubleR2:.*]] = OpExtInst %[[Double]] %[[#]] fmax %[[Vec3DoubleR1]] %[[Vec3DoubleItem2]]
++; CHECK: %[[Vec3DoubleR1MinMax:.*]] = OpExtInst %[[Double]] %[[#]] fmax %[[Vec3DoubleItem0]] %[[Vec3DoubleItem1]]
++; CHECK: %[[Vec3DoubleR1XSign:.*]] = OpExtInst %[[Double]] %[[#]] copysign %[[#]] %[[Vec3DoubleItem0]]
++; CHECK: %[[Vec3DoubleR1XNeg:.*]] = OpFOrdLessThan %[[#]] %[[Vec3DoubleR1XSign]] %[[#]]
++; CHECK: %[[Vec3DoubleR1Sign:.*]] = OpSelect %[[Double]] %[[Vec3DoubleR1XNeg]] %[[Vec3DoubleItem1]] %[[Vec3DoubleItem0]]
++; CHECK: %[[Vec3DoubleR1Signed:.*]] = OpExtInst %[[Double]] %[[#]] copysign %[[Vec3DoubleR1MinMax]] %[[Vec3DoubleR1Sign]]
++; CHECK: %[[Vec3DoubleR1Uno:.*]] = OpUnordered %[[#]] %[[Vec3DoubleItem0]] %[[Vec3DoubleItem1]]
++; CHECK: %[[Vec3DoubleR1:.*]] = OpSelect %[[Double]] %[[Vec3DoubleR1Uno]] %[[#]] %[[Vec3DoubleR1Signed]]
++; CHECK: %[[Vec3DoubleR2MinMax:.*]] = OpExtInst %[[Double]] %[[#]] fmax %[[Vec3DoubleR1]] %[[Vec3DoubleItem2]]
++; CHECK: %[[Vec3DoubleR2XSign:.*]] = OpExtInst %[[Double]] %[[#]] copysign %[[#]] %[[Vec3DoubleR1]]
++; CHECK: %[[Vec3DoubleR2XNeg:.*]] = OpFOrdLessThan %[[#]] %[[Vec3DoubleR2XSign]] %[[#]]
++; CHECK: %[[Vec3DoubleR2Sign:.*]] = OpSelect %[[Double]] %[[Vec3DoubleR2XNeg]] %[[Vec3DoubleItem2]] %[[Vec3DoubleR1]]
++; CHECK: %[[Vec3DoubleR2Signed:.*]] = OpExtInst %[[Double]] %[[#]] copysign %[[Vec3DoubleR2MinMax]] %[[Vec3DoubleR2Sign]]
++; CHECK: %[[Vec3DoubleR2Uno:.*]] = OpUnordered %[[#]] %[[Vec3DoubleR1]] %[[Vec3DoubleItem2]]
++; CHECK: %[[Vec3DoubleR2:.*]] = OpSelect %[[Double]] %[[Vec3DoubleR2Uno]] %[[#]] %[[Vec3DoubleR2Signed]]
+ ; CHECK: OpReturnValue %[[Vec3DoubleR2]]
+ ; CHECK: OpFunctionEnd
+ 
+diff --git a/test/CodeGen/SPIRV/llvm-intrinsics/llvm-vector-reduce/fminimum.ll b/test/CodeGen/SPIRV/llvm-intrinsics/llvm-vector-reduce/fminimum.ll
+index 53ef537ac338..c5cfa2085d40 100644
+--- a/test/CodeGen/SPIRV/llvm-intrinsics/llvm-vector-reduce/fminimum.ll
++++ b/test/CodeGen/SPIRV/llvm-intrinsics/llvm-vector-reduce/fminimum.ll
+@@ -18,7 +18,13 @@ target triple = "spir64-unknown-unknown"
+ ; CHECK: OpFunction
+ ; CHECK: %[[ParamVec2Half:.*]] = OpFunctionParameter %[[HalfVec2]]
+ ; CHECK: %[[Vec2HalfShuf:.*]] = OpVectorShuffle %[[HalfVec2]] %[[ParamVec2Half]] %[[#]] 1 0xFFFFFFFF
+-; CHECK: %[[Vec2HalfR1:.*]] = OpExtInst %[[HalfVec2]] %[[#]] fmin %[[ParamVec2Half]] %[[Vec2HalfShuf]]
++; CHECK: %[[Vec2HalfR1MinMax:.*]] = OpExtInst %[[HalfVec2]] %[[#]] fmin %[[ParamVec2Half]] %[[Vec2HalfShuf]]
++; CHECK: %[[Vec2HalfR1XSign:.*]] = OpExtInst %[[HalfVec2]] %[[#]] copysign %[[#]] %[[ParamVec2Half]]
++; CHECK: %[[Vec2HalfR1XNeg:.*]] = OpFOrdLessThan %[[#]] %[[Vec2HalfR1XSign]] %[[#]]
++; CHECK: %[[Vec2HalfR1Sign:.*]] = OpSelect %[[HalfVec2]] %[[Vec2HalfR1XNeg]] %[[ParamVec2Half]] %[[Vec2HalfShuf]]
++; CHECK: %[[Vec2HalfR1Signed:.*]] = OpExtInst %[[HalfVec2]] %[[#]] copysign %[[Vec2HalfR1MinMax]] %[[Vec2HalfR1Sign]]
++; CHECK: %[[Vec2HalfR1Uno:.*]] = OpUnordered %[[#]] %[[ParamVec2Half]] %[[Vec2HalfShuf]]
++; CHECK: %[[Vec2HalfR1:.*]] = OpSelect %[[HalfVec2]] %[[Vec2HalfR1Uno]] %[[#]] %[[Vec2HalfR1Signed]]
+ ; CHECK: %[[Vec2HalfR2:.*]] = OpCompositeExtract %[[Half]] %[[Vec2HalfR1]] 0
+ ; CHECK: OpReturnValue %[[Vec2HalfR2]]
+ ; CHECK: OpFunctionEnd
+@@ -28,15 +34,33 @@ target triple = "spir64-unknown-unknown"
+ ; CHECK: %[[Vec3HalfItem0:.*]] = OpCompositeExtract %[[Half]] %[[ParamVec3Half]] 0
+ ; CHECK: %[[Vec3HalfItem1:.*]] = OpCompositeExtract %[[Half]] %[[ParamVec3Half]] 1
+ ; CHECK: %[[Vec3HalfItem2:.*]] = OpCompositeExtract %[[Half]] %[[ParamVec3Half]] 2
+-; CHECK: %[[Vec3HalfR1:.*]] = OpExtInst %[[Half]] %[[#]] fmin %[[Vec3HalfItem0]] %[[Vec3HalfItem1]]
+-; CHECK: %[[Vec3HalfR2:.*]] = OpExtInst %[[Half]] %[[#]] fmin %[[Vec3HalfR1]] %[[Vec3HalfItem2]]
++; CHECK: %[[Vec3HalfR1MinMax:.*]] = OpExtInst %[[Half]] %[[#]] fmin %[[Vec3HalfItem0]] %[[Vec3HalfItem1]]
++; CHECK: %[[Vec3HalfR1XSign:.*]] = OpExtInst %[[Half]] %[[#]] copysign %[[#]] %[[Vec3HalfItem0]]
++; CHECK: %[[Vec3HalfR1XNeg:.*]] = OpFOrdLessThan %[[#]] %[[Vec3HalfR1XSign]] %[[#]]
++; CHECK: %[[Vec3HalfR1Sign:.*]] = OpSelect %[[Half]] %[[Vec3HalfR1XNeg]] %[[Vec3HalfItem0]] %[[Vec3HalfItem1]]
++; CHECK: %[[Vec3HalfR1Signed:.*]] = OpExtInst %[[Half]] %[[#]] copysign %[[Vec3HalfR1MinMax]] %[[Vec3HalfR1Sign]]
++; CHECK: %[[Vec3HalfR1Uno:.*]] = OpUnordered %[[#]] %[[Vec3HalfItem0]] %[[Vec3HalfItem1]]
++; CHECK: %[[Vec3HalfR1:.*]] = OpSelect %[[Half]] %[[Vec3HalfR1Uno]] %[[#]] %[[Vec3HalfR1Signed]]
++; CHECK: %[[Vec3HalfR2MinMax:.*]] = OpExtInst %[[Half]] %[[#]] fmin %[[Vec3HalfR1]] %[[Vec3HalfItem2]]
++; CHECK: %[[Vec3HalfR2XSign:.*]] = OpExtInst %[[Half]] %[[#]] copysign %[[#]] %[[Vec3HalfR1]]
++; CHECK: %[[Vec3HalfR2XNeg:.*]] = OpFOrdLessThan %[[#]] %[[Vec3HalfR2XSign]] %[[#]]
++; CHECK: %[[Vec3HalfR2Sign:.*]] = OpSelect %[[Half]] %[[Vec3HalfR2XNeg]] %[[Vec3HalfR1]] %[[Vec3HalfItem2]]
++; CHECK: %[[Vec3HalfR2Signed:.*]] = OpExtInst %[[Half]] %[[#]] copysign %[[Vec3HalfR2MinMax]] %[[Vec3HalfR2Sign]]
++; CHECK: %[[Vec3HalfR2Uno:.*]] = OpUnordered %[[#]] %[[Vec3HalfR1]] %[[Vec3HalfItem2]]
++; CHECK: %[[Vec3HalfR2:.*]] = OpSelect %[[Half]] %[[Vec3HalfR2Uno]] %[[#]] %[[Vec3HalfR2Signed]]
+ ; CHECK: OpReturnValue %[[Vec3HalfR2]]
+ ; CHECK: OpFunctionEnd
+ 
+ ; CHECK: OpFunction
+ ; CHECK: %[[ParamVec2Float:.*]] = OpFunctionParameter %[[FloatVec2]]
+ ; CHECK: %[[Vec2FloatShuf:.*]] = OpVectorShuffle %[[FloatVec2]] %[[ParamVec2Float]] %[[#]] 1 0xFFFFFFFF
+-; CHECK: %[[Vec2FloatR1:.*]] = OpExtInst %[[FloatVec2]] %[[#]] fmin %[[ParamVec2Float]] %[[Vec2FloatShuf]]
++; CHECK: %[[Vec2FloatR1MinMax:.*]] = OpExtInst %[[FloatVec2]] %[[#]] fmin %[[ParamVec2Float]] %[[Vec2FloatShuf]]
++; CHECK: %[[Vec2FloatR1XSign:.*]] = OpExtInst %[[FloatVec2]] %[[#]] copysign %[[#]] %[[ParamVec2Float]]
++; CHECK: %[[Vec2FloatR1XNeg:.*]] = OpFOrdLessThan %[[#]] %[[Vec2FloatR1XSign]] %[[#]]
++; CHECK: %[[Vec2FloatR1Sign:.*]] = OpSelect %[[FloatVec2]] %[[Vec2FloatR1XNeg]] %[[ParamVec2Float]] %[[Vec2FloatShuf]]
++; CHECK: %[[Vec2FloatR1Signed:.*]] = OpExtInst %[[FloatVec2]] %[[#]] copysign %[[Vec2FloatR1MinMax]] %[[Vec2FloatR1Sign]]
++; CHECK: %[[Vec2FloatR1Uno:.*]] = OpUnordered %[[#]] %[[ParamVec2Float]] %[[Vec2FloatShuf]]
++; CHECK: %[[Vec2FloatR1:.*]] = OpSelect %[[FloatVec2]] %[[Vec2FloatR1Uno]] %[[#]] %[[Vec2FloatR1Signed]]
+ ; CHECK: %[[Vec2FloatR2:.*]] = OpCompositeExtract %[[Float]] %[[Vec2FloatR1]] 0
+ ; CHECK: OpReturnValue %[[Vec2FloatR2]]
+ ; CHECK: OpFunctionEnd
+@@ -46,15 +70,33 @@ target triple = "spir64-unknown-unknown"
+ ; CHECK: %[[Vec3FloatItem0:.*]] = OpCompositeExtract %[[Float]] %[[ParamVec3Float]] 0
+ ; CHECK: %[[Vec3FloatItem1:.*]] = OpCompositeExtract %[[Float]] %[[ParamVec3Float]] 1
+ ; CHECK: %[[Vec3FloatItem2:.*]] = OpCompositeExtract %[[Float]] %[[ParamVec3Float]] 2
+-; CHECK: %[[Vec3FloatR1:.*]] = OpExtInst %[[Float]] %[[#]] fmin %[[Vec3FloatItem0]] %[[Vec3FloatItem1]]
+-; CHECK: %[[Vec3FloatR2:.*]] = OpExtInst %[[Float]] %[[#]] fmin %[[Vec3FloatR1]] %[[Vec3FloatItem2]]
++; CHECK: %[[Vec3FloatR1MinMax:.*]] = OpExtInst %[[Float]] %[[#]] fmin %[[Vec3FloatItem0]] %[[Vec3FloatItem1]]
++; CHECK: %[[Vec3FloatR1XSign:.*]] = OpExtInst %[[Float]] %[[#]] copysign %[[#]] %[[Vec3FloatItem0]]
++; CHECK: %[[Vec3FloatR1XNeg:.*]] = OpFOrdLessThan %[[#]] %[[Vec3FloatR1XSign]] %[[#]]
++; CHECK: %[[Vec3FloatR1Sign:.*]] = OpSelect %[[Float]] %[[Vec3FloatR1XNeg]] %[[Vec3FloatItem0]] %[[Vec3FloatItem1]]
++; CHECK: %[[Vec3FloatR1Signed:.*]] = OpExtInst %[[Float]] %[[#]] copysign %[[Vec3FloatR1MinMax]] %[[Vec3FloatR1Sign]]
++; CHECK: %[[Vec3FloatR1Uno:.*]] = OpUnordered %[[#]] %[[Vec3FloatItem0]] %[[Vec3FloatItem1]]
++; CHECK: %[[Vec3FloatR1:.*]] = OpSelect %[[Float]] %[[Vec3FloatR1Uno]] %[[#]] %[[Vec3FloatR1Signed]]
++; CHECK: %[[Vec3FloatR2MinMax:.*]] = OpExtInst %[[Float]] %[[#]] fmin %[[Vec3FloatR1]] %[[Vec3FloatItem2]]
++; CHECK: %[[Vec3FloatR2XSign:.*]] = OpExtInst %[[Float]] %[[#]] copysign %[[#]] %[[Vec3FloatR1]]
++; CHECK: %[[Vec3FloatR2XNeg:.*]] = OpFOrdLessThan %[[#]] %[[Vec3FloatR2XSign]] %[[#]]
++; CHECK: %[[Vec3FloatR2Sign:.*]] = OpSelect %[[Float]] %[[Vec3FloatR2XNeg]] %[[Vec3FloatR1]] %[[Vec3FloatItem2]]
++; CHECK: %[[Vec3FloatR2Signed:.*]] = OpExtInst %[[Float]] %[[#]] copysign %[[Vec3FloatR2MinMax]] %[[Vec3FloatR2Sign]]
++; CHECK: %[[Vec3FloatR2Uno:.*]] = OpUnordered %[[#]] %[[Vec3FloatR1]] %[[Vec3FloatItem2]]
++; CHECK: %[[Vec3FloatR2:.*]] = OpSelect %[[Float]] %[[Vec3FloatR2Uno]] %[[#]] %[[Vec3FloatR2Signed]]
+ ; CHECK: OpReturnValue %[[Vec3FloatR2]]
+ ; CHECK: OpFunctionEnd
+ 
+ ; CHECK: OpFunction
+ ; CHECK: %[[ParamVec2Double:.*]] = OpFunctionParameter %[[DoubleVec2]]
+ ; CHECK: %[[Vec2DoubleShuf:.*]] = OpVectorShuffle %[[DoubleVec2]] %[[ParamVec2Double]] %[[#]] 1 0xFFFFFFFF
+-; CHECK: %[[Vec2DoubleR1:.*]] = OpExtInst %[[DoubleVec2]] %[[#]] fmin %[[ParamVec2Double]] %[[Vec2DoubleShuf]]
++; CHECK: %[[Vec2DoubleR1MinMax:.*]] = OpExtInst %[[DoubleVec2]] %[[#]] fmin %[[ParamVec2Double]] %[[Vec2DoubleShuf]]
++; CHECK: %[[Vec2DoubleR1XSign:.*]] = OpExtInst %[[DoubleVec2]] %[[#]] copysign %[[#]] %[[ParamVec2Double]]
++; CHECK: %[[Vec2DoubleR1XNeg:.*]] = OpFOrdLessThan %[[#]] %[[Vec2DoubleR1XSign]] %[[#]]
++; CHECK: %[[Vec2DoubleR1Sign:.*]] = OpSelect %[[DoubleVec2]] %[[Vec2DoubleR1XNeg]] %[[ParamVec2Double]] %[[Vec2DoubleShuf]]
++; CHECK: %[[Vec2DoubleR1Signed:.*]] = OpExtInst %[[DoubleVec2]] %[[#]] copysign %[[Vec2DoubleR1MinMax]] %[[Vec2DoubleR1Sign]]
++; CHECK: %[[Vec2DoubleR1Uno:.*]] = OpUnordered %[[#]] %[[ParamVec2Double]] %[[Vec2DoubleShuf]]
++; CHECK: %[[Vec2DoubleR1:.*]] = OpSelect %[[DoubleVec2]] %[[Vec2DoubleR1Uno]] %[[#]] %[[Vec2DoubleR1Signed]]
+ ; CHECK: %[[Vec2DoubleR2:.*]] = OpCompositeExtract %[[Double]] %[[Vec2DoubleR1]] 0
+ ; CHECK: OpReturnValue %[[Vec2DoubleR2]]
+ ; CHECK: OpFunctionEnd
+@@ -64,8 +106,20 @@ target triple = "spir64-unknown-unknown"
+ ; CHECK: %[[Vec3DoubleItem0:.*]] = OpCompositeExtract %[[Double]] %[[ParamVec3Double]] 0
+ ; CHECK: %[[Vec3DoubleItem1:.*]] = OpCompositeExtract %[[Double]] %[[ParamVec3Double]] 1
+ ; CHECK: %[[Vec3DoubleItem2:.*]] = OpCompositeExtract %[[Double]] %[[ParamVec3Double]] 2
+-; CHECK: %[[Vec3DoubleR1:.*]] = OpExtInst %[[Double]] %[[#]] fmin %[[Vec3DoubleItem0]] %[[Vec3DoubleItem1]]
+-; CHECK: %[[Vec3DoubleR2:.*]] = OpExtInst %[[Double]] %[[#]] fmin %[[Vec3DoubleR1]] %[[Vec3DoubleItem2]]
++; CHECK: %[[Vec3DoubleR1MinMax:.*]] = OpExtInst %[[Double]] %[[#]] fmin %[[Vec3DoubleItem0]] %[[Vec3DoubleItem1]]
++; CHECK: %[[Vec3DoubleR1XSign:.*]] = OpExtInst %[[Double]] %[[#]] copysign %[[#]] %[[Vec3DoubleItem0]]
++; CHECK: %[[Vec3DoubleR1XNeg:.*]] = OpFOrdLessThan %[[#]] %[[Vec3DoubleR1XSign]] %[[#]]
++; CHECK: %[[Vec3DoubleR1Sign:.*]] = OpSelect %[[Double]] %[[Vec3DoubleR1XNeg]] %[[Vec3DoubleItem0]] %[[Vec3DoubleItem1]]
++; CHECK: %[[Vec3DoubleR1Signed:.*]] = OpExtInst %[[Double]] %[[#]] copysign %[[Vec3DoubleR1MinMax]] %[[Vec3DoubleR1Sign]]
++; CHECK: %[[Vec3DoubleR1Uno:.*]] = OpUnordered %[[#]] %[[Vec3DoubleItem0]] %[[Vec3DoubleItem1]]
++; CHECK: %[[Vec3DoubleR1:.*]] = OpSelect %[[Double]] %[[Vec3DoubleR1Uno]] %[[#]] %[[Vec3DoubleR1Signed]]
++; CHECK: %[[Vec3DoubleR2MinMax:.*]] = OpExtInst %[[Double]] %[[#]] fmin %[[Vec3DoubleR1]] %[[Vec3DoubleItem2]]
++; CHECK: %[[Vec3DoubleR2XSign:.*]] = OpExtInst %[[Double]] %[[#]] copysign %[[#]] %[[Vec3DoubleR1]]
++; CHECK: %[[Vec3DoubleR2XNeg:.*]] = OpFOrdLessThan %[[#]] %[[Vec3DoubleR2XSign]] %[[#]]
++; CHECK: %[[Vec3DoubleR2Sign:.*]] = OpSelect %[[Double]] %[[Vec3DoubleR2XNeg]] %[[Vec3DoubleR1]] %[[Vec3DoubleItem2]]
++; CHECK: %[[Vec3DoubleR2Signed:.*]] = OpExtInst %[[Double]] %[[#]] copysign %[[Vec3DoubleR2MinMax]] %[[Vec3DoubleR2Sign]]
++; CHECK: %[[Vec3DoubleR2Uno:.*]] = OpUnordered %[[#]] %[[Vec3DoubleR1]] %[[Vec3DoubleItem2]]
++; CHECK: %[[Vec3DoubleR2:.*]] = OpSelect %[[Double]] %[[Vec3DoubleR2Uno]] %[[#]] %[[Vec3DoubleR2Signed]]
+ ; CHECK: OpReturnValue %[[Vec3DoubleR2]]
+ ; CHECK: OpFunctionEnd
+ 
+-- 
+2.56.0
+

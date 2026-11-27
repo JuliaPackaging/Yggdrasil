@@ -1,0 +1,41 @@
+commit f412eb1efb784f8f6a618ac8a9a0be78005c7c39
+Author: Elliot Saba <staticfloat@gmail.com>
+Date:   Sun Feb 23 01:41:39 2025 +0000
+
+    Disable testing for soft-float targets as we don't use those
+    
+    Without this change, we end up with:
+    ```
+    Compiler-RT supported architectures: armv4t;armv6m;arm;armhf
+    ```
+    
+    Which leads to:
+    
+    ```
+    CMake Error at cmake/Modules/AddCompilerRT.cmake:347
+    (add_custom_command):
+      Attempt to add a custom rule to output
+    
+        /workspace/srcdir/llvm_build/lib/linux/clang_rt.crtbegin-arm.o.rule
+    
+      which already has a custom rule.
+    ```
+
+diff --git a/compiler-rt/cmake/base-config-ix.cmake b/compiler-rt/cmake/base-config-ix.cmake
+index 9c62320c3922..4cb0f1f255e1 100644
+--- a/compiler-rt/cmake/base-config-ix.cmake
++++ b/compiler-rt/cmake/base-config-ix.cmake
+@@ -244,9 +244,10 @@ macro(test_targets)
+       if(WIN32)
+         test_target_arch(arm "" "" "")
+       else()
+-        test_target_arch(armv4t "" "-march=armv4t" "-mfloat-abi=soft")
+-        test_target_arch(armv6m "" "-march=armv6m" "-mfloat-abi=soft")
+-        test_target_arch(arm "" "-march=armv7-a" "-mfloat-abi=soft")
++        # Disable these as they confuse the build system
++        #test_target_arch(armv4t "" "-march=armv4t" "-mfloat-abi=soft")
++        #test_target_arch(armv6m "" "-march=armv6m" "-mfloat-abi=soft")
++        #test_target_arch(arm "" "-march=armv7-a" "-mfloat-abi=soft")
+         test_target_arch(armhf "" "-march=armv7-a" "-mfloat-abi=hard")
+       endif()
+     elseif("${COMPILER_RT_DEFAULT_TARGET_ARCH}" MATCHES "avr")

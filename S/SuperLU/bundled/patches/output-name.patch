@@ -1,0 +1,24 @@
+Let the recipe set the library name, so that the Int32 and Int64 builds can be installed side by side. Yggdrasil-specific, not suitable for upstream.
+
+diff --git a/SRC/CMakeLists.txt b/SRC/CMakeLists.txt
+index 214adb90..ed25aedb 100755
+--- a/SRC/CMakeLists.txt
++++ b/SRC/CMakeLists.txt
+@@ -435,7 +435,7 @@ foreach(target ${targets})
+         set_target_properties(${target} PROPERTIES
+                               CUDA_SEPARABLE_COMPILATION ON
+                               CUDA_RESOLVE_DEVICE_SYMBOLS ON
+-							  OUTPUT_NAME superlu_dist
++							  OUTPUT_NAME ${SUPERLU_OUTPUT_NAME}
+                               VERSION ${PROJECT_VERSION}
+                               SOVERSION ${VERSION_MAJOR}
+ 			      LINKER_LANGUAGE CXX
+@@ -444,7 +444,7 @@ foreach(target ${targets})
+         set_target_properties(${target} PROPERTIES
+ 		                      CUDA_SEPARABLE_COMPILATION ON
+                                       CUDA_RESOLVE_DEVICE_SYMBOLS ON
+-                              OUTPUT_NAME superlu_dist
++                              OUTPUT_NAME ${SUPERLU_OUTPUT_NAME}
+                               VERSION ${PROJECT_VERSION}
+                               SOVERSION ${VERSION_MAJOR}
+ 			      )

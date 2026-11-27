@@ -1,0 +1,128 @@
+From f55138dd473a232fa4776082b14fdef2773c2644 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Mon, 16 Nov 2026 14:05:19 +0100
+Subject: [PATCH] Don't emit loop controls for loops whose header ends in a
+ switch
+
+OpLoopMerge and OpLoopControlINTEL must immediately precede an OpBranch
+or OpBranchConditional. When the header of a loop with loop control
+metadata ended in a switch, they were appended after the OpSwitch, which
+spirv-val rejects ("LoopMerge must appear in a block"): OpLoopMerge when
+the latch ends in a conditional branch, OpLoopControlINTEL when it ends in
+an unconditional one and SPV_INTEL_unstructured_loop_controls is enabled.
+LLVM's loop unroller produces such loops, e.g. a partially unrolled loop
+whose header switches over the small-exponent fast paths of an integer
+power.
+
+Skip the loop control in that case, as llvm/llvm-project#229289 does for
+the SPIR-V back-end. Only the hint is lost.
+---
+ lib/SPIRV/SPIRVWriter.cpp        | 12 +++++-
+ test/OpLoopMerge_switchHeader.ll | 64 ++++++++++++++++++++++++++++++++
+ 2 files changed, 74 insertions(+), 2 deletions(-)
+ create mode 100644 test/OpLoopMerge_switchHeader.ll
+
+diff --git a/lib/SPIRV/SPIRVWriter.cpp b/lib/SPIRV/SPIRVWriter.cpp
+index 17d12b40..3be4ec4b 100644
+--- a/lib/SPIRV/SPIRVWriter.cpp
++++ b/lib/SPIRV/SPIRVWriter.cpp
+@@ -2587,7 +2587,12 @@ LLVMToSPIRVBase::transValueWithoutDecoration(Value *V, SPIRVBasicBlock *BB,
+       BasicBlock *CurrentBB = Branch->getParent();
+       const Loop *ContainingLoop = LI.getLoopFor(CurrentBB);
+ 
+-      if (ContainingLoop) {
++      // OpLoopMerge must immediately precede an OpBranch or
++      // OpBranchConditional, so a header ending in a switch can't carry one.
++      // Dropping it only loses the loop control hint.
++      if (ContainingLoop &&
++          isa<UncondBrInst, CondBrInst>(
++              ContainingLoop->getHeader()->getTerminator())) {
+         // Check whether SuccessorFalse or SuccessorTrue is the loop header BB.
+         // For example consider following LLVM IR:
+         // br i1 %compare, label %for.body, label %for.end
+@@ -2641,8 +2646,11 @@ LLVMToSPIRVBase::transValueWithoutDecoration(Value *V, SPIRVBasicBlock *BB,
+                              BB->getId(),                  // Continue Target
+                              LoopControl, Parameters, Successor);
+       } else {
++        // Like OpLoopMerge, OpLoopControlINTEL must precede a branch.
+         if (BM->isAllowedToUseExtension(
+-                ExtensionID::SPV_INTEL_unstructured_loop_controls)) {
++                ExtensionID::SPV_INTEL_unstructured_loop_controls) &&
++            isa<UncondBrInst, CondBrInst>(
++                Branch->getSuccessor(0)->getTerminator())) {
+           // For unstructured loop we add a special loop control instruction.
+           // Simple example of unstructured loop is an infinite loop, that has
+           // no terminate instruction.
+diff --git a/test/OpLoopMerge_switchHeader.ll b/test/OpLoopMerge_switchHeader.ll
+new file mode 100644
+index 00000000..b0e40337
+--- /dev/null
++++ b/test/OpLoopMerge_switchHeader.ll
+@@ -0,0 +1,64 @@
++; OpLoopMerge and OpLoopControlINTEL must immediately precede an OpBranch or
++; OpBranchConditional, so a loop whose header ends in a switch gets neither,
++; and loses its loop control.
++
++; RUN: llvm-as %s -o %t.bc
++; RUN: llvm-spirv %t.bc -o %t.spv
++; RUN: spirv-val %t.spv
++; RUN: llvm-spirv --to-text %t.spv -o - | FileCheck %s
++
++; RUN: llvm-spirv %t.bc -o %t.intel.spv --spirv-ext=+SPV_INTEL_unstructured_loop_controls
++; RUN: spirv-val %t.intel.spv
++; RUN: llvm-spirv --to-text %t.intel.spv -o - | FileCheck %s
++
++; CHECK-NOT: LoopMerge
++; CHECK-NOT: LoopControlINTEL
++; CHECK: Switch
++; CHECK-NOT: LoopMerge
++; CHECK-NOT: LoopControlINTEL
++; CHECK: Switch
++; CHECK-NOT: LoopMerge
++; CHECK-NOT: LoopControlINTEL
++
++target triple = "spir64"
++
++; The latch ends in a conditional branch.
++define spir_kernel void @cond_latch(ptr addrspace(1) %dst, i32 %n) {
++entry:
++  br label %header
++header:
++  %i = phi i32 [ 0, %entry ], [ %i.next, %latch ]
++  switch i32 %i, label %latch [
++    i32 1, label %one
++  ]
++one:
++  store i32 1, ptr addrspace(1) %dst, align 4
++  br label %latch
++latch:
++  %i.next = add i32 %i, 1
++  %cmp = icmp slt i32 %i.next, %n
++  br i1 %cmp, label %header, label %exit, !llvm.loop !0
++exit:
++  ret void
++}
++
++; The latch ends in an unconditional branch.
++define spir_kernel void @uncond_latch(ptr addrspace(1) %dst) {
++entry:
++  br label %header
++header:
++  %i = phi i32 [ 0, %entry ], [ %i.next, %latch ]
++  switch i32 %i, label %latch [
++    i32 8, label %exit
++  ]
++latch:
++  store i32 %i, ptr addrspace(1) %dst, align 4
++  %i.next = add i32 %i, 1
++  br label %header, !llvm.loop !1
++exit:
++  ret void
++}
++
++!0 = distinct !{!0, !2}
++!1 = distinct !{!1, !2}
++!2 = !{!"llvm.loop.unroll.disable"}
+-- 
+2.56.0
+

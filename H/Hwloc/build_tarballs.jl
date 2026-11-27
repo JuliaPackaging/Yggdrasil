@@ -3,12 +3,12 @@
 using BinaryBuilder
 
 name = "Hwloc"
-version = v"2.15.0"
+version = v"2.16.0"
 
 # Collection of sources required to build hwloc
 sources = [
     ArchiveSource("https://download.open-mpi.org/release/hwloc/v$(version.major).$(version.minor)/hwloc-$(version).tar.bz2",
-                  "0084b926fff9a960ddbf175654db39054ed60afbb830d2039d8a60686ca06a7f")
+                  "ad05eb466b915a4f0e0228173d7e09974ac38760c38d5b6f060254c050fca12d"),
 ]
 
 # Bash recipe for building across all platforms

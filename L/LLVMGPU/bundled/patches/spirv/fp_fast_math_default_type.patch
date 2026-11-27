@@ -1,0 +1,163 @@
+From 16103ffa58bb19541ee2a7f20750905d3ca94496 Mon Sep 17 00:00:00 2001
+From: Tim Besard <tim.besard@gmail.com>
+Date: Mon, 12 Oct 2026 15:48:24 +0200
+Subject: [PATCH] [SPIR-V] Fix FPFastMathDefault type lookup for calls and
+ post-isel registers
+
+When an instruction has no fast-math flags of its own, the FPFastMathDefault
+flags of its floating point type are applied. That type was read from the
+global registry entry of operand 2, which crashes in two cases:
+
+- OpFunctionCall, which became eligible in #211879, has the callee rather
+  than a register as operand 2.
+- Registers created after instruction selection, e.g. by MachineCSE's PRE,
+  have no entry in the global registry.
+
+Use the result type for function calls, as was already done for extended
+instructions. For the other instructions, fall back to the result type of
+the operand's definition when the operand is not in the registry.
+
+Fixes #230986
+---
+ lib/Target/SPIRV/SPIRVModuleAnalysis.cpp      | 36 ++++-----
+ .../fp-fast-math-default-type.ll              | 81 +++++++++++++++++++
+ 2 files changed, 98 insertions(+), 19 deletions(-)
+ create mode 100644 llvm/test/CodeGen/SPIRV/extensions/SPV_KHR_float_controls2/fp-fast-math-default-type.ll
+
+diff --git a/lib/Target/SPIRV/SPIRVModuleAnalysis.cpp b/lib/Target/SPIRV/SPIRVModuleAnalysis.cpp
+index 2836a2cc43ef..c9fba45066d3 100644
+--- a/lib/Target/SPIRV/SPIRVModuleAnalysis.cpp
++++ b/lib/Target/SPIRV/SPIRVModuleAnalysis.cpp
+@@ -2836,25 +2836,23 @@ static void handleMIFlagDecoration(
+     if (FPFastMathDefaultInfoVec.empty())
+       return;
+ 
+-    // There are three types of instructions that can use fast math flags:
+-    // 1. Arithmetic instructions (FAdd, FMul, FSub, FDiv, FRem, etc.)
+-    // 2. Relational instructions (FCmp, FOrd, FUnord, etc.)
+-    // 3. Extended instructions (ExtInst)
+-    // For arithmetic instructions, the floating point type can be in the
+-    // result type or in the operands, but they all must be the same.
+-    // For the relational and logical instructions, the floating point type
+-    // can only be in the operands 1 and 2, not the result type. Also, the
+-    // operands must have the same type. For the extended instructions, the
+-    // floating point type can be in the result type or in the operands. It's
+-    // unclear if the operands and the result type must be the same. Let's
+-    // assume they must be. Therefore, for 1. and 2., we can check the first
+-    // operand type, and for 3. we can check the result type.
+-    assert(I.getNumOperands() >= 3 && "Expected at least 3 operands");
+-    Register ResReg = I.getOpcode() == SPIRV::OpExtInst
+-                          ? I.getOperand(1).getReg()
+-                          : I.getOperand(2).getReg();
+-    SPIRVTypeInst ResType = GR->getSPIRVTypeForVReg(ResReg, I.getMF());
+-    const Type *Ty = GR->getTypeForSPIRVType(ResType);
++    // Arithmetic and relational instructions have operands of a single
++    // floating point type, so use the type of the first one. For extended
++    // instructions and function calls, use the result type. Registers created
++    // after instruction selection (e.g. by MachineCSE) are not in the global
++    // registry, so fall back to the result type of the operand's definition.
++    const MachineRegisterInfo &MRI = I.getMF()->getRegInfo();
++    SPIRVTypeInst FPType = nullptr;
++    if (I.getOpcode() == SPIRV::OpExtInst ||
++        I.getOpcode() == SPIRV::OpFunctionCall) {
++      FPType = MRI.getVRegDef(I.getOperand(1).getReg());
++    } else {
++      Register OpReg = I.getOperand(2).getReg();
++      FPType = GR->getSPIRVTypeForVReg(OpReg, I.getMF());
++      if (!FPType)
++        FPType = MRI.getVRegDef(MRI.getVRegDef(OpReg)->getOperand(1).getReg());
++    }
++    const Type *Ty = GR->getTypeForSPIRVType(FPType);
+     Ty = Ty->isVectorTy() ? cast<VectorType>(Ty)->getElementType() : Ty;
+ 
+     // Match instruction type with the FPFastMathDefaultInfoVec.
+diff --git a/test/CodeGen/SPIRV/extensions/SPV_KHR_float_controls2/fp-fast-math-default-type.ll b/test/CodeGen/SPIRV/extensions/SPV_KHR_float_controls2/fp-fast-math-default-type.ll
+new file mode 100644
+index 000000000000..3f5d820d086b
+--- /dev/null
++++ b/test/CodeGen/SPIRV/extensions/SPV_KHR_float_controls2/fp-fast-math-default-type.ll
+@@ -0,0 +1,81 @@
++; Check that FPFastMathDefault flags are applied by looking up the type of the
++; instruction even when its operand registers were created after instruction
++; selection (here by MachineCSE), and that calls returning a non-floating point
++; type, including bool, are left alone.
++
++; RUN: llc -verify-machineinstrs -O2 -mtriple=spirv64-unknown-unknown --spirv-ext=+SPV_KHR_float_controls2 %s -o - | FileCheck %s --implicit-check-not=FPFastMathMode
++; RUN: %if spirv-tools %{ llc -O2 -mtriple=spirv64-unknown-unknown --spirv-ext=+SPV_KHR_float_controls2 %s -o - -filetype=obj | spirv-val %}
++
++; CHECK-DAG: OpDecorate %[[#MUL1:]] FPFastMathMode NotNaN|NotInf
++; CHECK-DAG: OpDecorate %[[#MUL2:]] FPFastMathMode NotNaN|NotInf
++; CHECK-DAG: OpDecorate %[[#MUL3:]] FPFastMathMode NotNaN|NotInf
++; CHECK-DAG: OpDecorate %[[#CMP:]] FPFastMathMode NotNaN|NotInf
++
++; CHECK: %[[#MUL1]] = OpFMul
++; CHECK: %[[#MUL2]] = OpFMul %[[#]] %[[#MUL1]]
++; CHECK: %[[#MUL3]] = OpFMul
++; CHECK: %[[#CMP]] = OpFOrdLessThan %[[#]] %[[#MUL3]]
++; CHECK: OpFunctionCall
++; CHECK: OpFunctionCall
++
++define spir_kernel void @arith(ptr addrspace(1) %p, float %x, float %y, i1 %c) {
++entry:
++  br i1 %c, label %then, label %exit
++
++then:
++  %a = fmul float %x, %y
++  store float %a, ptr addrspace(1) %p
++  br label %exit
++
++exit:
++  %b = fmul float %x, %y
++  %d = fmul float %b, %y
++  store float %d, ptr addrspace(1) %p
++  ret void
++}
++
++define spir_kernel void @relational(ptr addrspace(1) %p, ptr addrspace(1) %q, float %x, float %y, i1 %c) {
++entry:
++  br i1 %c, label %then, label %exit
++
++then:
++  %a = fmul float %x, %y
++  store float %a, ptr addrspace(1) %p
++  br label %exit
++
++exit:
++  %b = fmul float %x, %y
++  %d = fcmp olt float %b, %y
++  %e = zext i1 %d to i32
++  store i32 %e, ptr addrspace(1) %q
++  ret void
++}
++
++define spir_func i32 @callee(i32 %x) noinline {
++  %r = add i32 %x, 1
++  ret i32 %r
++}
++
++define spir_kernel void @call(ptr addrspace(1) %p, i32 %a) {
++  %r = call spir_func i32 @callee(i32 %a)
++  store i32 %r, ptr addrspace(1) %p
++  ret void
++}
++
++define spir_func i1 @bool_callee(i32 %x) noinline {
++  %r = icmp eq i32 %x, 0
++  ret i1 %r
++}
++
++define spir_kernel void @bool_call(ptr addrspace(1) %p, i32 %a) {
++  %b = call spir_func i1 @bool_callee(i32 %a)
++  %r = zext i1 %b to i32
++  store i32 %r, ptr addrspace(1) %p
++  ret void
++}
++
++!spirv.ExecutionMode = !{!0, !1, !2, !3}
++!0 = !{ptr @arith, i32 6028, float poison, i32 3}
++!1 = !{ptr @relational, i32 6028, float poison, i32 3}
++!2 = !{ptr @call, i32 6028, float poison, i32 3}
++!3 = !{ptr @bool_call, i32 6028, float poison, i32 3}
+-- 
+2.56.0
+

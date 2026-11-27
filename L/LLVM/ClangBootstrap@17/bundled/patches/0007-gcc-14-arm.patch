@@ -1,0 +1,47 @@
+commit 9eec10409c0cb80d17992153410bb07e41565e2a
+Author: Elliot Saba <staticfloat@gmail.com>
+Date:   Sat May 24 07:15:29 2025 +0000
+
+    Backport d54dfdd1b53ff72344287d250c2b67329792c840 to v17.0.6
+    
+    This fixes the build on GCC 14 for arm
+
+diff --git a/clang/include/clang/Basic/TokenKinds.def b/clang/include/clang/Basic/TokenKinds.def
+index ef0dad0f2dcd..849df57126cc 100644
+--- a/clang/include/clang/Basic/TokenKinds.def
++++ b/clang/include/clang/Basic/TokenKinds.def
+@@ -753,7 +753,7 @@ KEYWORD(__builtin_sycl_unique_stable_name, KEYSYCL)
+ 
+ // Keywords defined by Attr.td.
+ #ifndef KEYWORD_ATTRIBUTE
+-#define KEYWORD_ATTRIBUTE(X) KEYWORD(X, KEYALL)
++#define KEYWORD_ATTRIBUTE(X, EMPTY) KEYWORD(EMPTY ## X, KEYALL)
+ #endif
+ #include "clang/Basic/AttrTokenKinds.inc"
+ 
+diff --git a/clang/include/clang/Basic/TokenKinds.h b/clang/include/clang/Basic/TokenKinds.h
+index e4857405bc7f..3c263d6246d2 100644
+--- a/clang/include/clang/Basic/TokenKinds.h
++++ b/clang/include/clang/Basic/TokenKinds.h
+@@ -109,7 +109,7 @@ bool isPragmaAnnotation(TokenKind K);
+ 
+ inline constexpr bool isRegularKeywordAttribute(TokenKind K) {
+   return (false
+-#define KEYWORD_ATTRIBUTE(X) || (K == tok::kw_##X)
++#define KEYWORD_ATTRIBUTE(X, EMPTY) || (K == tok::kw_##X)
+ #include "clang/Basic/AttrTokenKinds.inc"
+   );
+ }
+diff --git a/clang/utils/TableGen/ClangAttrEmitter.cpp b/clang/utils/TableGen/ClangAttrEmitter.cpp
+index b5813c6abc2b..79db17501b64 100644
+--- a/clang/utils/TableGen/ClangAttrEmitter.cpp
++++ b/clang/utils/TableGen/ClangAttrEmitter.cpp
+@@ -3430,7 +3430,7 @@ void EmitClangAttrTokenKinds(RecordKeeper &Records, raw_ostream &OS) {
+                      "RegularKeyword attributes with arguments are not "
+                      "yet supported");
+         OS << "KEYWORD_ATTRIBUTE("
+-           << S.getSpellingRecord().getValueAsString("Name") << ")\n";
++           << S.getSpellingRecord().getValueAsString("Name") << ", )\n";
+       }
+   OS << "#undef KEYWORD_ATTRIBUTE\n";
+ }

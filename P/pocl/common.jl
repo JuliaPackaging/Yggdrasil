@@ -1,6 +1,7 @@
 #=
 
-Shared build logic for the PoCL 7.2 JLLs (`pocl_next` and `pocl_standalone`).
+Shared build logic for the PoCL 7.2 JLLs (`pocl`, `pocl_next`, `pocl_standalone` and
+`pocl_standalone_next`).
 
 This is the 7.2 track of PoCL. The goal is a JLL that needs *no* run-time helper tooling:
 no wrapper scripts, no bundled startup files, no external clang/lld/llvm-spirv. The init
@@ -36,26 +37,186 @@ Two upstream/build changes make that possible:
 
 The `standalone` argument selects between two variants of this same build:
 
-- standalone=false (`pocl_next`): an OpenCL ICD driver (ENABLE_ICD=ON) loaded by an ICD
+- standalone=false (`pocl`, `pocl_next`): an OpenCL ICD driver (ENABLE_ICD=ON) loaded by an ICD
   loader; the init block registers it with OpenCL_jll.
-- standalone=true (`pocl_standalone`): a directly-linkable library (ENABLE_ICD=OFF) whose
-  OpenCL entrypoints are renamed to `PO<cl_function>` (RENAME_POCL), so it can be used as
-  a CPU back-end (e.g. by KernelAbstractions.jl's nanoOpenCL) without an OpenCL.jl/ICD
-  dependency while coexisting in-process with a real OpenCL ICD targeting other GPUs.
+- standalone=true (`pocl_standalone`, `pocl_standalone_next`): a directly-linkable library
+  (ENABLE_ICD=OFF) whose OpenCL entrypoints are renamed to `PO<cl_function>` (RENAME_POCL),
+  so it can be used as a CPU back-end (e.g. by KernelAbstractions.jl's nanoOpenCL) without
+  an OpenCL.jl/ICD dependency while coexisting in-process with a real OpenCL ICD targeting
+  other GPUs.
 
-The stable 7.1 `pocl` recipe is intentionally *not* built from here: its 7.1 build system
-and external-link/wrapper machinery differ enough that it carries its own self-contained
-build script.
+The recipes differ in their sources: `pocl` is the release track (upstream v7.2 plus its
+own patch series), while the others follow upstream's 7.2 maintenance branch with the
+series in `pocl_next/bundled` (`pocl_standalone/bundled` is a symlink to it, and
+`pocl_standalone_next` uses it directly, so changing that series needs a change to their
+recipes to trigger their rebuild).
+
+The `spirv32` keyword additionally applies the experimental series in
+`pocl_next/bundled/patches/pocl-spirv32`, which enables SPIR-V on 32-bit x86 (JuliaGPU/pocl#3).
+`pocl_next` and `pocl_standalone_next` opt in, so that it can be tested before it moves into
+the default series; without it, the build script is the same as before.
 
 =#
 
-function build_script(standalone=false)
+# LLVM 19-22's AArch64 back-end rounds `<8 x bfloat>` arithmetic wrongly on CPUs without
+# FEAT_BF16 (e.g. Neoverse N1, Apple M1): the instruction patterns that promote it to two
+# `<4 x float>` halves take the round-to-nearest-even bit from an *input* instead of the
+# result, so ties go the wrong way (JuliaGPU/KernelAbstractions.jl#949). LLVM 23 removed
+# those patterns (llvm/llvm-project#190164). While these JLLs use LLVM 22, we fix the
+# pattern and rebuild the one LLVM object that contains the generated instruction
+# selector, AArch64ISelDAGToDAG.cpp, replacing it in LLVM_full_jll's static
+# libLLVMAArch64CodeGen.a before PoCL links against it. That needs the AArch64 target
+# sources, which are the same in upstream 22.1.8 and the Julia fork LLVM_full_jll builds.
+const aarch64_isel_fix_source =
+    FileSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.8/llvm-project-22.1.8.src.tar.xz",
+               "922f1817a0df7b1489272d18134ee0087a8b068828f87ac63b9861b1a9965888")
+needs_aarch64_isel_fix(platform) = llvm_version.major == 22 && arch(platform) == "aarch64"
+
+const aarch64_isel_fix_script = raw"""
+##########################################################################
+# 0. Fix LLVM 22's AArch64 selection of <8 x bfloat> arithmetic (see common.jl)
+##########################################################################
+# this changes the kernels PoCL generates, so it goes into the version tag (see below),
+# on all platforms to keep that tag the same
+llvm_fixes=$WORKSPACE/srcdir/llvm-fixes.txt
+echo "AArch64 round_v4fp32_to_v4bf16 (JuliaGPU/KernelAbstractions.jl#949)" > $llvm_fixes
+if [[ "${target}" == aarch64-* ]]; then
+    mkdir -p $WORKSPACE/srcdir/llvm-aarch64
+    pushd $WORKSPACE/srcdir/llvm-aarch64
+    tar -xJf $WORKSPACE/srcdir/llvm-project-22.1.8.src.tar.xz --strip-components=4 \
+        llvm-project-22.1.8.src/llvm/lib/Target/AArch64
+
+    # round_v4fp32_to_v4bf16 must shift its own argument, not the `V128:$Rn` operand of
+    # the pattern it is used in
+    sed -i 's/(USHRv4i32_shift V128:\$Rn, (i32 16))/(USHRv4i32_shift $Rn, (i32 16))/' \
+        AArch64/AArch64InstrInfo.td
+    if ! grep -q '(USHRv4i32_shift $Rn, (i32 16))' AArch64/AArch64InstrInfo.td; then
+        echo "ERROR: failed to patch AArch64InstrInfo.td" >&2
+        exit 1
+    fi
+
+    # generate what AArch64ISelDAGToDAG.cpp includes, with the host's llvm-tblgen of the
+    # same LLVM_full_jll, and compile it against the target LLVM's own (installed) headers
+    # and C++ flags, plus the usual flags of an LLVM release build
+    mkdir -p gen
+    tblgen=${host_prefix}/tools/llvm-tblgen
+    for gen in DAGISel:dag-isel InstrInfo:instr-info RegisterInfo:register-info \
+               SubtargetInfo:subtarget SystemOperands:searchable-tables \
+               SDNodeInfo:sd-node-info; do
+        $tblgen -gen-${gen#*:} -I AArch64 -I ${prefix}/include \
+            AArch64/AArch64.td -o gen/AArch64Gen${gen%%:*}.inc
+    done
+    $CXX $(bash $WORKSPACE/srcdir/llvm-config --cxxflags) -O3 -DNDEBUG -fPIC \
+        -fvisibility-inlines-hidden -ffunction-sections -fdata-sections \
+        -Igen -IAArch64 -c AArch64/AArch64ISelDAGToDAG.cpp -o AArch64ISelDAGToDAG.cpp.o
+
+    # BinaryBuilder copies dependency artifacts into the build directory, so we can patch
+    # the archive itself; LLVM's CMake package resolves the symlink in ${prefix} to it
+    lib=$(realpath ${prefix}/lib/libLLVMAArch64CodeGen.a)
+    if ! ar t $lib | grep -qx AArch64ISelDAGToDAG.cpp.o; then
+        echo "ERROR: AArch64ISelDAGToDAG.cpp.o not found in $lib" >&2
+        exit 1
+    fi
+    chmod u+w $lib
+    ar r $lib AArch64ISelDAGToDAG.cpp.o
+    ranlib $lib
+    popd
+fi
+
+"""
+
+# LLVM 23's loop vectorizer keeps only the first lane of a predicated instruction it
+# scalarizes when the result is then used as a vector by a widened GEP, e.g. a predicated
+# `sdiv` computing the index of a gather: dissolveReplicateRegion decides whether the lanes
+# need packing into a vector only after narrowing the predicated phi to a scalar one, which
+# VPWidenGEPRecipe then treats as uniform. On AVX-512 hosts this broke GPUArrays'
+# `repeat(x; inner)` (each 8-lane chunk got lane 0's value). Not fixed in LLVM 23.1.6; LLVM
+# main lowers such divisions to `llvm.masked.sdiv` instead. We rebuild VPlanUnroll.cpp from
+# the Julia fork revision LLVM_full_jll 23.1.4 is built from, with the fix applied, and
+# replace it in LLVM_full_jll's static libLLVMVectorize.a before PoCL links against it.
+const llvm_vplan_fix_commit = "3d876d0b0d8b4ac77362bd55cd030de355e83a9e" # julia-23.1.4-1
+# VPlanUnroll.cpp and the private headers of lib/Transforms/Vectorize it includes
+const llvm_vplan_fix_files = [
+    "VPlanUnroll.cpp" => "66f00c9b3c1f11209416fed71932ee92122d34b4e661047dbe498c2593e4418d",
+    "VPRecipeBuilder.h" => "2a6a8d910edd6ed27e41521140cdb6164700af363b65e9154d914f7d12643d60",
+    "VPlan.h" => "105eae754c79424adac79e78be9c699f42576a88234670373bb499c10b368df9",
+    "VPlanAnalysis.h" => "b790267285d323316878b8ca84ffe5e9080a14254b32f66dfb8e748c60c1accc",
+    "VPlanCFG.h" => "d2ce95b7d66e25ae7321685b151a31594977079fa65ec3b409cb87f12a2d53da",
+    "VPlanHelpers.h" => "3435ef4f67366270e1f6e7ea0d0055ecd4a4f5952248771c304177d42cbf525c",
+    "VPlanPatternMatch.h" => "1d7f05ff6190eb81bb000e69e6eabd68da179ff4c4de70bf4e3af3b6de8cb1c2",
+    "VPlanTransforms.h" => "ff416c485fd59cc32a5dc89b8a2eff43a218c8cdc08fb41dd389b7549169f569",
+    "VPlanUtils.h" => "6f2dbc191f4f7824b2e1973683389108677804a25122fb42d6e21e60ace94822",
+    "LoopVectorizationPlanner.h" => "2ca939ce33688cb0f861e674b254f361feeab61875123235f7239e5ff2fcd3a9",
+    "VPlanValue.h" => "44ed1a5653d770b8ccc1ec4315abe688ad247a3d2c198ec8a4ced4760761b18e",
+    "VPlanDominatorTree.h" => "54a23e12179051e961a26d6c51bcff902f7a62814cdf8418d19509d75e0f6ce7",
+    "VPlanVerifier.h" => "3fa4318c73531fe9cd7a1ddca85e012dc5bdf0ba7e210dbf0e2765306fc14e01",
+]
+const llvm_vplan_fix_sources = [
+    FileSource("https://raw.githubusercontent.com/JuliaLang/llvm-project/$(llvm_vplan_fix_commit)/llvm/lib/Transforms/Vectorize/$(file)",
+               hash; filename="llvm-vplan-$(file)")
+    for (file, hash) in llvm_vplan_fix_files]
+needs_llvm_vplan_fix(platform) = llvm_version == v"23.1.4"
+
+const llvm_vplan_fix_script = raw"""
+##########################################################################
+# 0. Fix LLVM 23's packing of predicated values with vector users (see common.jl)
+##########################################################################
+llvm_fixes=$WORKSPACE/srcdir/llvm-fixes.txt
+echo "VPlan: decide which predicated phis need packing before narrowing them" >> $llvm_fixes
+mkdir -p $WORKSPACE/srcdir/llvm-vplan/llvm/lib/Transforms/Vectorize
+pushd $WORKSPACE/srcdir/llvm-vplan
+for file in $WORKSPACE/srcdir/llvm-vplan-*; do
+    mv $file llvm/lib/Transforms/Vectorize/${file##*/llvm-vplan-}
+done
+atomic_patch -p1 $WORKSPACE/srcdir/patches/llvm/*.patch
+
+# compile it against the target LLVM's own (installed) headers and C++ flags, plus the
+# usual flags of an LLVM release build (with Clang on Windows, like PoCL itself)
+if [[ "${target}" == *mingw* ]]; then
+    vplan_cxx=clang++
+else
+    vplan_cxx=$CXX
+fi
+# (the archive member is named after CMake's object suffix, .obj on Windows)
+lib=$(realpath ${prefix}/lib/libLLVMVectorize.a)
+obj=$(ar t $lib | grep -xE 'VPlanUnroll\.cpp\.o(bj)?' || true)
+if [[ -z "${obj}" ]]; then
+    echo "ERROR: VPlanUnroll.cpp object not found in $lib" >&2
+    exit 1
+fi
+$vplan_cxx $(bash $WORKSPACE/srcdir/llvm-config --cxxflags) -O3 -DNDEBUG -fPIC \
+    -fvisibility-inlines-hidden -ffunction-sections -fdata-sections \
+    -Illvm/lib/Transforms/Vectorize \
+    -c llvm/lib/Transforms/Vectorize/VPlanUnroll.cpp -o ${obj}
+chmod u+w $lib
+ar r $lib ${obj}
+ranlib $lib
+popd
+
+"""
+
+function build_script(standalone=false; spirv32=false)
+    # The patch series to apply (and to hash into the version), in order; see the list in
+    # the script below. `pocl-spirv32` (JuliaGPU/pocl#3) follows the default series: a
+    # generated SPIR wrapper for the i386 ABI, struct types in SPIR modules that keep their
+    # OpenCL C layout instead of the host's (where long and double are less aligned), tests,
+    # enabling SPIR-V on 32-bit x86 CPU hosts, and looking for Intel's SVML only on x86-64,
+    # as it has no 32-bit libraries. It's kept out of the script's comments so
+    # that the script doesn't change for the recipes that don't opt in.
+    patches = raw"$WORKSPACE/srcdir/patches/pocl/*.patch"
+    if spirv32
+        patches *= raw" $WORKSPACE/srcdir/patches/pocl-spirv32/*.patch"
+    end
+
     preheader = """
     STANDALONE=$(standalone)
     LLVM_MAJOR_MINOR=$(llvm_version.major).$(llvm_version.minor)
     """
 
-    script = preheader * raw"""
+    isel_fix = llvm_version.major == 22 ? aarch64_isel_fix_script : ""
+    vplan_fix = llvm_version == v"23.1.4" ? llvm_vplan_fix_script : ""
+
+    script = preheader * isel_fix * vplan_fix * raw"""
     ##########################################################################
     # 1. Build the vendored SPIRV-LLVM-Translator as a static library.
     #
@@ -71,6 +232,12 @@ function build_script(standalone=false)
     spirv_src=$WORKSPACE/srcdir/SPIRV-LLVM-Translator
     pushd $spirv_src
     install_license LICENSE.TXT
+    # Fixes not in the vendored revision yet, as `git format-patch` exports of lib/:
+    # - KhronosGroup/SPIRV-LLVM-Translator#4153: lower OpSMulExtended/OpUMulExtended
+    #   to mul and mul_hi, as PoCL doesn't implement the __spirv_ builtins
+    for patch in $WORKSPACE/srcdir/patches/translator/*.patch; do
+        atomic_patch -p1 $patch
+    done
     # link statically against LLVM's component libraries rather than the LLVM dylib.
     # Patch both the library and the llvm-spirv tool: otherwise the tool links *both*
     # the LLVM dylib import-lib and the static components, which is fatal on COFF/lld
@@ -118,47 +285,122 @@ function build_script(standalone=false)
     cd $WORKSPACE/srcdir/pocl/
     install_license LICENSE
 
-    # Apply our patch series on top of upstream v7.2 (`git format-patch` exports; the
-    # binary SPIR-V test inputs are excluded since we don't build the tests):
+    # Apply our patch series (`git format-patch` exports; the binary SPIR-V test inputs are
+    # excluded since we don't build the tests). `pocl` applies its series to upstream v7.2;
+    # `pocl_next` and `pocl_standalone` apply theirs to upstream's 7.2 maintenance branch
+    # (release_next), which already contains the release series' backports of upstream PRs
+    # #2239, #2255, #2305, #2322, #2349, #2361, #2379, #2381, #2387, #2388, #2397, #2405,
+    # #2406, #2407, #2408, #2410, #2412 and #2414, and the cl_half.h fix of #2403.
+    #
+    # The `pocl_next` series:
     # - 0001: MinGW Clang/lld toolchain support (JuliaGPU-only, not upstreamed)
     # - 0002: FP16 host math overloads (upstream PR #2224, in `main`)
     # - 0003: in-process JIT via ORC/JITLink (upstream PR #2190, in `main`)
-    # - 0004: CanonicalizeBarriers fix for reconverging barrier successors (upstream PR #2281)
-    # - 0005, 0006: UnreachablesToReturns fix for issue #1958 (upstream PR #2280)
-    # - 0007: independent SVM/USM indirect pointer lists in clSetKernelExecInfo (upstream PR #2305)
+    # - 0004, 0005: CanonicalizeBarriers fix for reconverging barrier successors (upstream
+    #   PR #2281, closed: upstream won't change the legacy work-item loops)
+    # - 0006, 0007: UnreachablesToReturns fix for issue #1958 (upstream PR #2280, in `main`)
     # - 0008, 0009: keep LLVM from replacing the host's SIGSEGV/SIGBUS handlers, which kills
-    #   Julia's GC safepoints (upstream PRs #2339, #2340; JuliaGPU/OpenCL.jl#487)
+    #   Julia's GC safepoints (upstream PRs #2339, #2340, in `main`; JuliaGPU/OpenCL.jl#487)
     # - 0010: keep UnreachablesToReturns from deleting the entry block of a kernel reduced to
-    #   `unreachable` (upstream PR #2346; JuliaGPU/OpenCL.jl#509)
+    #   `unreachable` (upstream PR #2346, in `main`; JuliaGPU/OpenCL.jl#509)
     # - 0011: keep WorkitemLoops from rematerializing allocas without an initializer store
     #   (upstream PR #2345; JuliaGPU/OpenCL.jl#510)
     # - 0012: keep frexp on libclc when vectorizing builtins, avoiding a vector llvm.frexp
-    #   miscompile on x86 below AVX2 (upstream PR #2355; JuliaGPU/OpenCL.jl#506)
-    # - 0013: share local memory across WorkitemLoops region replicas, fixing sub-group
-    #   collectives after a branch with an early exit (upstream PR #2239, in `main`;
-    #   JuliaGPU/OpenCL.jl#526, JuliaGPU/KernelAbstractions.jl#831)
-    # - 0015, 0016: only wake up the CPU worker threads a command can use, making small
-    #   kernel launches and subdevices cheap (upstream PR #2371)
-    # - 0017: drop a freed SVM/USM allocation's shadow device-address entry at free time, so
-    #   reallocating the same address doesn't yield an allocation without a shadow buffer
-    #   (upstream PR #2361, in `main`)
-    # - 0018, 0019: create the CPU worker threads with an 8 MiB stack, which was intended but
+    #   miscompile on x86 below AVX2 (upstream PR #2359; JuliaGPU/OpenCL.jl#506)
+    # - 0013, 0014: only wake up the CPU worker threads a command can use, making small
+    #   kernel launches and subdevices cheap (upstream PR #2371, in `main`)
+    # - 0015, 0016: create the CPU worker threads with an 8 MiB stack, which was intended but
     #   never took effect (512 KiB on macOS, 1-2 MiB on Windows) (upstream PR #2383)
-    # - 0020: estimate kernel stack use after SROA, so that the -O0 locals of builtins like
+    # - 0017: estimate kernel stack use after SROA, so that the -O0 locals of builtins like
     #   hypot don't lower CL_KERNEL_WORK_GROUP_SIZE (upstream PR #2384)
-    # - 0021: build the FP16 builtins without double-precision helpers, whose
+    # - 0018: build the FP16 builtins without double-precision helpers, whose
     #   llvm.roundeven lowers to a roundeven libcall missing on Windows below SSE4.1
     #   (upstream commit 7fd676ef1, in `main`; JuliaGPU/OpenCL.jl#539)
-    # - 0022: accept SPIR-V using SPV_INTEL_subgroups again, lost in 7.2, for vector sub-group
-    #   shuffles (upstream PR #2394; JuliaGPU/KernelAbstractions.jl#864)
-    # - 0023: pass vectors directly in the SPIR wrappers of the MinGW kernel library, whose
-    #   mismatched calls left e.g. the vector sub-group shuffles unlinked on Windows
-    #   (upstream PR #2381, also matching our unnormalized mingw32 LLC_TRIPLE;
-    #   JuliaGPU/KernelAbstractions.jl#831)
-    # - 0024: convert half printf arguments in software instead of through _Float16, whose
+    # - 0019: accept SPIR-V using SPV_INTEL_subgroups again, lost in 7.2, for vector sub-group
+    #   shuffles (upstream PR #2394, in `main`; JuliaGPU/KernelAbstractions.jl#864)
+    # - 0020: also pass the SPIR wrapper's --mingw flag for our unnormalized mingw32
+    #   LLC_TRIPLE (on top of upstream PR #2381; JuliaGPU-only)
+    # - 0021: convert half printf arguments in software instead of through _Float16, whose
     #   libgcc helpers need libgcc_s >= GCC 12 and kept libpocl from loading next to an older
-    #   system libgcc_s, e.g. under `nsys profile` (upstream PR #2403)
-    for patch in $WORKSPACE/srcdir/patches/pocl/*.patch; do
+    #   system libgcc_s, e.g. under `nsys profile` (upstream PR #2403, in `main`, which relies
+    #   on a rewrite of pocl_half_to_float that 7.2 doesn't have, so with a local decoder)
+    # - 0022: keep CPU worker threads that are going to sleep from missing their wake-up
+    #   signal, which 0014 made possible and which slowly shrank the pool to a few threads
+    #   (upstream PR #2386)
+    # - 0023, 0024: fail commands whose wait-list dependency had already failed instead of
+    #   running them, which could crash a worker thread (upstream PR #2214, in `main`)
+    # - 0025: report the error when clCreateBuffer can't register a buffer's device address,
+    #   instead of returning NULL with CL_SUCCESS (upstream PR #2376)
+    # - 0026: fill system SVM pointers (e.g. malloc'd memory) in clEnqueueSVMMemFill and
+    #   clEnqueueMemFillINTEL directly instead of crashing on their missing shadow buffer
+    #   (upstream PR #2378; JuliaGPU/OpenCL.jl#536)
+    # - 0027: link kernels against the vector-math library loaded at run time rather than its
+    #   configure-time path in the build sandbox, which made every kernel link fail without the
+    #   JIT and exported binaries lack native code (upstream PR #2380; JuliaGPU/OpenCL.jl#540)
+    # - 0028: return NaN from FP16 powr for 1^inf, 0^0 and inf^0 (upstream commit ed1a18051,
+    #   in `main`)
+    # - 0029: use the CORE-math rsqrt for FP16, as 1/sqrt isn't accurate enough (upstream
+    #   commit 154ffcace, in `main`)
+    # - 0030-0032: implement clEnqueueWaitForEvents, a stub returning CL_INVALID_OPERATION, by
+    #   forwarding to clEnqueueBarrierWithWaitList (upstream PR #2377, in `main`, without its
+    #   remote and CUDA driver commits; JuliaGPU/OpenCL.jl#538)
+    # - 0033: remove the SIGFPE handler, which replaced the host application's handler and only
+    #   covered PoCL's own threads; integer division is made safe by SanitizeUBofDivRem
+    #   instead (upstream PR #2350, in `main`)
+    # - 0034: the draft cl_pocl_host_kernel extension, which lets KernelAbstractions.jl run
+    #   kernels on Julia's threads (JuliaGPU/pocl#2; JuliaGPU/KernelAbstractions.jl#906)
+    # - 0035: report the stack estimate as CL_KERNEL_PRIVATE_MEM_SIZE on CPUs, so that users of
+    #   cl_pocl_host_kernel can tell whether a work-group fits on their stack (JuliaGPU/pocl#2)
+    # - 0036: keep CPU worker threads from joining kernels whose work-groups have all been
+    #   claimed, which cost a lock round-trip per kernel with many small launches
+    #   (JuliaGPU/pocl#7)
+    # - 0037: give each CPU worker thread a static block of work-groups, with work stealing,
+    #   so that repeated launches run the same work-groups on the same threads and NUMA
+    #   first-touch placement works; POCL_PTHREAD_SCHEDULE=guided restores the old schedule
+    #   (JuliaGPU/pocl#7)
+    # - 0038: with POCL_AFFINITY=1, pin the CPU worker threads to the CPUs the process may run
+    #   on, spread over the NUMA nodes, instead of to CPUs 0 and up (JuliaGPU/pocl#8)
+    # - 0039, 0040: make cl_pocl_host_kernel launches cheaper on x86 by avoiding 64-bit
+    #   divisions for ranges starting in the first row and a second MXCSR read when the
+    #   caller's FP environment already matches the kernel's; flags the kernel raises may now
+    #   stay raised, as with a C function call (JuliaGPU/pocl#9)
+    # - 0041, 0042: accept SPIR-V using SPV_KHR_bfloat16, which LLVM's SPIR-V back-end emits
+    #   for `bfloat` (Julia's BFloat16), and report it through cl_khr_spirv_queries; the JIT
+    #   provides the float/double to bfloat16 conversion helpers that x86-64 codegen calls
+    #   (JuliaGPU/pocl#10)
+    # - 0043: fix abs() of INT_MIN and LONG_MIN, which relied on signed overflow, so LLVM
+    #   assumed the result's top bit is clear (upstream PR #2423, in `main`)
+    # - 0044: when rematerializing a private pointer across a barrier, rewrite a store that
+    #   uses the loaded pointer as its address instead of storing the pointer itself
+    #   (upstream PR #2429)
+    # - 0045-0047: fold the local and sub-group sizes and a zero global offset before the
+    #   barrier passes, and fully unroll loops with barriers that request it (e.g. `#pragma
+    #   unroll` or SPIR-V's `Unroll`) and have a constant trip count, instead of running every
+    #   iteration as a separate set of work-item loops (upstream PR #2375)
+    # - 0048, 0049: also fully unroll such loops without a request when LLVM's static
+    #   full-unroll size check accepts them, e.g. sub-group and work-group reductions and
+    #   scans; this has the front-end run its own -O2 pipeline without Clang's
+    #   -fno-unroll-loops, so that `#pragma nounroll` still works (upstream PR #2430)
+    # - 0050: enable SPV_KHR_float_controls2 for the CPU devices with LLVM 23+ (upstream
+    #   PR #2393)
+    # - 0051: in CBS, give a private variable a copy per work-item when its address is stored,
+    #   e.g. to carry a pointer across a barrier, instead of sharing it between the work-items
+    #   (upstream PR #2433)
+    # - 0052: give the loop vectorizer the vector-math library that codegen maps vector math
+    #   builtins to, so that it costs their calls as vector calls rather than scalarized ones
+    #   and vectorizes kernels made mostly of math calls; only where the device CPU can call
+    #   every variant the vectorizer may pick: x86 with AVX2 and AArch64 without SVE (upstream
+    #   PR #2438)
+    # - 0053: fix the min-legal-vector-width of every kernel, as Clang 23 no longer gives
+    #   OpenCL C kernels the SPIR_KERNEL calling convention FixMinVecSize looked for; a kernel
+    #   passing a 512-bit vector to a non-inlined builtin then disagreed with it on how the
+    #   vector is passed (wrong pown(half16, int16) on AVX-512 Windows hosts)
+    #
+    # The `pocl` series on v7.2 is this series without cl_pocl_host_kernel (0034, 0035, 0039
+    # and 0040), plus those of release_next's backports that it needs (upstream PRs #2239,
+    # #2305, #2322, #2349, #2361, #2379, #2381, #2397, #2407, #2408, #2410 and #2414) at their
+    # place in the series, so its numbers differ.
+    for patch in @PATCHES@; do
         atomic_patch -p1 $patch
     done
 
@@ -190,6 +432,9 @@ function build_script(standalone=false)
     # LLVM 22 split DTLTO out of LLVMLTO. PoCL's static component list predates
     # that split, leaving lld's llvm::lto::DTLTO vtable unresolved at load time.
     sed -i '/  LLVMLTO/a\  LLVMDTLTO' cmake/SetupLLVMviaCMake.cmake
+    # LLVM 23's clangCodeGen uses the new LLVMABI library, also missing from that list
+    # (it exists in LLVM 22 too, where nothing uses it).
+    sed -i '/  LLVMLTO/a\  LLVMABI' cmake/SetupLLVMviaCMake.cmake
 
     CMAKE_FLAGS=()
 
@@ -205,10 +450,18 @@ function build_script(standalone=false)
     # Enable optional debug messages for debuggability
     CMAKE_FLAGS+=(-DPOCL_DEBUG_MESSAGES:Bool=ON)
 
-    # Tag the version with a hash of our patch series. The version seeds the kernel cache
-    # key, so rebuilds with a different series don't reuse previously cached binaries.
-    patches_hash=$(cat $WORKSPACE/srcdir/patches/pocl/*.patch | sha256sum | cut -c1-12)
-    sed -i "s/^set(VERSION_SUFFIX_FIXED_TEXT \"\")/set(VERSION_SUFFIX_FIXED_TEXT \"~julia-${patches_hash}\")/" CMakeLists.txt
+    # Tag the version with a hash of our patch series (and of our LLVM and translator
+    # fixes). The version seeds the kernel cache key, so rebuilds with a different series
+    # don't reuse previously cached binaries (the build timestamp in that key is fixed by
+    # SOURCE_DATE_EPOCH), and it lets users tell these builds apart from upstream ones that
+    # lack our patches.
+    # (`\\"`, as `\"` in this raw string would reach the shell as a bare quote.)
+    patches_hash=$(cat @PATCHES@ ${llvm_fixes} $WORKSPACE/srcdir/patches/translator/*.patch | sha256sum | cut -c1-12)
+    sed -i "s/^set(VERSION_SUFFIX_FIXED_TEXT \\"\\")/set(VERSION_SUFFIX_FIXED_TEXT \\"~julia-${patches_hash}\\")/" CMakeLists.txt
+    if ! grep -q "^set(VERSION_SUFFIX_FIXED_TEXT \\"~julia-${patches_hash}\\")" CMakeLists.txt; then
+        echo "ERROR: failed to tag the PoCL version" >&2
+        exit 1
+    fi
 
     # Install things into $prefix
     CMAKE_FLAGS+=(-DCMAKE_INSTALL_PREFIX=${prefix})
@@ -387,7 +640,10 @@ function build_script(standalone=false)
 
     # PoCL's CPU autodetection doesn't work on RISC-V
     if [[ ${target} == riscv64-* ]]; then
-        CMAKE_FLAGS+=(-DLLC_HOST_CPU=rv64gc)
+        # PoCL passes this as the LLVM target CPU at run time, so it has to be a CPU name
+        # rather than an ISA string like rv64gc (which LLVM rejects). sifive-u54 implements
+        # exactly RV64GC, the baseline we build everything else for.
+        CMAKE_FLAGS+=(-DLLC_HOST_CPU=sifive-u54)
         # forcing a CPU disables distro kernellib mode, so only provide a native build
         CMAKE_FLAGS+=(-DKERNELLIB_HOST_CPU_VARIANTS=native)
     fi
@@ -407,7 +663,7 @@ function build_script(standalone=false)
           ${prefix}/bin/llvm-spirv ${prefix}/bin/llvm-spirv.exe
     """
 
-    return script
+    return replace(script, "@PATCHES@" => patches)
 end
 
 function init_block(standalone=false)

@@ -39,6 +39,30 @@ function project_path(build_result::BuildResult)
     return relpath(build_script_path, YGGDRASIL_BASE)
 end
 
+# Human-readable platform of a build, used in CI step labels.  This is the platform of the
+# default target spec; builds that also target other platforms (e.g. cross-compilers, whose
+# default spec is the host the compiler runs on) append those targets, e.g.
+# `x86_64-linux-gnu => aarch64-linux-musl`.
+function platform_label(config::BuildConfig)
+    default_spec = BinaryBuilder2.get_default_target_spec(config)
+    extra_specs = filter(ts -> isdisjoint(ts.flags, (:default, :native)), config.target_specs)
+    return join([triplet(ts.platform.target) for ts in [default_spec; extra_specs]], " => ")
+end
+
+# The platform of the agents that load-check the JLLs (see `agent()` in `.buildkite/utils.jl`)
+const LOAD_CHECK_PLATFORM = Platform("x86_64", "linux"; libc="glibc")
+
+# Whether the JLL's wrapper can select an artifact of `platform` on the load-check agents.
+# JLLs encode a `CrossPlatform` with the host as the base platform and the target in
+# `target_*` tags, or, for a host of `any`, with the target as the base platform; only the
+# base platform's architecture, OS and libc matter here, as the agent's other tags depend
+# on the Julia version that runs the check.
+loadable_on_load_check_agent(::AnyPlatform) = true
+loadable_on_load_check_agent(cp::CrossPlatform) = loadable_on_load_check_agent(cp.encoded)
+function loadable_on_load_check_agent(p::Platform)
+    return arch(p) == arch(LOAD_CHECK_PLATFORM) && os(p) == os(LOAD_CHECK_PLATFORM) &&
+           libc(p) == libc(LOAD_CHECK_PLATFORM)
+end
 
 # Next, iterate over `PackageResult` objects; each `PackageResult` will become a registration job,
 # and the `BuildConfig`'s from each `PackageResult` will become a build job.  Note that we
@@ -52,17 +76,27 @@ for (_, package_result) in meta.packagings
     package_deps = get_dep_names(package_result)
     for build_result in collect_builds(package_result)
         group = get_group(project_path(build_result))
+        build_hash = spec_hash(build_result.config)
+        idx = findfirst(b -> b["build_hash"] == build_hash, group["builds"])
+        if idx !== nothing
+            # This build was already scheduled by another of its JLLs
+            union!(group["builds"][idx]["dependencies"], package_deps)
+            continue
+        end
         push!(group["builds"], Dict(
             "name" => build_result.config.src_name,
             "script" => build_result.config.build_script_path,
-            "build_hash" => spec_hash(build_result.config),
-            "platform" => triplet(BinaryBuilder2.get_default_target_spec(build_result.config).platform.target),
-            "dependencies" => package_deps,
+            "build_hash" => build_hash,
+            "platform" => platform_label(build_result.config),
+            "dependencies" => copy(package_deps),
         ))
     end
     group = get_group(project_path(first(collect_builds(package_result))))
     push!(group["packagings"], Dict(
         "name" => package_result.config.name,
+        "version" => string(package_result.config.version),
+        "julia_compat" => package_result.config.julia_compat,
+        "load_check" => any(er -> loadable_on_load_check_agent(er.config.platform), collect_extractions(package_result)),
         "dependencies" => package_deps,
     ))
 end

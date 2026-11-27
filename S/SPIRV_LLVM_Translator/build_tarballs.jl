@@ -8,8 +8,8 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "SPIRV_LLVM_Translator"
-version = v"23.1.1"
-llvm_version = v"23.1.1+0"
+version = v"23.1.4"
+llvm_version = v"23.1.4+1"
 
 # This JLL ships `libllvm_spirv`, a shared library exposing a small, typed C API
 # (see bundled/libllvm_spirv.h) over a statically linked, symbol-hidden build of
@@ -21,7 +21,8 @@ llvm_version = v"23.1.1+0"
 sources = [
     GitSource(
         "https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git",
-        "e65dde28ce8f12ef7245914fa2850260328669e4"), # v23.1.2
+        "db5855d76a0ff33228bcf48032b350b25dcdbcf2";
+        tag="v23.1.3"),
     DirectorySource("bundled"),
     # LLVM 22 raised its minimum macOS deployment target to 11.0, and LLVM 23's
     # headers no longer compile against the older SDK's libc++.
@@ -47,6 +48,31 @@ atomic_patch -p1 ../sitofp-bool.patch
 # ("Translate llvm.minimum/maximum with NaN-propagating semantics"), without
 # which `llvm.minimum`/`llvm.maximum` ignore NaNs and don't order signed zeros.
 atomic_patch -p1 ../minimum-maximum.patch
+# Backport of https://github.com/KhronosGroup/SPIRV-LLVM-Translator/pull/4152
+# ("Convert boolean switch selectors to integers"; still open upstream): i1 is
+# a boolean in SPIR-V, which OpSwitch doesn't take as its selector, so
+# spirv-val rejected it. InstCombine leaves such switches when it narrows their
+# conditions, e.g. in Julia's union splits.
+atomic_patch -p1 ../switch-bool-selector.patch
+# Backport of https://github.com/KhronosGroup/SPIRV-LLVM-Translator/pull/4172
+# ("Don't emit loop controls for loops whose header ends in a switch"): they
+# were placed after the header's OpSwitch, which spirv-val rejects. LLVM's loop
+# unroller produces such headers, e.g. for `x^n` in a partially unrolled loop.
+atomic_patch -p1 ../loop-merge-switch-header.patch
+# Backport of https://github.com/KhronosGroup/SPIRV-LLVM-Translator/pull/4091
+# ("Translate signed with.overflow intrinsics, including vectors"; still open
+# upstream): llvm.smul.with.overflow and llvm.ssub.with.overflow were rejected
+# as unexpected intrinsics. Julia emits the former for checked `Int`
+# multiplication, e.g. in `Rational` arithmetic. Multiplication becomes
+# OpSMulExtended with a sign check on the high half, as the SPIR-V back-end
+# does since llvm/llvm-project#240309.
+atomic_patch -p1 ../signed-with-overflow.patch
+# Backport of https://github.com/KhronosGroup/SPIRV-LLVM-Translator/pull/4196
+# ("Clamp memory access alignments to 2^31"; still open upstream): an access
+# alignment of 2^32, which InferAlignment gives to accesses of null, was
+# truncated to an invalid `Aligned 0`. Julia emits such accesses in dead code
+# that unboxes a union value (JuliaGPU/OpenCL.jl#631).
+atomic_patch -p1 ../clamp-access-alignment.patch
 install_license LICENSE.TXT
 
 CMAKE_FLAGS=()
@@ -132,8 +158,11 @@ if [[ "${target}" == *mingw* ]]; then
     # LLVM.
     LINKER=${target}-clang++
     COMMON_FLAGS+=(-pthread)
+    # Take the multibyte C runtime functions from mingw-w64's libmsvcrt, which
+    # implements them statically, before libzstd-1.dll, which also exports
+    # them (see the check below).
     LINK_FLAGS=(-Wl,--exclude-all-symbols -Wl,--gc-sections
-        ${SYSTEM_LIBS[@]} -lole32 -luuid -lpsapi -lshell32 -ladvapi32 -lws2_32 -lntdll)
+        -lmsvcrt ${SYSTEM_LIBS[@]} -lole32 -luuid -lpsapi -lshell32 -ladvapi32 -lws2_32 -lntdll)
 elif [[ "${target}" == *-apple-* ]]; then
     LINKER=${CXX}
     printf '_%s\n' ${API} > libllvm_spirv.exports
@@ -169,6 +198,22 @@ if [[ "${target}" == *-linux-* || "${target}" == *-freebsd* ]]; then
 elif [[ "${target}" == *-apple-* ]]; then
     echo "exported symbols:"; nm -gU ${libdir}/libllvm_spirv.${dlext}
 fi
+
+# On Windows, the multibyte C runtime functions must not be imported from a
+# dependency's DLL.
+# Zstd_jll builds before v1.5.7+2 re-exported mingw-w64's `mbrtowc` and
+# `wcrtomb`, the link resolved LLVM's references to them through
+# libzstd-1.dll, and the library stopped loading ("The specified procedure
+# could not be found") once Zstd_jll was rebuilt without those exports.
+if [[ "${target}" == *mingw* ]]; then
+    ${target}-objdump -p ${libdir}/libllvm_spirv.${dlext} > imports.txt
+    awk '
+        /DLL Name:/ { dll = tolower($3); next }
+        dll ~ /^lib/ && /^[ \t]+[0-9a-f]+[ \t]/ &&
+        $NF ~ /^(mbrtowc|mbrlen|mbsrtowcs|mbtowc|wcrtomb|wcsrtombs|wctomb)$/ {
+            print "C runtime function " $NF " imported from " dll; bad = 1 }
+        END { exit bad }' imports.txt
+fi
 """
 
 # These are the platforms we will build for by default, unless further
@@ -195,7 +240,7 @@ products = Product[
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency(PackageSpec(name="LLVM_full_jll", version=llvm_version)),
-    Dependency("Zstd_jll"), # our LLVM 20 build has LLVM_ENABLE_ZSTD=ON
+    Dependency("Zstd_jll"), # our LLVM build has LLVM_ENABLE_ZSTD=ON
 ]
 
 # Determine the builds

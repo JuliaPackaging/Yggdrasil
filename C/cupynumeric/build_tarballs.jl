@@ -11,7 +11,7 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 include("make_script.jl")
 
 name = "cupynumeric"
-version = v"26.6.1"
+version = v"26.6.3"
 sources = [
     GitSource("https://github.com/nv-legate/cupynumeric.git","7d7836ce7bf54b0ed7f422fb62b62de732775e0d"),
     GitSource("https://github.com/MatthewsResearchGroup/tblis.git", "c4f81e08b2827e72335baa7bf91a245f72c43970"),
@@ -26,7 +26,7 @@ MIN_CUDA_VERSION = v"13.0"
 MAX_CUDA_VERSION = v"13.0.999" # none of the dependency JLLs have 13.1 builds rn
 
 
-cpu_platform = [Platform("x86_64", "linux")]
+cpu_platform = CUDA.cpu_platforms([Platform("x86_64", "linux")])
 cuda_platforms = CUDA.supported_platforms(; min_version = MIN_CUDA_VERSION, max_version = MAX_CUDA_VERSION)
 
 all_platforms = [cpu_platform; cuda_platforms]
@@ -37,23 +37,17 @@ filter!(p -> arch(p) == "x86_64", all_platforms)
 all_platforms = expand_cxxstring_abis(all_platforms) 
 filter!(p -> cxxstring_abi(p) == "cxx11", all_platforms)
 
-# manually mark platforms that could support CUDA, set 
-# flag so we know that we do NOT want to install CUDA on this one
-for platform in all_platforms
-    if CUDA.is_supported(platform) && !haskey(platform, "cuda")
-        platform["cuda"] = "none"
-    end
-end
-
 products = [
     LibraryProduct("libcupynumeric", :libcupynumeric)
 ] 
 
 dependencies = [
-    Dependency("legate_jll"; compat = "=26.6"), # Legate versioning is Year.Month
+    Dependency("legate_jll"; compat = "=26.6.1"), # Legate versioning is Year.Month; 26.6.1 has the CPU fallback
     Dependency("OpenBLAS32_jll"),
     HostBuildDependency(PackageSpec(; name = "CMake_jll", version = "3.31.9")),
-    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")) 
+    Dependency(PackageSpec(name="CompilerSupportLibraries_jll", uuid="e66e0078-7015-5450-92f7-15fbd957f2ae")),
+    Dependency("cuSolverMp_jll"; compat = "0.8", platforms=filter(p -> p["cuda"] != "none", all_platforms)),
+    CUDA.required_dependencies(all_platforms; static_sdk=true)...,
 ]
 
 for platform in all_platforms
@@ -63,7 +57,6 @@ for platform in all_platforms
     platform_sources = BinaryBuilder.AbstractSource[sources...]
     platform_products = BinaryBuilderBase.Product[products...]
 
-    _dependencies = copy(dependencies)
     script = get_script(Val{false}())
 
     if haskey(platform, "cuda") && platform["cuda"] != "none" 
@@ -80,9 +73,6 @@ for platform in all_platforms
            variant=var
         )
         push!(platform_sources, cutensor_sources...)
-        push!(_dependencies, Dependency("cuSolverMp_jll"; compat = "0.8"))
-
-        append!(_dependencies, CUDA.required_dependencies(platform, static_sdk=true))
 
         if arch(platform) == "aarch64"
             push!(platform_sources, CUDA.cuda_nvcc_redist_source(platform["cuda"], "x86_64"))
@@ -93,7 +83,7 @@ for platform in all_platforms
 
     build_tarballs(
         ARGS, name, version, platform_sources, 
-        script, [platform], platform_products, _dependencies;
+        script, [platform], platform_products, dependencies;
         julia_compat = "1.10", 
         preferred_gcc_version = v"11",
         lazy_artifacts = true, dont_dlopen = true,

@@ -1,0 +1,27 @@
+Avoid the ieee_arithmetic intrinsic module, which gfortran does not provide on
+some targets (e.g. armv6l-linux-musleabihf). It was only used for ieee_is_nan.
+Upstream: <add link to issue/PR on dftd3/simple-dftd3>
+
+diff --git a/src/dftd3/model.f90 b/src/dftd3/model.f90
+index 0a2a02a..f4983f9 100644
+--- a/src/dftd3/model.f90
++++ b/src/dftd3/model.f90
+@@ -15,7 +15,6 @@
+ ! along with s-dftd3.  If not, see <https://www.gnu.org/licenses/>.
+ 
+ module dftd3_model
+-   use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
+    use dftd3_citation, only : citation_type, get_citation, doi_fourier_d3
+    use dftd3_data, only : get_r4r2_val, get_vdw_rad
+    use dftd3_fourier_decomposition, only : d3_lowrank_c6, d3_lowrank_config, new_lowrank_c6
+@@ -328,7 +327,9 @@ end subroutine weight_references
+ elemental function is_exceptional(val)
+    real(wp), intent(in) :: val
+    logical :: is_exceptional
+-   is_exceptional = ieee_is_nan(val) .or. abs(val) > huge(val)
++   ! NaN is the only value that compares unequal to itself; avoids the
++   ! ieee_arithmetic module, which gfortran lacks on some targets
++   is_exceptional = val /= val .or. abs(val) > huge(val)
+ end function is_exceptional
+ 
+ 

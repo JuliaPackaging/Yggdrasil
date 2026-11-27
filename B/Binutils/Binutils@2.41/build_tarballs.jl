@@ -1,0 +1,132 @@
+using BinaryBuilder2
+
+script = raw"""
+cd ${WORKSPACE}/srcdir/binutils-*/
+
+update_configure_scripts
+for p in ${WORKSPACE}/srcdir/patches/binutils-*.patch; do
+    atomic_patch -p1 "${p}"
+done
+
+# Map `BUILD_CC` to `CC_FOR_BUILD`, etc...
+BUILD_ENVS=( $(env | grep "^BUILD_" | cut -d'=' -f1) )
+for BUILD_ENV in "${BUILD_ENVS[@]}"; do
+    ENV="${BUILD_ENV#BUILD_}"
+    export "${ENV}_FOR_BUILD=${!BUILD_ENV}"
+done
+
+# Let libtool link the static `libiberty.a`/`libintl.a` into the shared libraries; this is
+# already the default on ELF hosts, but on Windows libtool otherwise drops them from DLL
+# links and falls back to building static libraries only.
+export lt_cv_deplibs_check_method=pass_all
+
+./configure --prefix=${host_prefix} \
+    --build=${build} \
+    --host=${host} \
+    --target=${target} \
+    --with-sysroot=${host_prefix}/${target} \
+    --disable-multilib \
+    --program-prefix="${target}-" \
+    --disable-werror \
+    --enable-new-dtags \
+    --enable-deterministic-archives \
+    --disable-gprofng \
+    --enable-shared \
+    --enable-install-libbfd
+
+# Skip building the docs
+MAKEVARS=( MAKEINFO=true )
+
+# bison can't regenerate `plural.c` from `plural.y` when cross-compiling:
+# https://sourceware.org/bugzilla/show_bug.cgi?id=22941
+touch intl/plural.c
+
+make -j${nproc} ${MAKEVARS[@]}
+make install ${MAKEVARS[@]}
+"""
+
+host_platforms = [
+    Platform("x86_64", "linux"),
+    Platform("aarch64", "linux"),
+]
+
+# macOS targets use cctools instead of binutils
+target_platforms = filter(!Sys.isapple, supported_platforms(CToolchain))
+
+platforms = [
+    vec([CrossPlatform(host, target) for host in host_platforms, target in target_platforms]);
+    [CrossPlatform(target, target) for target in target_platforms if target ∉ host_platforms]
+]
+
+products = AbstractProduct[
+    ExecutableProduct("\${bindir}/\${target}-$(tool)", varname)
+    for (tool, varname) in (
+        ("ar", :ar),
+        ("as", :as),
+        ("ld", :ld),
+        ("nm", :nm),
+        ("objcopy", :objcopy),
+        ("objdump", :objdump),
+        ("ranlib", :ranlib),
+        ("readelf", :readelf),
+        ("strings", :strings),
+        ("strip", :binutils_strip),
+    )
+]
+# Shared libraries for packages (e.g. Extrae) that link against `libbfd`.  In cross builds,
+# `libbfd` and `libopcodes` are installed in the target-specific `${host}/${target}/lib`; on
+# Windows the libraries are DLLs in `${bindir}`.
+# A cross artifact (selected when the platform names a target) does not have its libraries
+# under `${libdir}`, so they are `dont_dlopen` to keep `import Binutils_jll` from failing.
+append!(products, [
+    LibraryProduct([
+        "\${libdir}/$(lib)",
+        "\${prefix}/\${host}/\${target}/lib/$(lib)",
+        "\${bindir}/$(dll)",
+    ], Symbol(lib); dont_dlopen=true)
+    for (lib, dll) in (
+        ("libbfd", "libbfd-2-41.dll"),
+        ("libctf", "libctf-0.dll"),
+        ("libopcodes", "libopcodes-2-41.dll"),
+        ("libsframe", "libsframe-1.dll"),
+    )
+])
+
+# Every artifact is tagged with its host platform and its `target_*` platform, but Julia's
+# host platform has no `target_*` tags.  Unless the platform names a target, select the native
+# build (target == host).  `target_os_version` is left out: artifacts for FreeBSD carry 14.1.0,
+# which a host's `os_version` would not equal, and each host has a single FreeBSD-target
+# artifact anyway.
+augment_platform_block = raw"""
+function augment_platform!(p::Platform)
+    if !haskey(p, "target_arch")
+        for tag in ("arch", "os", "libc", "call_abi")
+            if haskey(p, tag)
+                p["target_$(tag)"] = p[tag]
+            end
+        end
+    end
+    return p
+end
+"""
+
+build_tarballs(;
+    src_name = "Binutils",
+    src_version = v"2.41",
+    sources = [
+        ArchiveSource("https://ftpmirror.gnu.org/gnu/binutils/binutils-2.41.tar.xz",
+                      "ae9a5789e23459e59606e6714723f2d3ffc31c03174191ef0d015bdf06007450"),
+        DirectorySource("./bundled/patches"; target="patches"),
+    ],
+    target_dependencies = [
+        JLLSource("Zlib_jll"; version=v"1.4.1"),
+    ],
+    script,
+    platforms,
+    products,
+    host_toolchains = [CToolchain(;vendor=:gcc_bootstrap), HostToolsToolchain()],
+    target_toolchains = [CToolchain(;vendor=:gcc_bootstrap)],
+    # Pkg runs the `augment_platform_block` artifact selection hook from Julia 1.7 on.
+    julia_compat = "1.7",
+    augment_platform_block,
+)

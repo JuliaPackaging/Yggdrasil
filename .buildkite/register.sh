@@ -15,11 +15,18 @@ if [[ ! -d "${JULIA_PROJECT:-}" ]]; then
     exit 1
 fi
 
+# Only publish the artifacts of the build that triggered this one. The triggering build
+# chooses BUILD_ID, whereas Buildkite sets BUILDKITE_TRIGGERED_FROM_BUILD_ID itself.
+if [[ -z "${BUILD_ID:-}" || "${BUILD_ID}" != "${BUILDKITE_TRIGGERED_FROM_BUILD_ID:-}" ]]; then
+    echo "ERROR: BUILD_ID '${BUILD_ID:-}' is not the triggering build '${BUILDKITE_TRIGGERED_FROM_BUILD_ID:-}'" >&2
+    exit 1
+fi
+
 echo "--- Setup Julia packages"
 GITHUB_TOKEN="" REGISTRY_GITHUB_TOKEN="" julia --color=yes -e 'import Pkg; Pkg.instantiate(); Pkg.precompile()'
 
-if [[ -z "${PROJECT:-}" ]]; then
-    echo "ERROR: PROJECT must be set" >&2
+if [[ -z "${PROJECT:-}" ]] && [[ -z "${PROJECTS:-}" ]]; then
+    echo "ERROR: PROJECT (BB1) or PROJECTS (BB2) must be set" >&2
     exit 1
 fi
 
@@ -29,12 +36,28 @@ git config --global user.name "jlbuild"
 git config --global user.email "juliabuildbot@gmail.com"
 
 if [[ "${JULIA_PROJECT}" == *"/bb2_project"* ]]; then
+    # `PROJECTS` lists every project that builds this package, lowest version first
+    read -r -a PROJECT_LIST <<< "${PROJECTS}"
     echo "--- [BB2] Downloading artifacts..."
-    buildkite-agent artifact download --build "${BUILD_ID}" "${PROJECT}/products/*" "${YGGDRASIL_BASE}"
+    for PROJ in "${PROJECT_LIST[@]}"; do
+        buildkite-agent artifact download --build "${BUILD_ID}" "${PROJ}/products/*" "${YGGDRASIL_BASE}"
+    done
 
-    echo "--- [BB2] Registering ${NAME}..."
-    cd "${PROJECT}"
-    julia "${JULIA_PROJECT}/register_package.jl" --verbose
+    # BB2 takes its tokens from the `access_tokens` preference rather than the environment
+    PREFS_TOML="${JULIA_PROJECT}/LocalPreferences.toml"
+    trap 'rm -f "${PREFS_TOML}"' EXIT
+    (umask 077; cat > "${PREFS_TOML}" <<EOF
+[BinaryBuilder2.access_tokens."github.com"]
+JuliaBinaryWrappers = "${GITHUB_TOKEN}"
+
+[BinaryBuilder2.access_tokens."github.com".JuliaRegistries]
+General = "${REGISTRY_GITHUB_TOKEN}"
+EOF
+    )
+
+    echo "--- [BB2] Registering ${NAME} from ${PROJECTS}..."
+    cd "${YGGDRASIL_BASE}"
+    env -u GITHUB_TOKEN -u REGISTRY_GITHUB_TOKEN julia "${JULIA_PROJECT}/register_package.jl" "${PROJECT_LIST[@]}"
     exit 0
 fi
 

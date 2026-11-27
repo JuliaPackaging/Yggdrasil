@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Compiler"
-version = v"0.6.3"
+version = v"0.6.8"
 
 const toolkit_versions = [CUDA.cuda_full_versions; CUDA.cuda_prerelease_versions]
 const compiler_versions = filter(v -> v >= v"11.4" || Base.thisminor(v) == v"10.2", toolkit_versions)
@@ -19,6 +19,8 @@ include("build_10.2.jl")
 # LocalPreferences.toml files predating the runtime/compiler split only pin the runtime,
 # and silently combining such a pinned runtime with an auto-selected (newer) compiler
 # would break at load time through major-versioned sonames (e.g. libnvJitLink).
+# before Julia 1.13, changing only the runtime's preference doesn't invalidate our cache,
+# so there the preference must be set on both.
 augment_platform_block = """
     const CUDA_jll_uuids = [Base.UUID("d1e2174e-dfdc-576e-b43e-73b79eb1aca8"),
                             Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2")]
@@ -36,6 +38,22 @@ done
 
 # license
 install_license cuda_nvcc/LICENSE
+mv *cccl/LICENSE LICENSE.cccl
+install_license LICENSE.cccl
+
+# NVRTC does not ship the headers that code compiled at run time includes (`cuda_fp16.h`,
+# `cooperative_groups.h`, CCCL), so provide them, laid out as in the toolkit's `include`
+mkdir -p ${includedir}
+cp -r cuda_cudart/include/* *cccl/include/* ${includedir}
+
+# the runtime headers include the compiler-support headers in `crt/`, which compilers other
+# than NVRTC (e.g. Clang, as used by CCCL's C library) need too. they come with nvcc before
+# CUDA 13, and as a separate component since.
+if [[ -d cuda_crt ]]; then
+    cp -r cuda_crt/include/crt ${includedir}
+else
+    cp -r cuda_nvcc/include/crt ${includedir}
+fi
 
 # binaries
 mkdir -p ${bindir} ${libdir} ${prefix}/lib ${prefix}/share
@@ -50,6 +68,9 @@ if [[ ${target} == *-linux-gnu ]]; then
     else
         mv libnvvm/nvvm ${prefix}
     fi
+    # cicc is nvcc's front-end: libnvvm, NVRTC and nvlink's LTO mode don't use it
+    rm ${prefix}/nvvm/bin/cicc
+    rmdir ${prefix}/nvvm/bin
 
     mv cuda_nvrtc/lib/libnvrtc.so* ${libdir}
     mv cuda_nvrtc/lib/libnvrtc-builtins.so* ${libdir}
@@ -89,7 +110,11 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     else
         mv libnvvm/nvvm ${prefix}
     fi
+    # unlike on Linux, nvvm/bin also holds the libnvvm DLL
+    rm ${prefix}/nvvm/bin/cicc.exe
 
+    # NVRTC 12.5 to 13.0 comes with an alternative DLL that nothing loads
+    rm -f cuda_nvrtc/bin/nvrtc64_*.alt.dll
     mv cuda_nvrtc/bin/nvrtc64_* ${bindir}
     mv cuda_nvrtc/bin/nvrtc-builtins64_* ${bindir}
 
@@ -164,6 +189,7 @@ function get_products(version::VersionNumber)
     products = [
         FileProduct(["lib/libcudadevrt.a", "lib/cudadevrt.lib"], :libcudadevrt),
         FileProduct("nvvm/libdevice/libdevice.10.bc", :libdevice),
+        FileProduct("include", :cuda_include_dir),
         LibraryProduct(["libnvvm", "nvvm64_40_0"], :libnvvm,
                        ["nvvm/lib64", "nvvm/bin/x64", "nvvm/bin"]),
         LibraryProduct(["libnvrtc", nvrtc_dll], :libnvrtc),
@@ -192,6 +218,7 @@ for version in compiler_versions
     # CUDA_Compiler uses the following components
     components = [
         "cuda_cudart",
+        version >= v"13.3" ? "cccl" : "cuda_cccl",
         "cuda_nvcc",
         "cuda_nvdisasm",
         "cuda_nvrtc",
@@ -200,6 +227,7 @@ for version in compiler_versions
         push!(components, "libnvjitlink")
     end
     if version >= v"13"
+        push!(components, "cuda_crt")
         push!(components, "libnvvm")
     end
     if version >= v"13.1"

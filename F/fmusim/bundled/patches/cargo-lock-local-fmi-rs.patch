@@ -1,0 +1,24 @@
+Mark fmi-rs and fmi-rs-macros as local path packages in Cargo.lock, matching the
+`patch.crates-io` override that points fmi-rs at our patched checkout, so the
+build can use `cargo build --locked`. Yggdrasil-specific.
+
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -1030,8 +1030,6 @@ dependencies = [
+ [[package]]
+ name = "fmi-rs"
+ version = "0.3.5"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "903d99a4c19c71aad7fb5fd204f386dde05e796d388a2b053078bc04df6044f6"
+ dependencies = [
+  "anyhow",
+  "approx",
+@@ -1060,8 +1058,6 @@ dependencies = [
+ [[package]]
+ name = "fmi-rs-macros"
+ version = "0.3.5"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "e378fdce76806e11a80ae06375dc59857b3d56165bfe1842f65394313c0cc150"
+ dependencies = [
+  "proc-macro2",
+  "quote",

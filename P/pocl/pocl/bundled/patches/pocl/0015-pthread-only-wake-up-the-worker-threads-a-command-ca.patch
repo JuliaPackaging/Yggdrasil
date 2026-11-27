@@ -1,4 +1,4 @@
-From 689e798547e1f91a544a61de70a700cb557daea4 Mon Sep 17 00:00:00 2001
+From e7841d4e6c7de664057728708343bb8d703ee31f Mon Sep 17 00:00:00 2001
 From: Tim Besard <tim.besard@gmail.com>
 Date: Mon, 5 Oct 2026 11:11:41 +0200
 Subject: [PATCH] pthread: only wake up the worker threads a command can use
@@ -177,5 +177,5 @@ index c00793b8a..53afaa526 100644
      }
  
 -- 
-2.55.0
+2.56.0
 

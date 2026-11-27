@@ -4,6 +4,8 @@ using BinaryBuilder, Pkg
 
 name = "aws_c_common"
 version = v"1.0.3"
+# The SONAME contains major.minor, and minor releases may break the ABI.
+# Downstream recipes must restrict compat to one minor version, e.g. compat="~1.2.3".
 
 # Collection of sources required to complete build
 sources = [

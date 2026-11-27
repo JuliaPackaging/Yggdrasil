@@ -3,14 +3,14 @@
 using BinaryBuilder, Pkg
 
 name = "CUDA_Tile"
-version = v"13.4.1"
+version = v"13.4.3"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/NVIDIA/cuda-tile",
-              "5b3fa4c0dd04d90edeb935a1887c20bf14a86ebe"),
+              "0192668c0315a21013846641dfaa369aa53ed8a3"),
     GitSource("https://github.com/llvm/llvm-project.git",
-              "c495a9b796c46456e523a5eeb3690415ba99f5db")    # see cmake/IncludeLLVM.cmake
+              "d6a4b2ad0b90fad43565a25f1cbcbac6e6857dde")    # see cmake/IncludeLLVM.cmake
 ]
 
 # Bash recipe for building across all platforms
@@ -178,6 +178,17 @@ make -j${nproc} install
 
 # XXX: remove third-party tools that aren't needed at run time
 rm -rf ${prefix}/third_party
+
+# the products are statically linked executables: the static libraries, objects and
+# TableGen/C headers that the install rules add are only of use for building against
+# CUDA Tile, which nothing does
+rm -rf ${prefix}/lib ${prefix}/include
+
+# the executables keep their symbol tables otherwise. on macOS, stripping would invalidate
+# the linker's ad-hoc code signature.
+if [[ ${target} != *-apple-* ]]; then
+    strip ${bindir}/*
+fi
 """
 
 # These are the platforms we will build for by default, unless further

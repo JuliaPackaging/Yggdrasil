@@ -10,74 +10,67 @@ using Base.BinaryPlatforms: arch, os, tags
 # the "cuda" platform tag contains the major and minor version of the CUDA runtime loaded
 # by CUDA_Runtime_jll, and is used to select artifacts that depend on the CUDA runtime.
 
-const augment = """
+# shared by `augment` and `augment_with`; they add the `augment_platform!` entry point.
+# CUDA_Runtime_jll owns the selection logic, so that its releases fix every JLL using it.
+const augment_definitions = """
     using Base.BinaryPlatforms
 
     try
         using CUDA_Runtime_jll
     catch
         # during initial package installation, CUDA_Runtime_jll may not be available.
-        # in that case, we just won't select an artifact.
     end
 
-    # can't use Preferences for the same reason
-    const CUDA_Runtime_jll_uuid = Base.UUID("76a88914-d11a-5bdc-97e0-2f5a05c973a2")
-    const preferences = Base.get_preferences(CUDA_Runtime_jll_uuid)
-    Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "version")
-    Base.record_compiletime_preference(CUDA_Runtime_jll_uuid, "local")
-    # the `local` preference is a boolean, but CUDA.jl's `set_runtime_version!` writes it
-    # as a string, and hand-written LocalPreferences.toml files use either spelling.
-    const local_toolkit = let pref = get(preferences, "local", false)
-        pref isa Bool ? pref : something(tryparse(Bool, pref), false)
-    end
-
-    function cuda_comparison_strategy(_a::String, _b::String, a_requested::Bool, b_requested::Bool)
-        # if we're using a local toolkit, we can't use artifacts
-        if local_toolkit
-            return false
-        end
-
-        # if either isn't a version number (e.g. "none"), perform a simple equality check
-        a = tryparse(VersionNumber, _a)
-        b = tryparse(VersionNumber, _b)
-        if a === nothing || b === nothing
-            return _a == _b
-        end
-
-        # if both b and a requested, then we fall back to equality
-        if a_requested && b_requested
-            return Base.thisminor(a) == Base.thisminor(b)
-        end
-
-        # otherwise, do the comparison between the the single version cap and the single version:
-        function is_compatible(artifact::VersionNumber, host::VersionNumber)
-            if host >= v"11.0"
-                # enhanced compatibility, semver-style
-                artifact.major == host.major &&
-                Base.thisminor(artifact) <= Base.thisminor(host)
-            else
-                Base.thisminor(artifact) == Base.thisminor(host)
-            end
-        end
-        if a_requested
-            is_compatible(b, a)
-        else
-            is_compatible(a, b)
-        end
-    end
-
-    function augment_platform!(platform::Platform)
-        if !@isdefined(CUDA_Runtime_jll)
-            # don't set to nothing or Pkg will download any artifact
+    # every other tag that artifacts are selected on must be set before calling this
+    function augment_cuda_tag!(platform::Platform)
+        if @isdefined(CUDA_Runtime_jll) && isdefined(CUDA_Runtime_jll, :augment_dependent!)
+            # both Pkg and the JLL module include this file from the JLL's `.pkg` directory
+            artifacts_toml = joinpath(@__DIR__, "..", "Artifacts.toml")
+            CUDA_Runtime_jll.augment_dependent!(platform, artifacts_toml)
+        elseif !haskey(platform, "cuda")
+            # CUDA_Runtime_jll is missing during initial installation, or briefly older than
+            # our compat bound while Pkg changes the environment. select the CPU build, if
+            # any; without the tag, Pkg would select any build.
             platform["cuda"] = "none"
         end
-
-        if !haskey(platform, "cuda")
-            CUDA_Runtime_jll.augment_platform!(platform)
-        end
-        BinaryPlatforms.set_compare_strategy!(platform, "cuda", cuda_comparison_strategy)
-
         return platform
+    end"""
+
+# the CUDA_Runtime_jll release that provides `augment_dependent!`
+const runtime_compat = "0.26.1 - 0"
+
+"""
+    augment
+
+Platform augmentation block for JLLs whose artifacts depend on the CUDA runtime. A JLL
+without an artifact for the selected toolkit selects its `cuda=none` artifact, if any. To
+combine it with another tag's block, use [`augment_with`](@ref).
+
+Keep its `function augment_platform!` definition in long form: `M/MPICH_CUDA` renames it
+with `replace`.
+"""
+const augment = augment_definitions * """\n
+    function augment_platform!(platform::Platform)
+        augment_cuda_tag!(platform)
+    end"""
+
+"""
+    augment_with(block, call)
+
+Platform augmentation block that runs `call` from `block`, then sets the CUDA tag, e.g.
+`CUDA.augment_with(MPI.augment, "augment_mpi!")`. The CUDA tag goes last: the fallback to
+the CPU build needs every other tag.
+"""
+augment_with(block::String, call::String) = """
+    using Base.BinaryPlatforms
+
+    $block
+
+    $augment_definitions
+
+    function augment_platform!(platform::Platform)
+        $call(platform)
+        augment_cuda_tag!(platform)
     end"""
 
 # augmentation block for artifacts that depend on the CUDA compiler (i.e., the JIT
@@ -162,7 +155,8 @@ const cuda_full_versions = [
     v"13.1.1",
     v"13.2.1",
     v"13.3.1",
-    v"13.4.3"
+    v"13.4.3",
+    v"13.5.0"
 ]
 
 # EA/preview toolkits. We do build JLLs for these, so that they can be used explicitly,
@@ -251,9 +245,7 @@ end
 """
     is_supported(platform)
 
-Check if a platform is supported by CUDA, and whether we can build artifacts for it.
-This can be used to determine whether to also provide a `cuda+none` build, which should
-only ever be used if there is _also_ a CUDA-enabled build available.
+Whether CUDA builds could exist for `platform`.
 """
 function is_supported(platform)
     if Sys.islinux(platform)
@@ -267,27 +259,42 @@ function is_supported(platform)
 end
 
 """
-    required_dependencies(platform; static_sdk=false)
+    required_dependencies(platforms::AbstractVector; static_sdk=false)
 
-Return a list of dependencies required to build and use CUDA artifacts for a given platform.
-Optionally include the CUDA static libraries with `static_sdk` for toolchains that require them.
+Dependencies for building and using the CUDA builds among `platforms`, each limited to
+the platforms that need it. `static_sdk` adds the static CUDA libraries.
+
+Pass the same list to every `build_tarballs` call: the last call writes the JLL's
+Project.toml. Tag the CPU platforms with [`cpu_platforms`](@ref).
 """
-function required_dependencies(platform; static_sdk=false)
-    dependencies = Dependency[]
-    if !haskey(tags(platform), "cuda") || tags(platform)["cuda"] == "none"
-        return BinaryBuilder.AbstractDependency[]
+function required_dependencies(platforms::AbstractVector; static_sdk=false)
+    cuda_platforms = filter(p -> get(tags(p), "cuda", "none") != "none", platforms)
+    deps = BinaryBuilder.AbstractDependency[]
+    for release in unique(p["cuda"] for p in cuda_platforms)
+        release_platforms = filter(p -> p["cuda"] == release, cuda_platforms)
+        version = string(full_version(VersionNumber(release)))
+        push!(deps, BuildDependency(PackageSpec(; name="CUDA_SDK_jll", version); platforms=release_platforms))
+        static_sdk && push!(deps, BuildDependency(PackageSpec(; name="CUDA_SDK_static_jll", version); platforms=release_platforms))
     end
-    release = VersionNumber(tags(platform)["cuda"])
-    deps = BinaryBuilder.AbstractDependency[
-        BuildDependency(PackageSpec(name="CUDA_SDK_jll", version=string(CUDA.full_version(release)))),
-        RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"))
-    ]
-
-    if static_sdk
-        push!(deps, BuildDependency(PackageSpec(name="CUDA_SDK_static_jll", version=string(CUDA.full_version(release)))))
-    end
-
+    isempty(cuda_platforms) ||
+        push!(deps, RuntimeDependency(PackageSpec(name="CUDA_Runtime_jll"); compat=runtime_compat,
+                                     platforms=cuda_platforms))
     return deps
+end
+required_dependencies(platform; static_sdk=false) = required_dependencies([platform]; static_sdk)
+
+"""
+    cpu_platforms(platforms)
+
+Copies of `platforms` for the CPU builds of a JLL that also has CUDA builds, tagged
+`cuda=none`. Every CPU build needs the tag: an untagged one would match CUDA hosts.
+"""
+function cpu_platforms(platforms)
+    map(platforms) do platform
+        platform = deepcopy(platform)
+        platform["cuda"] = "none"
+        platform
+    end
 end
 
 """
@@ -361,34 +368,68 @@ function cuda_nvcc_redist_source(cuda_ver, arch)
     end
 end
 
+# GPUs only found in Tegra SoCs (Jetson, DRIVE)
+const tegra_gpu_archs = ["53", "62", "72", "87", "101", "110"]
+
 """
     cuda_gpu_archs(platform::Platform)
 
-Returns a list of the GPU architectures supported by the given CUDA platform.
+Returns a sorted list of the GPU architectures supported by the given CUDA platform:
+x86_64 and SBSA omit the Tegra architectures, Jetson has only those, and aarch64 from CUDA 13
+has both.
 """
 function cuda_gpu_archs(platform::Platform)
     ver = VersionNumber(tags(platform)["cuda"])
-    cuda_gpu_archs(ver)
+    archs = cuda_gpu_archs(ver)
+    cuda_platform = get(tags(platform), "cuda_platform", "")
+    if arch(platform) == "x86_64" && isempty(cuda_platform)
+        return filter!(!in(tegra_gpu_archs), archs)
+    elseif arch(platform) == "aarch64" && cuda_platform == "sbsa"
+        return filter!(!in(tegra_gpu_archs), archs)
+    elseif arch(platform) == "aarch64" && cuda_platform == "jetson"
+        return filter!(in(tegra_gpu_archs), archs)
+    elseif arch(platform) == "aarch64" && isempty(cuda_platform) && ver >= v"13"
+        return archs
+    end
+    error("No GPU architectures known for $(triplet(platform))")
 end
 
 """
     cuda_gpu_archs(cuda_ver)
 
-Returns a list of the GPU architectures supported by the given CUDA version.
+Returns a sorted list of the GPU architectures supported by the given CUDA version.
 """
 function cuda_gpu_archs(cuda_ver)
-    # List roughly based on https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
+    # Architectures each toolkit supports: `nvcc --list-gpu-arch`, tabulated in
+    # https://gist.github.com/agirault/d0d66c12c85dbc2662c95569ef039a1d
+    # GPUs per architecture: https://developer.nvidia.com/cuda-gpus and
+    # https://developer.nvidia.com/cuda-legacy-gpus
+    # Overview: https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
 
     # CUDA 10 and later
     supported_archs = [
         "75",       # sm_75 -> Turing (RTX 20xx, T4)
         ]
 
+    if cuda_ver < v"11"
+        # Their last JetPack (4.6) ships CUDA 10.2
+        push!(supported_archs, "53")        # sm_53 -> Maxwell (Jetson Nano, TX1)
+        push!(supported_archs, "62")        # sm_62 -> Pascal (Jetson TX2)
+    end
+
+    if cuda_ver < v"13"
+        push!(supported_archs, "70")        # sm_70 -> Volta (V100)
+        push!(supported_archs, "72")        # sm_72 -> Volta (Jetson AGX Xavier)
+    end
+
     if cuda_ver >= v"11.1"
         push!(supported_archs, "80")        # sm_80 -> Ampere (A100)
         push!(supported_archs, "86")        # sm_86 -> Ampere (A40, RTX 30xx, RTX Ax000 Ada)
     end
 
+    if cuda_ver >= v"11.4"
+        push!(supported_archs, "87")        # sm_87 -> Ampere (Jetson Orin)
+    end
 
     if cuda_ver >= v"11.8"
         push!(supported_archs, "89")        # sm_89 -> Ada lovelace (RTX 4090/4080, L40)
@@ -403,12 +444,69 @@ function cuda_gpu_archs(cuda_ver)
         push!(supported_archs, "120")       # sm_120 -> Blackwell (RTX 50xx, RTX PRO x000 BLACKWELL)
     end
 
+    if v"12.8" <= cuda_ver < v"13"
+        push!(supported_archs, "101")       # sm_101 -> Blackwell (Jetson Thor), renumbered sm_110 in CUDA 13
+    end
+
     if cuda_ver >= v"12.9"
         push!(supported_archs, "103")       # sm_103 -> Blackwell (B300, GB300)
         push!(supported_archs, "121")       # sm_121 -> Blackwell (DGX SPARK, DIGITS)
     end
 
-    supported_archs
+    if cuda_ver >= v"13"
+        push!(supported_archs, "110")       # sm_110 -> Blackwell (Jetson Thor)
+    end
+
+    sort!(supported_archs; by=a -> parse(Int, a))
+    return supported_archs
+end
+
+# `sm_90a` etc.: arch-specific machine code, which runs only on its own architecture; such features exist from sm_90
+function cuda_gpu_arch_name(arch, min_specific_arch)
+    min_specific_arch === nothing && return arch
+    parse(Int, min_specific_arch) >= 90 || error("Arch-specific features exist from sm_90, not sm_$(min_specific_arch)")
+    return parse(Int, arch) >= parse(Int, min_specific_arch) ? "$(arch)a" : arch
+end
+
+"""
+    cuda_gpu_archs_cmake(platform::Platform; min_specific_arch=nothing)
+    cuda_gpu_archs_cmake(archs; min_specific_arch=nothing)
+
+Returns `CMAKE_CUDA_ARCHITECTURES` (or `CUDAARCHS`) for `archs`, by default `cuda_gpu_archs(platform)`:
+machine code for each architecture, and PTX for the newest, so newer GPUs can run it.
+
+With `min_specific_arch`, e.g. `"90"`, the machine code for that architecture and newer ones is
+arch-specific (`90a`), for code using features that exist only on those architectures, e.g.
+Hopper's `wgmma`. Arch-specific code runs only on its own architecture, so the PTX stays portable.
+Leave architectures out of `archs` only below `min_specific_arch`: `sm_100a` code does not run on
+sm_103, and the PTX for a newer architecture cannot run on it either. CMake accepts arch-specific
+entries from version 3.25.
+"""
+cuda_gpu_archs_cmake(platform::Platform; min_specific_arch=nothing) =
+    cuda_gpu_archs_cmake(cuda_gpu_archs(platform); min_specific_arch)
+function cuda_gpu_archs_cmake(archs::AbstractVector{<:AbstractString}; min_specific_arch=nothing)
+    newest = archs[argmax(parse.(Int, archs))]
+    entries = ["$(cuda_gpu_arch_name(a, min_specific_arch))-real" for a in archs]
+    push!(entries, "$(newest)-virtual")
+    return join(entries, ";")
+end
+
+"""
+    cuda_gpu_archs_nvcc(platform::Platform; min_specific_arch=nothing)
+    cuda_gpu_archs_nvcc(archs; min_specific_arch=nothing)
+
+Returns `nvcc` `-gencode` flags for `archs`, by default `cuda_gpu_archs(platform)`:
+machine code for each architecture, and PTX for the newest, so newer GPUs can run it.
+`min_specific_arch` is as for [`cuda_gpu_archs_cmake`](@ref).
+"""
+cuda_gpu_archs_nvcc(platform::Platform; min_specific_arch=nothing) =
+    cuda_gpu_archs_nvcc(cuda_gpu_archs(platform); min_specific_arch)
+function cuda_gpu_archs_nvcc(archs::AbstractVector{<:AbstractString}; min_specific_arch=nothing)
+    newest = archs[argmax(parse.(Int, archs))]
+    names = [cuda_gpu_arch_name(a, min_specific_arch) for a in archs]
+    flags = ["-gencode=arch=compute_$(sm),code=sm_$(sm)" for sm in names]
+    push!(flags, "-gencode=arch=compute_$(newest),code=compute_$(newest)")
+    return join(flags, " ")
 end
 
 end
