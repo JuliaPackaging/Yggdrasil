@@ -2,19 +2,24 @@
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder
 
+const YGGDRASIL_DIR = "../.."
+include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
+
 name = "OCCT"
-version = v"7.9.3"
+version = v"8.0.2"
 
 # Collection of sources required to build Open CASCADE Technology (OCCT)
 sources = [
     GitSource("https://github.com/Open-Cascade-SAS/OCCT.git",
-              "a016080bf6738d6aeae020badee4e888ad1540a5"), # V7_9_3 @ Dec 6, 2025
-    DirectorySource("./bundled")
+              "83f9abe9477af36e4ca218e1468068aed052779f";
+              tag="V$(version.major)_$(version.minor)_$(version.patch)"),
+    DirectorySource("./bundled"),
 ]
 
 # Bash recipe for building across all platforms
 script = raw"""
 cd ${WORKSPACE}/srcdir/OCCT
+atomic_patch -p1 "${WORKSPACE}/srcdir/patches/Standard_limits_noexcept.patch"
 if [[ ${target} == *musl* ]]; then
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/OSD_MemInfo.cxx.patch"
     atomic_patch -p1 "${WORKSPACE}/srcdir/patches/OSD_signal.cxx.patch"
@@ -35,11 +40,16 @@ cmake -Wno-dev .. \
     -DBUILD_LIBRARY_TYPE=Shared \
     -DBUILD_MODULE_Draw=0 \
     -DBUILD_MODULE_Visualization=0 \
-    -DBUILD_MODULE_ApplicationFramework=0
+    -DBUILD_MODULE_ApplicationFramework=0 \
+    -DUSE_RAPIDJSON=ON \
+    -D3RDPARTY_RAPIDJSON_INCLUDE_DIR=${includedir}
 make -j${nproc}
 make install
 install_license ../LICENSE_LGPL_21.txt ../OCCT_LGPL_EXCEPTION.txt
 """
+
+# std::variant's throwing accessors need libc++ from macOS 10.14
+sources, script = require_macos_sdk("10.14", sources, script)
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
@@ -95,6 +105,13 @@ x11_platforms = filter(p ->Sys.islinux(p) || Sys.isfreebsd(p), platforms)
 # Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("Xorg_xorgproto_jll"; platforms=x11_platforms),
+    # Header-only, for the glTF reader and writer in TKDEGLTF
+    BuildDependency("rapidjson_jll"),
+    # libgcc_s. Julia 1.6 ships 0.5.0 and 1.8 ships 1.0.1; build against 1.1.2,
+    # the oldest release with a riscv64 build
+    Dependency("CompilerSupportLibraries_jll", v"1.1.2";
+               compat="0.5.0, 1",
+               platforms=filter(!Sys.isbsd, platforms)),
     Dependency("FreeType2_jll"; compat="2.13.4"),
     Dependency("Libglvnd_jll"; platforms=x11_platforms),
     Dependency("Xorg_libX11_jll"; platforms=x11_platforms),
