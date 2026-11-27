@@ -179,6 +179,23 @@ else
     make install-host "${MAKEVARS[@]}"
 fi
 
+# Strip the debug info from the compiler (drivers, `cc1*`, `lto1`, the LTO plugin and
+# `libcc1`), which is most of its size.  `-S` keeps the symbols that GCC plugins link
+# against.  The target libraries in `${prefix}/${target}` and `lib/gcc/${target}` keep theirs.
+is_object_file() {
+    case "$(head -c4 "${1}" | od -An -tx1 | tr -d ' \n')" in
+        # ELF, Mach-O (64-bit, 32-bit, universal), PE
+        7f454c46|cffaedfe|cefaedfe|cafebabe|4d5a*) return 0 ;;
+    esac
+    return 1
+}
+for f in $(find ${prefix}/bin ${prefix}/libexec ${prefix}/lib*/libcc1* ${prefix}/lib/gcc/${target}/*/plugin \
+                -maxdepth 4 -type f 2>/dev/null); do
+    if is_object_file "${f}"; then
+        ${HOST_STRIP} -S "${f}"
+    fi
+done
+
 # Remove misleading libtool archives
 rm -f ${prefix}/${target}/lib*/*.la
 
