@@ -178,6 +178,12 @@ make -j${nproc} install
 
 # XXX: remove third-party tools that aren't needed at run time
 rm -rf ${prefix}/third_party
+
+# the executables keep their symbol tables otherwise. on macOS, stripping would invalidate
+# the linker's ad-hoc code signature.
+if [[ ${target} != *-apple-* ]]; then
+    strip ${bindir}/*
+fi
 """
 
 # These are the platforms we will build for by default, unless further
