@@ -17,6 +17,8 @@ dependencies = [
     BuildDependency("Xorg_xorgproto_jll"),
     BuildDependency("LibVPX_jll"), # We use the static archive
     Dependency("FFMPEG_jll"; compat=string(version)),
+    # Provides libclang_rt.osx.a, see the script
+    BuildDependency("LLVMCompilerRT_jll"; platforms=filter(p -> Sys.isapple(p) && arch(p) == "x86_64", platforms)),
     Dependency("SDL2_jll"; compat="2.32.10"),
     Dependency("OpenSSL_jll"; compat="3.5.0"),
 ]
@@ -25,4 +27,4 @@ dependencies = [
 build_tarballs(ARGS, name, version, sources, script(; ffplay=true), platforms, products, dependencies;
                julia_compat="1.6", preferred_gcc_version, clang_use_lld=false)
 
-# Build trigger: 6
+# Build trigger: 7
