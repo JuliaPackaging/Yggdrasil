@@ -1,0 +1,101 @@
+From 3b7b211f901a3f8949d3cf10e9aa796c3d799bef Mon Sep 17 00:00:00 2001
+From: Elliot Saba <staticfloat@gmail.com>
+Date: Tue, 10 Nov 2026 08:06:53 -0800
+Subject: [PATCH 1/2] libstdc++: build with clang for sanitizers
+
+Changes needed to build libstdc++-v3 standalone with clang, for
+MemorySanitizer:
+
+- clang does not accept `-gno-as-loc-support`.
+- clang does not enable sized deallocation by default; src/c++17 calls
+  the sized `operator delete`.
+- clang requires a C++11 `[[noreturn]]` to appear on the first
+  declaration, which in c++config uses `_GLIBCXX_NORETURN`.
+---
+ libstdc++-v3/src/c++11/Makefile.am    | 4 ++--
+ libstdc++-v3/src/c++11/Makefile.in    | 4 ++--
+ libstdc++-v3/src/c++11/assert_fail.cc | 2 +-
+ libstdc++-v3/src/c++17/Makefile.am    | 2 +-
+ libstdc++-v3/src/c++17/Makefile.in    | 2 +-
+ 5 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/libstdc++-v3/src/c++11/Makefile.am b/libstdc++-v3/src/c++11/Makefile.am
+index 89e20ca..efcbe46 100644
+--- a/libstdc++-v3/src/c++11/Makefile.am
++++ b/libstdc++-v3/src/c++11/Makefile.am
+@@ -172,12 +172,12 @@ if ENABLE_DUAL_ABI
+ rewrite_ios_failure_typeinfo = sed -e '/^_*_ZTISt13__ios_failure:/,/_ZTVN10__cxxabiv120__si_class_type_infoE/s/_ZTVN10__cxxabiv120__si_class_type_infoE/_ZTVSt19__iosfail_type_info/'
+ 
+ cxx11-ios_failure-lt.s: cxx11-ios_failure.cc
+-	$(LTCXXCOMPILE) -gno-as-loc-support -S $< -o tmp-cxx11-ios_failure-lt.s
++	$(LTCXXCOMPILE) -S $< -o tmp-cxx11-ios_failure-lt.s
+ 	-test -f tmp-cxx11-ios_failure-lt.o && mv -f tmp-cxx11-ios_failure-lt.o tmp-cxx11-ios_failure-lt.s
+ 	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
+ 	-rm -f tmp-$@
+ cxx11-ios_failure.s: cxx11-ios_failure.cc
+-	$(CXXCOMPILE) -gno-as-loc-support -S $< -o tmp-$@
++	$(CXXCOMPILE) -S $< -o tmp-$@
+ 	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
+ 	-rm -f tmp-$@
+ 
+diff --git a/libstdc++-v3/src/c++11/Makefile.in b/libstdc++-v3/src/c++11/Makefile.in
+index 4be021e..e437a4c 100644
+--- a/libstdc++-v3/src/c++11/Makefile.in
++++ b/libstdc++-v3/src/c++11/Makefile.in
+@@ -896,12 +896,12 @@ localename.o: localename.cc
+ 	$(CXXCOMPILE) -fchar8_t -c $<
+ 
+ @ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure-lt.s: cxx11-ios_failure.cc
+-@ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) -gno-as-loc-support -S $< -o tmp-cxx11-ios_failure-lt.s
++@ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) -S $< -o tmp-cxx11-ios_failure-lt.s
+ @ENABLE_DUAL_ABI_TRUE@	-test -f tmp-cxx11-ios_failure-lt.o && mv -f tmp-cxx11-ios_failure-lt.o tmp-cxx11-ios_failure-lt.s
+ @ENABLE_DUAL_ABI_TRUE@	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
+ @ENABLE_DUAL_ABI_TRUE@	-rm -f tmp-$@
+ @ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure.s: cxx11-ios_failure.cc
+-@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) -gno-as-loc-support -S $< -o tmp-$@
++@ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) -S $< -o tmp-$@
+ @ENABLE_DUAL_ABI_TRUE@	$(rewrite_ios_failure_typeinfo) tmp-$@ > $@
+ @ENABLE_DUAL_ABI_TRUE@	-rm -f tmp-$@
+ 
+diff --git a/libstdc++-v3/src/c++11/assert_fail.cc b/libstdc++-v3/src/c++11/assert_fail.cc
+index 76c8a5a..327809f 100644
+--- a/libstdc++-v3/src/c++11/assert_fail.cc
++++ b/libstdc++-v3/src/c++11/assert_fail.cc
+@@ -28,7 +28,7 @@
+ #include <cstdio>	// for std::fprintf, stderr
+ namespace std
+ {
+-  [[__noreturn__]]
++  _GLIBCXX_NORETURN
+   void
+   __glibcxx_assert_fail(const char* file, int line,
+ 			const char* function, const char* condition) noexcept
+diff --git a/libstdc++-v3/src/c++17/Makefile.am b/libstdc++-v3/src/c++17/Makefile.am
+index ee9e77a..40babdb 100644
+--- a/libstdc++-v3/src/c++17/Makefile.am
++++ b/libstdc++-v3/src/c++17/Makefile.am
+@@ -83,7 +83,7 @@ endif
+ # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
+ # as the occasion calls for it.
+ AM_CXXFLAGS = \
+-	-std=gnu++17 -nostdinc++ \
++	-std=gnu++17 -fsized-deallocation -nostdinc++ \
+ 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
+ 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS) \
+diff --git a/libstdc++-v3/src/c++17/Makefile.in b/libstdc++-v3/src/c++17/Makefile.in
+index fe5c9ff..b33e303 100644
+--- a/libstdc++-v3/src/c++17/Makefile.in
++++ b/libstdc++-v3/src/c++17/Makefile.in
+@@ -465,7 +465,7 @@ sources = \
+ # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
+ # as the occasion calls for it.
+ AM_CXXFLAGS = \
+-	-std=gnu++17 -nostdinc++ \
++	-std=gnu++17 -fsized-deallocation -nostdinc++ \
+ 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
+ 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS) \
+-- 
+2.43.0
+

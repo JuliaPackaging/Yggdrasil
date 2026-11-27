@@ -1,0 +1,25 @@
+libgcc: Honor LDFLAGS_FOR_TARGET when linking the legacy libgcc_s.1.dylib on Darwin
+
+libgcc_s.1.1.dylib and libgcc_ehs are linked with $(LDFLAGS), but the libgcc_s.1.dylib
+stub that re-exports them is not, so e.g. -Wl,-sdk_version does not reach it.
+
+--- a/libgcc/config/t-slibgcc-darwin
++++ b/libgcc/config/t-slibgcc-darwin
+@@ -126,7 +126,7 @@
+ 	  cp ../$${mlib}/libgcc/$${mlib}/libgcc_ehs$(SHLIB_EXT)  \
+ 	    ./libgcc_ehs.$(SHLIB_SOVERSION)$(SHLIB_EXT)_T_$${mlib} || exit 1 ; \
+ 	  arch=`$(LIPO) -info libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT)_T_$${mlib} | sed -e 's/.*:\ //'` ; \
+-	  $(CC) -arch $${arch} -nodefaultlibs -dynamiclib -nodefaultrpaths \
++	  $(CC) -arch $${arch} $(LDFLAGS) -nodefaultlibs -dynamiclib -nodefaultrpaths \
+ 	    -o libgcc_s.1$(SHLIB_EXT)_T_$${mlib} \
+ 	    -Wl,-reexport_library,libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT)_T_$${mlib} \
+ 	    -Wl,-reexport_library,libgcc_ehs.$(SHLIB_SOVERSION)$(SHLIB_EXT)_T_$${mlib} \
+@@ -145,7 +145,7 @@
+ 	  cp ../$${mlib}/libgcc/$${mlib}/libgcc_s$(SHLIB_EXT)  \
+ 	    ./libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT)_T_$${mlib} || exit 1 ; \
+ 	  arch=`$(LIPO) -info libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT)_T_$${mlib} | sed -e 's/.*:\ //'` ; \
+-	  $(CC) -arch $${arch} -nodefaultlibs -dynamiclib -nodefaultrpaths \
++	  $(CC) -arch $${arch} $(LDFLAGS) -nodefaultlibs -dynamiclib -nodefaultrpaths \
+ 	    -o libgcc_s.1$(SHLIB_EXT)_T_$${mlib} \
+ 	    -Wl,-reexport_library,libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT)_T_$${mlib} \
+ 	    -lSystem \
