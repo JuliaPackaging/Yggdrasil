@@ -166,8 +166,18 @@ $WORKSPACE/srcdir/gcc-*/configure \
     --program-prefix="${target}-" \
     ${GCC_CONF_ARGS[@]}
 
-make -j${nproc} "${MAKEVARS[@]}"
-make install "${MAKEVARS[@]}"
+# A compiler that doesn't run on the build machine (a Canadian cross) can't build its own
+# target libraries, and the bootstrap GCC may be too old to build them.  Those are the same
+# for every host, so only the compiler and its host-side libraries are built there, and the
+# target libraries come from the build of this target on the build machine.
+config_sub="$(echo $WORKSPACE/srcdir/gcc-*/config.sub)"
+if [[ "$(${config_sub} "${host}")" == "$(${config_sub} "${build}")" ]]; then
+    make -j${nproc} "${MAKEVARS[@]}"
+    make install "${MAKEVARS[@]}"
+else
+    make -j${nproc} all-host "${MAKEVARS[@]}"
+    make install-host "${MAKEVARS[@]}"
+fi
 
 # Remove misleading libtool archives
 rm -f ${prefix}/${target}/lib*/*.la
@@ -305,6 +315,42 @@ function gcc_extract_spec_generator(build::BuildConfig, platform::AbstractPlatfo
     host_audit_config = Sys.isapple(platform.host) ? macos_audit_config : nothing
 
     host_spec = get_target_spec_by_name(build, "host")
+    gcc_spec = ExtractSpec(
+        raw"""
+        # Everything not extracted into the target JLLs
+        extract ${prefix}/**
+        rm -rf ${extract_dir}/${target}/include
+        rm -rf ${extract_dir}/${target}/${lib64}
+        # Except for the plugin headers, which describe the host GCC runs on
+        # (`GCC_crt_objects` is per target only, so it can't carry them)
+        plugin_dir=lib/gcc/${target}/${gcc_version}/plugin
+        if [[ -d ${extract_dir}/${plugin_dir} ]]; then
+            mv ${extract_dir}/${plugin_dir} ${extract_dir}/gcc_plugin
+        fi
+        rm -rf ${extract_dir}/lib/gcc
+        if [[ -d ${extract_dir}/gcc_plugin ]]; then
+            mkdir -p $(dirname ${extract_dir}/${plugin_dir})
+            mv ${extract_dir}/gcc_plugin ${extract_dir}/${plugin_dir}
+        fi
+        """,
+        [
+            ExecutableProduct("\${target}-gcc", :gcc),
+            ExecutableProduct("\${target}-g++", :gxx),
+        ],
+        host_spec;
+        # `GCC` doesn't depend on the target JLLs: they are not `CrossPlatform`s,
+        # so JLLPrefixes would not install them alongside it anyway.
+        jll_name = "GCC",
+        platform,
+        audit_config = host_audit_config,
+    )
+
+    # A Canadian cross builds no target libraries (see the build script)
+    build_machine = get_target_spec_by_name(build, "build").platform.target
+    if triplet(gcc_platform(platform.host)) != triplet(gcc_platform(build_machine))
+        return ExtractSpec[gcc_spec]
+    end
+
     return ExtractSpec[
         ExtractSpec(
             raw"""
@@ -353,35 +399,7 @@ function gcc_extract_spec_generator(build::BuildConfig, platform::AbstractPlatfo
             jll_name = "GCC_crt_objects",
             platform = platform.target,
         ),
-        ExtractSpec(
-            raw"""
-            # Everything not extracted into the target JLLs above
-            extract ${prefix}/**
-            rm -rf ${extract_dir}/${target}/include
-            rm -rf ${extract_dir}/${target}/${lib64}
-            # Except for the plugin headers, which describe the host GCC runs on
-            # (`GCC_crt_objects` is per target only, so it can't carry them)
-            plugin_dir=lib/gcc/${target}/${gcc_version}/plugin
-            if [[ -d ${extract_dir}/${plugin_dir} ]]; then
-                mv ${extract_dir}/${plugin_dir} ${extract_dir}/gcc_plugin
-            fi
-            rm -rf ${extract_dir}/lib/gcc
-            if [[ -d ${extract_dir}/gcc_plugin ]]; then
-                mkdir -p $(dirname ${extract_dir}/${plugin_dir})
-                mv ${extract_dir}/gcc_plugin ${extract_dir}/${plugin_dir}
-            fi
-            """,
-            [
-                ExecutableProduct("\${target}-gcc", :gcc),
-                ExecutableProduct("\${target}-g++", :gxx),
-            ],
-            host_spec;
-            # `GCC` doesn't depend on the target JLLs above: they are not `CrossPlatform`s,
-            # so JLLPrefixes would not install them alongside it anyway.
-            jll_name = "GCC",
-            platform,
-            audit_config = host_audit_config,
-        ),
+        gcc_spec,
     ]
 end
 
