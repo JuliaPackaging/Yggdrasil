@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Compiler"
-version = v"0.6.7"
+version = v"0.6.8"
 
 const toolkit_versions = [CUDA.cuda_full_versions; CUDA.cuda_prerelease_versions]
 const compiler_versions = filter(v -> v >= v"11.4" || Base.thisminor(v) == v"10.2", toolkit_versions)
@@ -68,6 +68,9 @@ if [[ ${target} == *-linux-gnu ]]; then
     else
         mv libnvvm/nvvm ${prefix}
     fi
+    # cicc is nvcc's front-end: libnvvm, NVRTC and nvlink's LTO mode don't use it
+    rm ${prefix}/nvvm/bin/cicc
+    rmdir ${prefix}/nvvm/bin
 
     mv cuda_nvrtc/lib/libnvrtc.so* ${libdir}
     mv cuda_nvrtc/lib/libnvrtc-builtins.so* ${libdir}
@@ -107,7 +110,11 @@ elif [[ ${target} == x86_64-w64-mingw32 ]]; then
     else
         mv libnvvm/nvvm ${prefix}
     fi
+    # unlike on Linux, nvvm/bin also holds the libnvvm DLL
+    rm ${prefix}/nvvm/bin/cicc.exe
 
+    # NVRTC 12.5 to 13.0 comes with an alternative DLL that nothing loads
+    rm -f cuda_nvrtc/bin/nvrtc64_*.alt.dll
     mv cuda_nvrtc/bin/nvrtc64_* ${bindir}
     mv cuda_nvrtc/bin/nvrtc-builtins64_* ${bindir}
 
