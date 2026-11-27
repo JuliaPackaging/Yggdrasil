@@ -38,6 +38,29 @@ function check_pkgserver_latency(; tolerance = Hour(1))
     end
 end
 
+# A trigger step creates the `yggdrasil-register` build as the creator of the current build,
+# i.e. the Buildkite org member whose email matches the commit author.  Builds by authors
+# without a Buildkite account have no creator and can always trigger, but org members need
+# build access to `yggdrasil-register`, or the trigger fails instantly without any log.
+# Org admins have access without being on a team, and the ones merging here are on the
+# committers team, so that team is treated as having access too.
+const REGISTER_TEAMS = ("yggdrasil-build-and-read", "committers-at-julialang-slash-committers")
+function check_register_access()
+    creator = get(ENV, "BUILDKITE_BUILD_CREATOR", "")
+    teams = filter(!isempty, split(get(ENV, "BUILDKITE_BUILD_CREATOR_TEAMS", ""), ':'))
+    # No teams means either no Buildkite account, or a member we cannot tell apart from one.
+    if isempty(teams) || any(in(REGISTER_TEAMS), teams)
+        return
+    end
+    msg = """
+        This build was attributed to Buildkite user $(creator), who is not a member of the
+        `yggdrasil-build-and-read` team, so triggering registration will fail. Ask a Buildkite
+        admin to add them to that team, then retry the trigger job.
+        """
+    @warn(msg)
+    annotate(msg, style="warning", context="register-access", append=false)
+end
+
 # Remove a project's metadata files left over from a previous BB1 run.  The generator runs
 # once per project in the same checkout, and the launcher uploads the files of every project
 # afterwards, so this must not touch the files of other projects.
