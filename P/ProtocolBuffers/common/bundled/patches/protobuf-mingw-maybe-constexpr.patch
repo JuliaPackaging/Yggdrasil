@@ -1,0 +1,13 @@
+diff --git a/src/google/protobuf/port_def.inc b/src/google/protobuf/port_def.inc
+index 320e888..cb5bbad 100644
+--- a/src/google/protobuf/port_def.inc
++++ b/src/google/protobuf/port_def.inc
+@@ -563,7 +563,7 @@
+ // Some constructors can't be constexpr under MSVC, but given that MSVC will not
+ // do constant initialization of globals anyway we can omit `constexpr` from
+ // them. These constructors are marked with PROTOBUF_MAYBE_CONSTEXPR
+-#if defined(_MSC_VER)
++#if defined(_WIN32)
+ #define PROTOBUF_MAYBE_CONSTEXPR
+ #else
+ #define PROTOBUF_MAYBE_CONSTEXPR constexpr
