@@ -1,3 +1,5 @@
+using BinaryBuilder2
+
 include("../common.jl")
 
 name = "GCC"
