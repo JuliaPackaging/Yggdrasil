@@ -472,17 +472,20 @@ end
     cuda_gpu_archs_cmake(platform::Platform; min_specific_arch=nothing)
     cuda_gpu_archs_cmake(archs; min_specific_arch=nothing)
 
-Returns `CMAKE_CUDA_ARCHITECTURES` (or `CUDAARCHS`) for the sorted `archs`, by default `cuda_gpu_archs(platform)`:
+Returns `CMAKE_CUDA_ARCHITECTURES` (or `CUDAARCHS`) for `archs`, by default `cuda_gpu_archs(platform)`:
 machine code for each architecture, and PTX for the newest, so newer GPUs can run it.
 
 With `min_specific_arch`, e.g. `"90"`, the machine code for that architecture and newer ones is
 arch-specific (`90a`), for code using features that exist only on those architectures, e.g.
 Hopper's `wgmma`. Arch-specific code runs only on its own architecture, so the PTX stays portable.
+Leave architectures out of `archs` only below `min_specific_arch`: `sm_100a` code does not run on
+sm_103, and the PTX for a newer architecture cannot run on it either. CMake accepts arch-specific
+entries from version 3.25.
 """
 cuda_gpu_archs_cmake(platform::Platform; min_specific_arch=nothing) =
     cuda_gpu_archs_cmake(cuda_gpu_archs(platform); min_specific_arch)
 function cuda_gpu_archs_cmake(archs::AbstractVector{<:AbstractString}; min_specific_arch=nothing)
-    newest = last(archs)
+    newest = archs[argmax(parse.(Int, archs))]
     entries = ["$(cuda_gpu_arch_name(a, min_specific_arch))-real" for a in archs]
     push!(entries, "$(newest)-virtual")
     return join(entries, ";")
@@ -492,14 +495,14 @@ end
     cuda_gpu_archs_nvcc(platform::Platform; min_specific_arch=nothing)
     cuda_gpu_archs_nvcc(archs; min_specific_arch=nothing)
 
-Returns `nvcc` `-gencode` flags for the sorted `archs`, by default `cuda_gpu_archs(platform)`:
+Returns `nvcc` `-gencode` flags for `archs`, by default `cuda_gpu_archs(platform)`:
 machine code for each architecture, and PTX for the newest, so newer GPUs can run it.
 `min_specific_arch` is as for [`cuda_gpu_archs_cmake`](@ref).
 """
 cuda_gpu_archs_nvcc(platform::Platform; min_specific_arch=nothing) =
     cuda_gpu_archs_nvcc(cuda_gpu_archs(platform); min_specific_arch)
 function cuda_gpu_archs_nvcc(archs::AbstractVector{<:AbstractString}; min_specific_arch=nothing)
-    newest = last(archs)
+    newest = archs[argmax(parse.(Int, archs))]
     names = [cuda_gpu_arch_name(a, min_specific_arch) for a in archs]
     flags = ["-gencode=arch=compute_$(sm),code=sm_$(sm)" for sm in names]
     push!(flags, "-gencode=arch=compute_$(newest),code=compute_$(newest)")
