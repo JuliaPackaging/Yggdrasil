@@ -90,6 +90,10 @@ elif [[ "${target}" == *-darwin* ]]; then
     export ac_cv_func_clock_gettime=no
     export ac_cv_func_mkostemp=no
 
+    # Without `-sdk_version`, ld64 leaves LC_BUILD_VERSION's SDK version of the runtime
+    # dylibs (libstdc++, libgcc_s, ...) unset, which macOS 26's stricter dyld rejects.
+    export LDFLAGS_FOR_TARGET="${LDFLAGS_FOR_TARGET:-} -Wl,-sdk_version,11.0"
+
 elif [[ "${target}" == *-freebsd ]]; then
     # GCC needs the FreeBSD version in the target triplet
     target_suffix="${FREEBSD_TARGET_SDK}"
