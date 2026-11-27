@@ -1,0 +1,13 @@
+Leave out jemalloc, which only the command-line program uses, on every Windows target: it does not build with MinGW.
+https://github.com/Tractables/tddlog/commit/f25efc2b0639b2ab7eed59451633fecf2b50b22f
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -37,7 +37,7 @@
+ # pages. The library uses none of them. For WebAssembly (`bindings/wasm`)
+ # only the library is built, and jemalloc does not build with MSVC, so the
+ # binary uses the system allocator there.
+-[target.'cfg(not(any(target_family = "wasm", target_env = "msvc")))'.dependencies]
++[target.'cfg(not(any(target_family = "wasm", target_os = "windows")))'.dependencies]
+ tikv-jemallocator = "0.6"
+ tikv-jemalloc-sys = "0.6.1"
+ libc = "0.2"
