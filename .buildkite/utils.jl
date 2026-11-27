@@ -91,6 +91,7 @@ agent() = Dict(
 # Reserving the peak kept jobs queued on agents with hundreds of GiB free.
 const LARGE_MEMORY_PROJECTS = [
     "A/AMDGPU_LLVM_Backend",
+    "C/CUDA/CUDA_Tile",
     "C/cupynumeric",
     "E/Enzyme",
     "L/LLVM",
