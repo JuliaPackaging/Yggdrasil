@@ -10,7 +10,7 @@ version = v"0.1.0"
 # (deps/patches) applied. Facil.jl applies the same series when it builds the
 # library locally, so the patches live in its repository, not in bundled/.
 sources = [
-    GitSource("https://github.com/aryan-juliahub/Facil.jl.git", "99b8312a41abb37ba309b5d6299169a13322f9b4"),
+    GitSource("https://github.com/aryan-juliahub/Facil.jl.git", "fd95b113a2af2b6852729bf36e98f9f734d0dc96"),
     GitSource("https://github.com/boazsegev/facil.io.git", "5128747363055201d3ecf0e29bf0a961703c9fa0"),
 ]
 
