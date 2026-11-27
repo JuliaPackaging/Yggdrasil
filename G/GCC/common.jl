@@ -212,7 +212,8 @@ end
 
 # Cross compilers from each host to every target, plus a native compiler for each target.
 # The compilers for hosts other than x86_64-linux-gnu are Canadian crosses: they can't run
-# on the build machine, so the target libraries are built by the bootstrap GCC instead.
+# on the build machine, so they build no target libraries, and the target JLLs come from the
+# x86_64-linux-gnu-hosted build of each target.
 host_platforms = [
     Platform("x86_64", "linux"),
     Platform("aarch64", "linux"),
@@ -230,7 +231,7 @@ gcc_products = [
 
 # GCC is built for `host` with the bootstrap GCC, against the target's C library (and, on
 # Linux, kernel headers), which is installed into `${target_prefix}/${target}` as GCC's
-# build sysroot.  The target libraries are built with the bootstrap GCC for `target` too.
+# build sysroot.  The target libraries are built with the new compiler (`xgcc`).
 function gcc_build_spec_generator(host, platform)
     if sanitize(platform.target) == "memory"
         # The sanitized libstdc++ is built before any sanitized C++ runtime exists, so its
