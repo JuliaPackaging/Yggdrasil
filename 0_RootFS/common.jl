@@ -5,6 +5,37 @@ using squashfs_tools_jll
 
 host_platform = Platform("x86_64", "linux"; libc="musl")
 
+# The macOS SDK in the sysroot of compiler shards for the macOS `platform`: the 11.1 SDK for
+# Darwin 20 (macOS 11) and newer, the 10.12 SDK for older targets.
+function macos_sdk_source(platform::Platform)
+    if something(os_version(platform), v"0") >= v"20"
+        return ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
+                             "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6")
+    else
+        return ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
+                             "6852728af94399193599a55d00ae9c4a900925b6431534a3816496b354926774")
+    end
+end
+
+# The FreeBSD base system in the sysroot of compiler shards for the FreeBSD `platform`,
+# selected by its `os_version`.
+function freebsd_base_source(platform::Platform)
+    freebsd_bases = Dict(
+        ("x86_64", v"13.4") => "8e13b0a93daba349b8d28ad246d7beb327659b2ef4fe44d89f447392daec5a7c",
+        ("x86_64", v"14.1") => "bb451694e8435e646b5ff7ddc5e94d5c6c9649f125837a34b2a2dd419732f347",
+        ("aarch64", v"14.1") => "b25830252e0dce0161004a5b69a159cbbd92d5e92ae362b06158dbb3f2568d32",
+    )
+    version = os_version(platform)
+    version = VersionNumber(version.major, version.minor)
+    key = (arch(platform), version)
+    if !haskey(freebsd_bases, key)
+        error("No FreeBSD base system for $(triplet(platform))")
+    end
+    freebsd_arch = arch(platform) == "aarch64" ? "arm64" : "amd64"
+    return ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/$(freebsd_arch)/$(version.major).$(version.minor)-RELEASE/base.txz",
+                         freebsd_bases[key])
+end
+
 # Test if something is older than a reference, or doesn't exist
 function is_outdated(test, reference)
     if !isfile(test)

@@ -8,9 +8,9 @@
 # for platform in supported_platforms()
 #     # Append version numbers for BSD systems
 #     if Sys.isapple(platform)
-#         suffix = arch(platform) == "aarch64" ? "20" : "14"
+#         suffix = "20"
 #     elseif Sys.isfreebsd(platform)
-#         suffix = arch(platform) == "aarch64" ? "14.1" : "13.4"
+#         suffix = "14.1"
 #     else
 #         suffix = ""
 #     end
@@ -56,30 +56,14 @@ if Sys.islinux(compiler_target)
 end
 
 if Sys.isfreebsd(compiler_target)
-    if arch(compiler_target) == "aarch64"
-        push!(sources,
-              ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/arm64/14.1-RELEASE/base.txz",
-                            "b25830252e0dce0161004a5b69a159cbbd92d5e92ae362b06158dbb3f2568d32"))
-    else
-        push!(sources,
-              ArchiveSource("http://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/amd64/13.4-RELEASE/base.txz",
-                            "8e13b0a93daba349b8d28ad246d7beb327659b2ef4fe44d89f447392daec5a7c"))
-    end
+    push!(sources, freebsd_base_source(compiler_target))
 end
 
 if Sys.isapple(compiler_target)
     push!(sources,
           ArchiveSource("https://github.com/llvm/llvm-project/releases/download/llvmorg-8.0.1/libcxx-8.0.1.src.tar.xz",
                         "7f0652c86a0307a250b5741ab6e82bb10766fb6f2b5a5602a63f30337e629b78"))
-    if arch(compiler_target) == "aarch64"
-    push!(sources,
-          ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/11.0-11.1/MacOSX11.1.sdk.tar.xz",
-                        "9b86eab03176c56bb526de30daa50fa819937c54b280364784ce431885341bf6"))
-    else
-        push!(sources,
-              ArchiveSource("https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.12.sdk.tar.xz",
-                            "6852728af94399193599a55d00ae9c4a900925b6431534a3816496b354926774"))
-    end
+    push!(sources, macos_sdk_source(compiler_target))
 end
 
 script = "COMPILER_TARGET=$(BinaryBuilder.aatriplet(compiler_target))\n" * raw"""
