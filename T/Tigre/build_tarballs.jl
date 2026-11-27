@@ -1,0 +1,172 @@
+# build_tarballs.jl
+# BinaryBuilder.jl recipe for Tigre_jll (libtigre)
+
+using BinaryBuilder, Pkg
+using Base.BinaryPlatforms: arch
+
+include("../../fancy_toys.jl")
+include("../../platforms/cuda.jl")
+
+name = "Tigre"
+version = v"3.1.3"
+
+# Sources: CERN/TIGRE upstream GitSource and bundled Julia shims/overlays
+# Note: GitHub automatic tarball archives are rejected by BinaryBuilderBase due to unstable checksums.
+# GitSource with a pinned commit hash and release tag is the standard, stable source format in Yggdrasil.
+sources = [
+    GitSource(
+        "https://github.com/CERN/TIGRE.git",
+        "9aad4fe623e8e0dbc5fed32958973e1173185ea0";
+        tag = "v$(version)",
+    ),
+    DirectorySource("./bundled"),
+]
+
+# Bash script executed inside BinaryBuilder sandbox
+script = raw"""
+cd ${WORKSPACE}/srcdir/TIGRE
+
+# 1. Normalize line endings to LF (upstream CERN/TIGRE has mixed CRLF/LF line endings)
+find Common/CUDA -type f -exec dos2unix {} +
+
+# 2. Apply patches from bundled/patches
+if [ -d "${WORKSPACE}/srcdir/patches" ]; then
+    for f in ${WORKSPACE}/srcdir/patches/*.patch; do
+        echo "Applying patch ${f}..."
+        atomic_patch -p1 ${f}
+    done
+fi
+
+# 3. Apply overlay files to Common/CUDA
+if [ -d "${WORKSPACE}/srcdir/overlay" ]; then
+    echo "Applying overlays to Common/CUDA..."
+    cp -fv ${WORKSPACE}/srcdir/overlay/TIGRE_common.hpp Common/CUDA/
+    cp -fv ${WORKSPACE}/srcdir/overlay/TIGRE_common.cpp Common/CUDA/
+fi
+
+COMMON_DIR="Common/CUDA"
+
+# 4. Collect source files
+UPSTREAM_SOURCES=(
+    "${COMMON_DIR}/projection.cpp"
+    "${COMMON_DIR}/TIGRE_common.cpp"
+    "${COMMON_DIR}/GpuIds.cpp"
+    "${COMMON_DIR}/gpuUtils.cu"
+    "${COMMON_DIR}/Siddon_projection.cu"
+    "${COMMON_DIR}/Siddon_projection_parallel.cu"
+    "${COMMON_DIR}/ray_interpolated_projection.cu"
+    "${COMMON_DIR}/ray_interpolated_projection_parallel.cu"
+    "${COMMON_DIR}/voxel_backprojection.cu"
+    "${COMMON_DIR}/voxel_backprojection2.cu"
+    "${COMMON_DIR}/voxel_backprojection_parallel.cu"
+    "${COMMON_DIR}/GD_TV.cu"
+    "${COMMON_DIR}/GD_AwTV.cu"
+    "${COMMON_DIR}/tv_proximal.cu"
+    "${COMMON_DIR}/PICCS.cu"
+)
+
+WRAPPER_SOURCES=(
+    "${WORKSPACE}/srcdir/wrapper/src/tigre_julia_runtime.cpp"
+    "${WORKSPACE}/srcdir/wrapper/src/tigre_julia_shim.cpp"
+)
+
+# 5. Locate CUDA toolkit and nvcc compiler
+CUDA_HOME="${prefix}/cuda"
+NVCC="${CUDA_HOME}/bin/nvcc"
+
+INCLUDE_FLAGS=(
+    "-I${COMMON_DIR}"
+    "-I${WORKSPACE}/srcdir/wrapper/include"
+    "-I${CUDA_HOME}/include"
+    "-I${prefix}/include"
+)
+
+LIB_FLAGS=(
+    "-L${CUDA_HOME}/lib64"
+    "-L${CUDA_HOME}/lib"
+    "-L${libdir}"
+    "-lcudart"
+)
+
+mkdir -p "${libdir}"
+
+# 6. Compile shared library libtigre
+echo "Compiling libtigre..."
+${NVCC} --shared -O3 --std=c++14 \
+    --cudart shared \
+    --expt-relaxed-constexpr \
+    -Xcompiler=-fPIC \
+    -Xlinker=--allow-multiple-definition \
+    -DIS_FOR_JULIA_TIGRE \
+    "${INCLUDE_FLAGS[@]}" \
+    "${ARCH_FLAGS[@]}" \
+    "${UPSTREAM_SOURCES[@]}" \
+    "${WRAPPER_SOURCES[@]}" \
+    "${LIB_FLAGS[@]}" \
+    -o "${libdir}/libtigre.${dlext}"
+
+# 7. Install license files
+install_license LICENSE.txt
+install_license "${WORKSPACE}/srcdir/LICENSE"
+"""
+
+# Products: exported shared library
+products = [
+    LibraryProduct("libtigre", :libtigre),
+]
+
+# Platforms: Start from CUDA-supported platforms and filter as needed
+# TIGRE directly invokes the nvcc compiler without an aarch64 cross-nvcc toolchain
+platforms = CUDA.supported_platforms(; min_version = v"12.0")
+filter!(p -> arch(p) == "x86_64", platforms)
+
+dependencies = [
+    Dependency("CompilerSupportLibraries_jll"; compat = "1.0.5"),
+]
+
+for platform in platforms
+    should_build_platform(triplet(platform)) || continue
+
+    # Generate GPU architectures according to the selected CUDA version.
+    cuda_archs = CUDA.cuda_gpu_archs(platform)
+    cuda_ver = VersionNumber(platform["cuda"])
+
+    # Yggdrasil's helper starts at sm_75, but TIGRE also supports
+    # Volta (sm_70) with CUDA 12.x. CUDA 13 dropped sm_70 support.
+    if cuda_ver < v"13.0" && !("70" in cuda_archs)
+        pushfirst!(cuda_archs, "70")
+    end
+
+    arch_flags = [
+        "-gencode=arch=compute_$(sm),code=sm_$(sm)"
+        for sm in cuda_archs
+    ]
+
+    # Keep forward-compatible PTX for the newest supported architecture.
+    ptx_arch = maximum(parse.(Int, cuda_archs))
+    push!(arch_flags,
+          "-gencode=arch=compute_$(ptx_arch),code=compute_$(ptx_arch)")
+
+    platform_script = "ARCH_FLAGS=($(join(arch_flags, " ")))\n" * script
+
+    deps = BinaryBuilder.AbstractDependency[
+        dependencies;
+        CUDA.required_dependencies(platform)...
+    ]
+
+    build_tarballs(
+        ARGS,
+        name,
+        version,
+        sources,
+        platform_script,
+        [platform],
+        products,
+        deps;
+        lazy_artifacts = true,
+        julia_compat = "1.10",
+        augment_platform_block = CUDA.augment,
+        dont_dlopen = true,
+        preferred_gcc_version = v"10",
+    )
+end
