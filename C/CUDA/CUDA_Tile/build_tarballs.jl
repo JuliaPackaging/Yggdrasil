@@ -179,6 +179,11 @@ make -j${nproc} install
 # XXX: remove third-party tools that aren't needed at run time
 rm -rf ${prefix}/third_party
 
+# the products are statically linked executables: the static libraries, objects and
+# TableGen/C headers that the install rules add are only of use for building against
+# CUDA Tile, which nothing does
+rm -rf ${prefix}/lib ${prefix}/include
+
 # the executables keep their symbol tables otherwise. on macOS, stripping would invalidate
 # the linker's ad-hoc code signature.
 if [[ ${target} != *-apple-* ]]; then
