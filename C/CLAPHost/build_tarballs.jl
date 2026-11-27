@@ -4,37 +4,16 @@ using BinaryBuilder
 
 include("../../platforms/macos_sdks.jl")
 
-# The headless CLAP host from AudioPlugins.jl (https://github.com/SciML/AudioPlugins.jl):
-# one C translation unit, `csrc/clap_host.c`, exposing a C ABI of scalar doubles
-# for hosting CLAP audio plugins. CLAP itself is header-only (MIT) and vendored
-# in the same repository, so this builds with nothing but a C compiler.
-#
-# CLAPHost_jll 1.0.0 was built from an earlier AudioPlugins.jl commit that
-# already carried Project.toml version 1.0.0, so the JLL version can no longer
-# equal the package version: 1.0.1 is the registered AudioPlugins v1.0.0
-# sources, with Windows.
-#
-# 1.1.0 rebuilds from a tree carrying SciML/AudioPlugins.jl#40, which lifted a
-# fixed 32-entry descriptor cache in `clap_host_scan`. A CLAP module may hold
-# hundreds of plugins in one file -- the Airwindows collection that
-# Airwindows_jll ships is 504 -- and 1.0.1 reported any such module as holding
-# 32, silently and indistinguishably from a module that really is that small.
-# Airwindows_jll is unusable without this rebuild. Minor rather than patch
-# because the scan ABI also *gained* functions (additive, nothing removed or
-# changed): clap_host_scan_count, and the vendor/version/description and
-# feature-keyword getters that a bundle registry needs to classify what it
-# found.
-#
-# 1.3.0 is a minor bump: it adds the live-session ABI (`ap_live_*` symbols,
-# `csrc/clap_live.h` and `csrc/live_device.h`) alongside `clap_host.h`; the
-# existing `clap_host_*` ABI is unchanged.
+# AudioPlugins provides scalar-double singleton and instance hosting, plus the
+# native live-session/device ABI. Its vendored C sources build directly with CC.
+# Host JLL versions track this C ABI independently of the Julia package version.
 name = "CLAPHost"
-version = v"1.3.0"
+version = v"1.4.0"
 
-# Collection of sources required to complete build
+# The source pin carries the explicit Windows host exports (https://github.com/SciML/AudioPlugins.jl/pull/99).
 sources = [
     GitSource("https://github.com/SciML/AudioPlugins.jl.git",
-              "c7a6aee21c0fe6673ffb92df3a8599f9ee99648c"),  # SciML/AudioPlugins.jl main (PR 89, native live sessions)
+              "5321b9ba259db907961eecc9edd42cdea7bd469e"),
 ]
 
 # Bash recipe for building across all platforms
