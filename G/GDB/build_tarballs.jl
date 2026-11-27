@@ -4,7 +4,7 @@ using BinaryBuilder, Pkg
 
 name = "GDB"
 version_string = "12.1"
-version = v"12.1.1" # Different from VersionNumber(version_string) because we changed the dependencies
+version = v"12.1.2" # Different from VersionNumber(version_string) because we changed the dependencies and the installed files
 
 # Collection of sources required to complete build
 sources = [
@@ -30,7 +30,9 @@ fi
 ./configure ${CONFIGURE_FLAGS[@]}
 
 make -j${nproc} all
-make install
+# Only gdb and gdbserver: a plain `make install` also installs the bfd, opcodes and
+# libctf libraries, headers, info pages and translations, which belong to Binutils_jll.
+make install-gdb install-gdbserver
 """
 
 # These are the platforms we will build for by default, unless further
