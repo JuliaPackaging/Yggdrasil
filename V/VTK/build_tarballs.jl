@@ -427,4 +427,4 @@ ENV["MPITRAMPOLINE_DELAY_INIT"] = "1"
 # VTK requires GCC 8
 # We would need GCC 13 on Windows for the new `[[...]]`` attribute syntax.
 build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-               augment_platform_block, julia_compat="1.6", preferred_gcc_version=v"8")
+               augment_platform_block, julia_compat="1.10", preferred_gcc_version=v"8")
