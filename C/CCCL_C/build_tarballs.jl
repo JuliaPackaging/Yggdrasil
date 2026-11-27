@@ -100,6 +100,8 @@ rm -rf ${prefix}/cuda/cccl
 # the libraries and the C API headers have no install rules
 install -Dm755 build/lib/libcccl.c.parallel.v2.so ${libdir}/libcccl.c.parallel.v2.so
 install -Dm755 build/lib/libnvcc.so ${libdir}/libnvcc.so
+# the symbol table of the statically linked LLVM, Clang and LLD is 15% of libnvcc
+strip --strip-unneeded ${libdir}/libcccl.c.parallel.v2.so ${libdir}/libnvcc.so
 cp -a c/parallel.v2/include/cccl ${includedir}/cccl
 
 # drop the CMake package files that the header install rules drag in
@@ -107,6 +109,8 @@ rm -rf ${prefix}/lib/cmake ${prefix}/lib64/cmake
 
 install_license LICENSE
 
+# the static libraries we provided for libnvcc are part of it now
+rm ${prefix}/cuda/lib/lib{nvfatbin,nvptxcompiler}_static.a ${prefix}/cuda/include/nvFatbin.h
 rm -f ${prefix}/cuda/lib64
 """
 
