@@ -162,24 +162,53 @@ function bb2_build_steps!(group_steps, projects)
     bb2_load_check_steps!(group_steps, groups, build_steps)
     SHOULD_REGISTER || return
 
-    # Each package gets a single registration step.  When several projects build the same
-    # package, that step registers them one after another, lowest version first, so that
-    # the versions stack on top of each other in the JLL repository and the registry PR.
-    packagings = Dict{String,Vector{Tuple{VersionNumber,String,Dict}}}()
-    for (group_name, group) in groups, packaging in group["packagings"]
-        push!(get!(packagings, packaging["name"], []), (VersionNumber(packaging["version"]), group_name, packaging))
-    end
-    for name in sort(collect(keys(packagings)))
-        entries = sort(packagings[name]; by = first)
-        projects = [group_name for (_, group_name, _) in entries]
+    # `register_package.jl` registers every package that a project's `build_tarballs.jl`
+    # builds, so all packages of a project share one registration step, as do all projects
+    # that build the same package (e.g. `G/Glibc/Glibc@2.17` and `Glibc@2.19`).  The step
+    # registers its projects one after another, in dependency order and lowest version
+    # first, so that the JLLs stack on top of each other in their repositories and in a
+    # chain of registry PRs.
+    for (name, packagings) in bb2_registration_groups(groups)
+        names = Set(p["name"] for (_, p) in packagings)
+        projects = registration_order(packagings)
         deps = vcat(
-            # Other packages that must be registered first
-            unique([bb2_register_key(dep) for (_, _, p) in entries for dep in p["dependencies"]]),
-            # The builds of every project that packages this one
-            [bs for group_name in unique(projects) for bs in build_steps[group_name]],
+            # The registrations of other packages that must be registered first
+            unique([bb2_register_key(bb2_registration_name(groups, dep))
+                    for (_, p) in packagings for dep in p["dependencies"] if dep ∉ names]),
+            # The builds of every project that this step registers
+            [bs for project in projects for bs in build_steps[project]],
         )
         push!(group_steps, render(BB2RegisterStep(name, projects, deps)))
     end
+end
+
+# The BinaryBuilder2 packages of `groups` (the output of `scheduler.jl`), partitioned into
+# the sets that must be registered by a single step: packages built by the same project, and
+# projects that build the same package, belong together.  Returns `name => packagings` pairs,
+# sorted by name, where `packagings` holds `(project, packaging)` pairs and `name` joins the
+# set's package names with `+`.
+function bb2_registration_groups(groups)
+    packagings = [(project, p) for (project, group) in groups for p in group["packagings"]]
+    # Union-find over projects and package names
+    parent = Dict{String,String}()
+    find(x) = (p = get!(parent, x, x); p == x ? x : (parent[x] = find(p)))
+    for (project, p) in packagings
+        parent[find("project:$(project)")] = find("package:$(p["name"])")
+    end
+    sets = Dict{String,Vector{Tuple{String,Dict}}}()
+    for (project, p) in packagings
+        push!(get!(sets, find("package:$(p["name"])"), []), (project, p))
+    end
+    named = [join(sort(unique(p["name"] for (_, p) in set)), "+") => set for set in values(sets)]
+    return sort(named; by = first)
+end
+
+# The name of the registration step (see `bb2_registration_groups()`) that registers `package`
+function bb2_registration_name(groups, package::AbstractString)
+    for (name, packagings) in bb2_registration_groups(groups)
+        any(((_, p),) -> p["name"] == package, packagings) && return name
+    end
+    error("No registration step registers $(package)")
 end
 
 # The oldest Julia version (as `major.minor`) that the `julia` compat specifier allows, but

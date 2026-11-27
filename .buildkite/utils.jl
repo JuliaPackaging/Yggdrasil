@@ -244,12 +244,15 @@ end
 
 step_key(rs::BB1RegisterStep) = "register-$(safe_name(rs.project))"
 
-# A BinaryBuilder2 package is registered by a single step, even when several projects
-# build it (e.g. `G/Glibc/Glibc@2.17` and `Glibc@2.19` both build `Glibc`).  That step
-# registers one version per project, in order, so they stack into one registry PR.
+# A BinaryBuilder2 package is registered by a single step, which also registers the other
+# packages of the projects that build it, and the versions of those packages that other
+# projects build (see `bb2_registration_groups()` in `generator.jl`).  E.g. one step
+# registers both versions of `Glibc` (from `G/Glibc/Glibc@2.17` and `Glibc@2.19`), and one
+# registers both JLLs of `L/LLVM/ClangBootstrap@17`.
 struct BB2RegisterStep <: AbstractRegisterStep
+    # The names of the packages this step registers, joined with `+`
     name::String
-    # Projects to register, in ascending order of the version they build
+    # Projects to register, in dependency order and ascending order of the version they build
     projects::Vector{String}
 
     # Build steps, and the step keys of other registrations
