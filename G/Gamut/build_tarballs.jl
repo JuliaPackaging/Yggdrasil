@@ -1,22 +1,21 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg
+using Base.BinaryPlatforms: tags
 
 const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "mpi.jl"))
 
 name = "Gamut"
-version = v"2.3.1"
+version = v"2.3.2"
 
 # The Gamut core: a C++17 library behind a plain C interface, which the
 # GamutFile.jl package calls.
-# The 2.3.1 release commit.  The release is tagged only after Gamut_jll is
-# registered (GamutFile 2.3.1 depends on it), on a later commit that changes
-# dates alone; the core built here is the one the tag carries.
+# Pin the source commit so each platform builds the same Gamut core.
 sources = [
     GitSource("https://github.com/bijective-systems-org/gamut.git",
-              "7a032250062aa16013d5771d2b3ba72bf3cd4c68"),
+              "cf67e88e1d584e1986a35d2078943bf6bb10f955"; tag="v$(version)"),
 ]
 
 script = raw"""
@@ -52,6 +51,12 @@ augment_platform_block = """
 
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
+platforms = expand_gfortran_versions(platforms)
+# HDF5_jll publishes libgfortran 5 and cxx11 where the C++ string ABI applies.
+filter!(platforms) do p
+    VersionNumber(get(tags(p), "libgfortran_version", "0")) == v"5" &&
+        get(tags(p), "cxxstring_abi", "cxx11") == "cxx11"
+end
 platforms, platform_dependencies = MPI.augment_platforms(platforms)
 
 products = [
@@ -59,7 +64,7 @@ products = [
 ]
 
 dependencies = [
-    Dependency("HDF5_jll"; compat="2.2.1"),
+    Dependency("HDF5_jll"; compat="2.2.3"),
     Dependency("Zlib_jll"; compat="1.2.12"),
 ]
 append!(dependencies, platform_dependencies)
