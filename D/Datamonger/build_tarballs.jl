@@ -1,11 +1,11 @@
 using BinaryBuilder
 
 name = "Datamonger"
-version = v"0.3.1"
+version = v"0.5.0"
 
 sources = [GitSource(
     "https://github.com/jolars/datamonger.git",
-    "8c5aa5bad6b4efae540542312ef33fd4f7e99c98";
+    "baa9857aaf7f5abaa36321f8af470b5e38c61a8a";
     tag = "datamonger-ffi-v$(version)",
 )]
 
