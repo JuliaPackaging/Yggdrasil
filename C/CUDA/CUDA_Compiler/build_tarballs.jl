@@ -7,7 +7,7 @@ include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 include(joinpath(YGGDRASIL_DIR, "platforms", "cuda.jl"))
 
 name = "CUDA_Compiler"
-version = v"0.6.6"
+version = v"0.6.7"
 
 const toolkit_versions = [CUDA.cuda_full_versions; CUDA.cuda_prerelease_versions]
 const compiler_versions = filter(v -> v >= v"11.4" || Base.thisminor(v) == v"10.2", toolkit_versions)
@@ -45,6 +45,15 @@ install_license LICENSE.cccl
 # `cooperative_groups.h`, CCCL), so provide them, laid out as in the toolkit's `include`
 mkdir -p ${includedir}
 cp -r cuda_cudart/include/* *cccl/include/* ${includedir}
+
+# the runtime headers include the compiler-support headers in `crt/`, which compilers other
+# than NVRTC (e.g. Clang, as used by CCCL's C library) need too. they come with nvcc before
+# CUDA 13, and as a separate component since.
+if [[ -d cuda_crt ]]; then
+    cp -r cuda_crt/include/crt ${includedir}
+else
+    cp -r cuda_nvcc/include/crt ${includedir}
+fi
 
 # binaries
 mkdir -p ${bindir} ${libdir} ${prefix}/lib ${prefix}/share
@@ -211,6 +220,7 @@ for version in compiler_versions
         push!(components, "libnvjitlink")
     end
     if version >= v"13"
+        push!(components, "cuda_crt")
         push!(components, "libnvvm")
     end
     if version >= v"13.1"
