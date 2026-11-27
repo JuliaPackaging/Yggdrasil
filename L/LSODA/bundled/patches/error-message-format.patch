@@ -1,0 +1,46 @@
+From 56dc16e492f5dceb8f89230d619871db8718c56e Mon Sep 17 00:00:00 2001
+From: singhharsh1708 <hs1663531@gmail.com>
+Date: Tue, 24 Nov 2026 21:02:38 +0530
+Subject: [PATCH] Fix the error message formatting
+
+---
+ src/lsoda.c         | 2 +-
+ src/strdup_printf.c | 8 ++++++--
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/src/lsoda.c b/src/lsoda.c
+index 0971d46..3a78f3d 100644
+--- a/src/lsoda.c
++++ b/src/lsoda.c
+@@ -865,7 +865,7 @@ int lsoda(struct lsoda_context_t * ctx, double *y, double *t, double tout) {
+ 					}
+ 				}
+ 				if (kflag == -1) {
+-					softfailure(-4, "lsoda -- at t = %g and step size _C(h) = %g, the\n",
++					softfailure(-4, "lsoda -- at t = %g and step size _C(h) = %g, the\n"
+ 					"         error test failed repeatedly or\n"
+ 					"         with fabs(_C(h)) = hmin\n", _C(tn), _C(h));
+ 				}
+diff --git a/src/strdup_printf.c b/src/strdup_printf.c
+index 34ef556..4481f45 100644
+--- a/src/strdup_printf.c
++++ b/src/strdup_printf.c
+@@ -6,9 +6,13 @@ char * _strdup_printf(char * fmt, ...) {
+ 	va_start(va, fmt);
+ 	int s = vsnprintf(NULL, 0, fmt, va);
+ 	va_end(va);
+-	char * rt = malloc(s);
++	if (s < 0)
++		return NULL;
++	char * rt = malloc(s + 1);
++	if (rt == NULL)
++		return NULL;
+ 	va_start(va, fmt);
+-	vsnprintf(rt, s, fmt, va);
++	vsnprintf(rt, s + 1, fmt, va);
+ 	va_end(va);
+ 	return rt;
+ }
+-- 
+2.54.0 (Apple Git-157)
+
