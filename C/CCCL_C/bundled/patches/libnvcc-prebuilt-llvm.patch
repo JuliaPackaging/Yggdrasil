@@ -1,6 +1,6 @@
 --- a/c/parallel.v2/src/hostjit/libnvcc/CMakeLists.txt
 +++ b/c/parallel.v2/src/hostjit/libnvcc/CMakeLists.txt
-@@ -26,75 +26,119 @@
+@@ -26,75 +26,136 @@
    )
  endif()
  
@@ -158,6 +158,23 @@
 +
 +add_library(libnvcc SHARED compiler.cpp)
 +
++if (LIBNVCC_LLVM_PREFIX)
++  # lld's driver initializes every target of the LLVM it was built with, which links in
++  # all of their back-ends. libnvcc only uses X86 and NVPTX, so turn the entry points of
++  # the others into no-ops (hidden, like the rest of the statically linked LLVM).
++  set(_libnvcc_target_stubs "")
++  foreach (_target IN LISTS LLVM_TARGETS_TO_BUILD)
++    if (NOT _target MATCHES "^(X86|NVPTX)$")
++      foreach (_part TargetInfo Target TargetMC AsmPrinter AsmParser Disassembler)
++        string(APPEND _libnvcc_target_stubs
++          "extern \"C\" __attribute__((visibility(\"hidden\"))) void LLVMInitialize${_target}${_part}() {}\n")
++      endforeach()
++    endif()
++  endforeach()
++  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/unused_targets.cpp" "${_libnvcc_target_stubs}")
++  target_sources(libnvcc PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/unused_targets.cpp")
++endif()
++
 +target_include_directories(
 +  libnvcc
 +  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -174,7 +191,7 @@
      HOSTJIT_INCLUDE_DIR="${_hostjit_include_dir}"
  )
  
-@@ -217,6 +261,9 @@
+@@ -217,6 +278,9 @@
    # from the static LLVM/Clang/LLD archives so libnvcc exports only its own
    # libnvcc* C API and all of its LLVM references bind internally.
    target_link_options(libnvcc PRIVATE LINKER:--exclude-libs,ALL)
@@ -184,7 +201,7 @@
  endif()
  
  set_target_properties(
-@@ -267,12 +314,12 @@
+@@ -267,12 +331,12 @@
  # copies in cuda_minimal/ replace them.
  set(
    _clang_cuda_headers_needed
@@ -203,7 +220,7 @@
  )
  install(
    FILES ${_clang_cuda_headers_needed}
-@@ -282,17 +329,17 @@
+@@ -282,17 +346,17 @@
  # Clang builtin C headers needed by our stubs and CUDA toolkit headers.
  file(
    GLOB _clang_stddef_headers
