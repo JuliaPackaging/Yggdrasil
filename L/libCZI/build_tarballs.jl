@@ -61,6 +61,7 @@ cmake -S . -B build \
 	-DLIBCZI_DESTINATION_FOLDER_LIBCZIAPI="${libdir}" \
 	"${cmake_options[@]}"
 
+# The build stage also installs the shared library into ${libdir}
 cmake --build build \
 	--target libCZIAPI \
 	--parallel "${nproc}"
