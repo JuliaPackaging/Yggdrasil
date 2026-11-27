@@ -7,14 +7,14 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "fancy_toys.jl"))
 
 name = "libevent"
-libevent_version =v"2.1.12"
-# We update to 2.1.15 because we updated our dependencies
-version = v"2.1.15"
+libevent_version =v"2.1.13"
+# We add an offset because we updated our dependencies
+version = v"2.1.16"
 
 # Collection of sources required to complete build
 sources = [
     ArchiveSource("https://github.com/libevent/libevent/releases/download/release-$(libevent_version)-stable/libevent-$(libevent_version)-stable.tar.gz",
-                  "92e6de1be9ec176428fd2367677e61ceffc2ee1cb119035037a27d346b0403bb"),
+                  "f7e9383b8c0baa81b687e5b5eecc01beefaf1b19b64151d95ed61647fe7a315c"),
     DirectorySource("bundled"),
 ]
 
@@ -49,7 +49,7 @@ products_unix = [
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency(get_addable_spec("OpenSSL_jll", v"3.0.15+2"); compat="3.0.15"),
+    Dependency("OpenSSL_jll"; compat="3.0.16"),
 ]
 
 platforms_unix = filter(!Sys.iswindows, platforms)
