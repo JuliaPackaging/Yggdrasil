@@ -10,18 +10,13 @@ include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 # of scalar doubles for hosting VST3 audio plugins. Built against the SDK from
 # vst3sdk_jll (a build dependency only: the SDK's static libraries are linked
 # in, so the result is self-contained and exports only the C surface). The
-# companion of CLAPHost and LV2Host; the version tracks the AudioPlugins.jl
-# release whose `csrc/` is built.
-#
-# 1.3.0 is a minor bump: it adds the live-session ABI (`ap_live_*` symbols,
-# `csrc/clap_live.h` and `csrc/live_device.h`) alongside `vst3_host.h`; the
-# existing `vst3_host_*` ABI is unchanged.
+# companion of CLAPHost and LV2Host.
 name = "VST3Host"
-version = v"1.3.0"
+version = v"1.4.0"
 
 sources = [
     GitSource("https://github.com/SciML/AudioPlugins.jl.git",
-              "c7a6aee21c0fe6673ffb92df3a8599f9ee99648c"),  # SciML/AudioPlugins.jl main (PR 89, native live sessions)
+              "db936e2e3f2e855a20944c19ff7adac21c176037"),
 ]
 
 script = raw"""

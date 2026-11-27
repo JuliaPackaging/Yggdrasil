@@ -7,27 +7,14 @@ include("../../platforms/macos_sdks.jl")
 # The headless LV2 host from AudioPlugins.jl (https://github.com/SciML/AudioPlugins.jl):
 # one C translation unit, `csrc/lv2_host.c`, exposing a C ABI of scalar doubles
 # for hosting LV2 audio plugins, with discovery through lilv. The companion of
-# CLAPHost (C/CLAPHost); the version tracks the AudioPlugins.jl release whose
-# `csrc/` is built.
-#
-# 1.1.1 rebuilds from a tree carrying SciML/AudioPlugins.jl#61, which lifted a
-# fixed 256-entry descriptor cache in `lv2_host_scan`. An LV2 search path
-# holding more plugins than that was reported as holding 256, silently, and
-# indistinguishably from a path that really does: the LSP collection alone is
-# 198 plugins, and a search path routinely adds the system directories on top.
-# Patch rather than minor: the fix adds no exported symbol and changes no
-# signature, so `lv2_host.h` and the ABI are identical to 1.1.0's.
-#
-# 1.3.0 is a minor bump: it adds the live-session ABI (`ap_live_*` symbols,
-# `csrc/clap_live.h` and `csrc/live_device.h`) alongside `lv2_host.h`; the
-# existing `lv2_host_*` ABI is unchanged.
+# CLAPHost (C/CLAPHost).
 name = "LV2Host"
-version = v"1.3.0"
+version = v"1.4.0"
 
 # Collection of sources required to complete build
 sources = [
     GitSource("https://github.com/SciML/AudioPlugins.jl.git",
-              "c7a6aee21c0fe6673ffb92df3a8599f9ee99648c"),  # SciML/AudioPlugins.jl main (PR 89, native live sessions)
+              "db936e2e3f2e855a20944c19ff7adac21c176037"),
 ]
 
 # Bash recipe for building across all platforms
