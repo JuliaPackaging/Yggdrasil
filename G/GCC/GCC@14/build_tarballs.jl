@@ -41,4 +41,7 @@ build_tarballs(;
     build_spec_generator = gcc_build_spec_generator,
     extract_spec_generator = gcc_extract_spec_generator,
     duplicate_extraction_handling = :ignore_all,
+    # Julia < 1.10 breaks ties between matching artifacts by triplet, so on x86_64-linux-gnu
+    # it would select the MemorySanitizer libstdc++ over the plain one.
+    julia_compat = "1.10",
 )

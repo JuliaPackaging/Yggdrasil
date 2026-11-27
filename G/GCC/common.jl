@@ -378,7 +378,8 @@ function gcc_extract_spec_generator(build::BuildConfig, platform::AbstractPlatfo
             [
                 FileProduct([raw"${target}/include/c++/${gcc_version}/iostream"], :iostream),
                 FileProduct([raw"${target}/${lib64}/libstdc++.a"], :libstdcxx_a),
-                LibraryProduct([raw"${target}/${lib64}/libstdc++"], :libstdcxx),
+                # Julia runs with its own libstdc++ loaded, so don't load a second one into it
+                LibraryProduct([raw"${target}/${lib64}/libstdc++"], :libstdcxx; dont_dlopen=true),
             ],
             host_spec;
             jll_name = "libstdcxx",
@@ -393,6 +394,8 @@ function gcc_extract_spec_generator(build::BuildConfig, platform::AbstractPlatfo
             """,
             [
                 LibraryProduct([
+                        # On Linux, `libgcc_s.so` is a linker script, not the library
+                        raw"${target}/${lib64}/libgcc_s.so.1",
                         raw"${target}/${lib64}/libgcc_s",
                         # Windows names of libgcc_s
                         raw"${target}/${lib64}/libgcc_s_seh",
@@ -433,7 +436,7 @@ function libstdcxx_sanitized_extract_specs(build::BuildConfig, platform::Abstrac
             [
                 FileProduct(["$(gcc_target)/include/c++/$(gcc_version)/iostream"], :iostream),
                 FileProduct(["$(gcc_target)/lib64/libstdc++.a"], :libstdcxx_a),
-                LibraryProduct(["$(gcc_target)/lib64/libstdc++"], :libstdcxx),
+                LibraryProduct(["$(gcc_target)/lib64/libstdc++"], :libstdcxx; dont_dlopen=true),
             ],
             get_default_target_spec(build);
             jll_name = "libstdcxx",
