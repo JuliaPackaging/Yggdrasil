@@ -1,0 +1,12 @@
+Configure the bundled QD without FMA: on powerpc its configure tests FMA by running a program, which fails when cross-compiling. QD then computes exact products by splitting instead.
+
+--- a/external/qd/Makefile.am
++++ b/external/qd/Makefile.am
+@@ -1,6 +1,6 @@
+ QDVERSION=2.3.23
+ 
+-CONFIGURE_ARGS=--prefix=$(abs_builddir)/../i/QD/ --host=$(host) --disable-shared
++CONFIGURE_ARGS=--prefix=$(abs_builddir)/../i/QD/ --host=$(host) --disable-shared --disable-fma
+ 
+ EXTRACT_STAMP=.qd_extract_done
+ PATCH_STAMP=.qd_patch_done

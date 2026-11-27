@@ -1,0 +1,15 @@
+Build the bundled QD as a static library on macOS too: with libqd.dylib present, -lqd links sdpa_dd to it by its install name in the build tree.
+
+--- a/external/qd/Makefile.am
++++ b/external/qd/Makefile.am
+@@ -1,10 +1,6 @@
+ QDVERSION=2.3.23
+ 
+-if IS_MACOS
+-CONFIGURE_ARGS=--prefix=$(abs_builddir)/../i/QD/ --host=$(host)
+-else
+ CONFIGURE_ARGS=--prefix=$(abs_builddir)/../i/QD/ --host=$(host) --disable-shared
+-endif
+ 
+ EXTRACT_STAMP=.qd_extract_done
+ PATCH_STAMP=.qd_patch_done
