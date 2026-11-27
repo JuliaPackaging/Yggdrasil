@@ -184,6 +184,9 @@ if [[ "${target}" == *linux* ]]; then
     echo "exported symbols:"; nm -D --defined-only ${libdir}/libnvptx.${dlext} | grep -v ' [wv] '
     echo "STB_GNU_UNIQUE symbols: $(readelf -Ws ${libdir}/libnvptx.${dlext} | grep -c UNIQUE)"
 fi
+
+# the static symbol table of the embedded LLVM is a sixth of the library on Linux
+strip --strip-unneeded ${libdir}/libnvptx.${dlext}
 """
 
 # Only build for the host platforms where CUDA itself runs.
