@@ -4,7 +4,7 @@
 
 Yggdrasil is a collection of recipes to build binary packages, saved in files called `build_tarballs.jl`.
 
-The rules every recipe must follow, along with a build script reference and common patterns, are in [AGENTS.md](AGENTS.md). It is written for AI coding agents, but applies to human contributors too.
+The rules every recipe must follow, along with a build script reference and common patterns, are in [AGENTS.md](AGENTS.md), named so that coding agents find it too.
 Before opening a pull request, check it against the [review checklist](.agents/skills/reviewing-prs/SKILL.md) maintainers use.
 
 If you are new to BinaryBuilder, please read [its documentation](https://docs.binarybuilder.org/stable/).
