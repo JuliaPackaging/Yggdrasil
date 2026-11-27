@@ -1,0 +1,17 @@
+Only include <execinfo.h> when tracing is enabled; it does not exist on musl.
+https://github.com/libxsmm/libxsmm (upstream issue to be opened)
+
+diff --git a/src/libxsmm_trace.c b/src/libxsmm_trace.c
+--- a/src/libxsmm_trace.c
++++ b/src/libxsmm_trace.c
+@@ -49,7 +49,9 @@
+ LIBXSMM_APIVAR_DEFINE(volatile LONG internal_trace_initialized);
+ #else
+ LIBXSMM_APIVAR_DEFINE(volatile int internal_trace_initialized);
+-# include <execinfo.h>
++# if defined(__TRACE)
++#   include <execinfo.h>
++# endif
+ # if defined(LIBXSMM_TRACE_DLINFO)
+ #   include <dlfcn.h>
+ # else
