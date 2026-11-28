@@ -29,7 +29,8 @@ ygg_version = VersionNumber(100 * version.major, 100 * version.minor,
 # Using the Meson-based fork from https://github.com/JuliaGiac/giac
 sources = [
     GitSource("https://github.com/JuliaGiac/giac.git",
-        "312e89285a1edd56383c057a27378a40e6c2446c"),  # dev: upstream giac 2.1.0, PARI 2.19, upstream's 5-bit type field
+        "9f04834a25b23ca5292d0f95794fb5ae5c1ce02b"),  # dev: upstream giac 2.1.0, PARI 2.19, upstream's 5-bit type field,
+                                                       # with fixes to GIAC (JuliaGiac/giac#23, #24, #25)
 ]
 
 # Bash recipe for building across all platforms
