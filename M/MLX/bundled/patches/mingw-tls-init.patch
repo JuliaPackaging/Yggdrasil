@@ -1,0 +1,83 @@
+Access the thread_local counters through functions, as counter() and trace_stack(), so that MinGW GCC does not reference TLS init functions that are never defined
+https://github.com/ml-explore/mlx/pull/5004
+
+diff --git a/mlx/transforms.cpp b/mlx/transforms.cpp
+index cad704bd4..7985b0814 100644
+--- a/mlx/transforms.cpp
++++ b/mlx/transforms.cpp
+@@ -70,12 +70,18 @@ std::vector<std::pair<char, char>>& detail::InTracing::trace_stack() {
+   static thread_local std::vector<std::pair<char, char>> trace_stack_;
+   return trace_stack_;
+ }
+-thread_local int detail::InTracing::grad_counter{0};
++int& detail::InTracing::grad_counter() {
++  static thread_local int grad_counter_{0};
++  return grad_counter_;
++}
+ int& detail::InExportTracing::counter() {
+   static thread_local int counter_;
+   return counter_;
+ }
+-thread_local int detail::RetainGraph::tracing_counter{0};
++int& detail::RetainGraph::tracing_counter() {
++  static thread_local int tracing_counter_{0};
++  return tracing_counter_;
++}
+ 
+ array eval_impl(std::vector<array> outputs, bool async) {
+   std::deque<array> tape;
+diff --git a/mlx/transforms_impl.h b/mlx/transforms_impl.h
+index 4fc78a1ac..2b4d058e2 100644
+--- a/mlx/transforms_impl.h
++++ b/mlx/transforms_impl.h
+@@ -23,11 +23,11 @@ MLX_API std::vector<array> vmap_replace(
+ // the graph.
+ struct InTracing {
+   explicit InTracing(bool dynamic = false, bool grad = false) {
+-    grad_counter += grad;
++    grad_counter() += grad;
+     trace_stack().push_back({dynamic, grad});
+   }
+   ~InTracing() {
+-    grad_counter -= trace_stack().back().second;
++    grad_counter() -= trace_stack().back().second;
+     trace_stack().pop_back();
+   }
+ 
+@@ -40,11 +40,11 @@ struct InTracing {
+   }
+ 
+   static bool in_grad_tracing() {
+-    return grad_counter > 0;
++    return grad_counter() > 0;
+   }
+ 
+  private:
+-  static thread_local int grad_counter;
++  static int& grad_counter();
+   static std::vector<std::pair<char, char>>& trace_stack();
+ };
+ 
+@@ -66,18 +66,18 @@ struct InExportTracing {
+ 
+ struct RetainGraph {
+   RetainGraph() {
+-    tracing_counter++;
++    tracing_counter()++;
+   }
+   ~RetainGraph() {
+-    tracing_counter--;
++    tracing_counter()--;
+   }
+ 
+   static bool retain_graph() {
+-    return tracing_counter > 0;
++    return tracing_counter() > 0;
+   }
+ 
+  private:
+-  static thread_local int tracing_counter;
++  static int& tracing_counter();
+ };
+ 
+ /** Return true if we are currently performing a function transformation in
