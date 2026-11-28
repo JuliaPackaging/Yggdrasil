@@ -30,6 +30,7 @@ cmake -S . -B build \
     -DRYML_INSTALL=ON
 cmake --build build --parallel ${nproc}
 cmake --install build
+
 # Upstream incorporates c4core into ryml; retain the bundled notices.
 install_license LICENSE.txt
 install -Dvm 644 ext/c4core/LICENSE.txt ${prefix}/share/licenses/rapidyaml/c4core-LICENSE.txt
