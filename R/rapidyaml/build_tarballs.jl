@@ -18,6 +18,7 @@ cp -av ${WORKSPACE}/srcdir/c4core/. ${WORKSPACE}/srcdir/rapidyaml/ext/c4core/
 cp -av ${WORKSPACE}/srcdir/cmake/. ${WORKSPACE}/srcdir/rapidyaml/ext/c4core/cmake/
 cp -av ${WORKSPACE}/srcdir/debugbreak/. ${WORKSPACE}/srcdir/rapidyaml/ext/c4core/src/c4/ext/debugbreak/
 cp -av ${WORKSPACE}/srcdir/fast_float/. ${WORKSPACE}/srcdir/rapidyaml/ext/c4core/src/c4/ext/fast_float/
+
 cd ${WORKSPACE}/srcdir/rapidyaml
 cmake -S . -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
