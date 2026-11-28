@@ -4,13 +4,13 @@ const YGGDRASIL_DIR = "../.."
 include(joinpath(YGGDRASIL_DIR, "platforms", "macos_sdks.jl"))
 
 name = "libsparseir"
-version = v"0.16.0"
+version = v"0.16.1"
 
 # Collection of sources required to complete build
 sources = [
     GitSource(
         "https://github.com/SpM-lab/sparse-ir-rs.git",
-        "9890ce4d8dea4d35958c7be1a8bd7e5657066d8e";
+        "13ddd273ee0b151788f31008b7692e6b10574808";
         tag = "v$(version)",
     ),
 ]
@@ -39,12 +39,12 @@ export CARGO_BUILD_JOBS=2
 
 if [[ "${target}" == *mingw* ]]; then
     export RUSTFLAGS="-C target-feature=+fma -C link-arg=-L${libdir} -C link-arg=-lblastrampoline-5"
-    cargo build --release --features system-blas
+    cargo build --release --features system-blas,bundled-libm
     install -D -m 755 "target/${rust_target}/release/sparse_ir_capi.${dlext}" \
         "${libdir}/libsparse_ir_capi.${dlext}"
 else
     export RUSTFLAGS="-C target-feature=+fma -C link-arg=-lblastrampoline"
-    cargo build --release --features system-blas
+    cargo build --release --features system-blas,bundled-libm
     install -D -m 755 "target/${rust_target}/release/libsparse_ir_capi.${dlext}" \
         "${libdir}/libsparse_ir_capi.${dlext}"
 fi
