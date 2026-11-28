@@ -1,0 +1,20 @@
+Disable GGUF on Windows, including MinGW, as gguflib includes sys/mman.h
+https://github.com/ml-explore/mlx/pull/5002
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6b1d2cadb..26e580ad5 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -243,10 +243,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+ endif()
+ 
+ if(WIN32)
+-  if(MSVC)
+-    # GGUF does not build with MSVC.
+-    set(MLX_BUILD_GGUF OFF)
+-  endif()
++  # GGUF does not build on Windows, as gguflib includes sys/mman.h.
++  set(MLX_BUILD_GGUF OFF)
+   # Generate DLL and EXE in the same dir, otherwise EXE will not be able to run.
+   # This is only done when MLX is built as the top project.
+   if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)

@@ -1,39 +1,26 @@
-# Note that this script can accept some limited command-line arguments, run
-# `julia build_tarballs.jl --help` to see a usage message.
-using BinaryBuilder, Pkg
-
-name = "MLX"
-version = v"0.25.1"
+include(joinpath(@__DIR__, "..", "..", "platforms", "macos_sdks.jl"))
 
 sources = [
-    GitSource("https://github.com/ml-explore/mlx.git", "eaf709b83e559079e212699bfc9dd2f939d25c9a"),
-    ArchiveSource("https://github.com/roblabla/MacOSX-SDKs/releases/download/macosx14.0/MacOSX14.0.sdk.tar.xz",
-                  "4a31565fd2644d1aec23da3829977f83632a20985561a2038e198681e7e7bf49"),
-    # Using the PyPI wheel for aarch64-apple-darwin to get the metal backend, which would otherwise require the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
-    FileSource("https://files.pythonhosted.org/packages/02/1b/7da8f1d224a4287cdd5eda77d878a73ff13c22e2c89097bc6effcc5c318a/mlx-$(version)-cp313-cp313-macosx_13_0_arm64.whl", "f2ca5c2f60804bbb3968ee3e087ce4cf5789065f4c927f76b025b3f5f122a63a"; filename = "mlx-aarch64-apple-darwin20.whl"),
+    GitSource("https://github.com/ml-explore/mlx.git", "36969c094354086e15d2a327a9c50feb20b9cf11"; tag="v$(version)"),
+    # Using the PyPI wheel of the Metal backend for aarch64-apple-darwin, which would otherwise require the `metal` compiler to build (which is practically impossible to use from the BinaryBuilder build env.)
+    FileSource("https://files.pythonhosted.org/packages/77/24/7e5b7ed5d28abacab4577c7a8dd1fca6e9058504f5f95ae4333c09420e2e/mlx_metal-$(version)-py3-none-macosx_14_0_arm64.whl", "8019b2db622599267d66cc168b2f0dbf5af929790a6c3b3913e00eabc42a7947"; filename = "mlx-aarch64-apple-darwin20.whl"),
+    DirectorySource(joinpath(@__DIR__, "bundled")),
 ]
 
 script = raw"""
 apk del cmake # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 
-if [[ "$target" == *-apple-darwin* ]]; then
-    sdk_root=$WORKSPACE/srcdir/MacOSX14.0.sdk
-    sed -i "s#/opt/$bb_target/$bb_target/sys-root#$sdk_root#" $CMAKE_TARGET_TOOLCHAIN
-    sed -i "s#/opt/$bb_target/$bb_target/sys-root#$sdk_root#" /opt/bin/$bb_full_target/$target-clang*
-fi
-
 cd $WORKSPACE/srcdir/mlx
+
+for patch in ${WORKSPACE}/srcdir/patches/*.patch; do
+    atomic_patch -p1 $patch
+done
 
 CMAKE_EXTRA_OPTIONS=()
 if [[ "$target" == x86_64-apple-darwin* ]]; then
     CMAKE_EXTRA_OPTIONS+=(
-        -DCMAKE_CXX_FLAGS=-Wno-psabi # Disabled psabi warnings, due to a lot being produced for mlx/backend/cpu/simd/accelerate_simd.h
+        "-DCMAKE_CXX_FLAGS=-Wno-psabi -Wno-elaborated-enum-base" # Disabled psabi warnings, due to a lot being produced for mlx/backend/cpu/simd/accelerate_simd.h, and errors for CF_ENUM in the headers of the macOS 14 SDK
         -DMLX_ENABLE_X64_MAC=ON
-    )
-    export MACOSX_DEPLOYMENT_TARGET=13.3
-elif [[ "$target" == *-w64-mingw32* ]]; then
-    CMAKE_EXTRA_OPTIONS+=(
-        -DMLX_BUILD_GGUF=OFF # Disabled gguf, due to `gguflib-src/gguflib.c:4:10: fatal error: sys/mman.h: No such file or directory`
     )
 fi
 
@@ -51,6 +38,30 @@ if [[ "$target" != *-apple-darwin* &&
     )
 fi
 
+if [[ $bb_full_target == *cuda* ]]; then
+    export TMPDIR=${WORKSPACE}/tmpdir # nvcc exhausts /tmp
+    mkdir -pv ${TMPDIR}
+
+    CMAKE_EXTRA_OPTIONS+=(
+        -DMLX_BUILD_CUDA=ON
+        -DCMAKE_RELEASE_POSTFIX=_cuda # A SONAME of its own, so that libmlx_cuda can be loaded next to libmlx
+        -DMLX_CUDA_ARCHITECTURES=$cuda_archs # Set per platform in MLX_CUDA/build_tarballs.jl
+        -DCMAKE_CUDA_COMPILER=${prefix}/cuda/bin/nvcc
+        -DCMAKE_CUDA_FLAGS=-L${prefix}/cuda/lib
+        -DCUDAToolkit_ROOT=${prefix}/cuda
+        -DCUDNN_INCLUDE_PATH=${includedir}
+        -DCUDNN_LIBRARY_PATH=${libdir}
+    )
+fi
+
+if [[ $bb_full_target == *cuda* && $target == aarch64-* ]]; then
+    export LD_LIBRARY_PATH="/usr/lib/csl-musl-x86_64:/usr/lib/csl-glibc-x86_64:${LD_LIBRARY_PATH}"
+    export NVCC_PREPEND_FLAGS="-ccbin=${CXX}"
+    rm -rfv ${prefix}/cuda/bin ${prefix}/cuda/nvvm/bin ${prefix}/cuda/nvvm/lib64
+    cp -a ${WORKSPACE}/srcdir/cuda_nvcc-linux-x86_64-*-archive/bin ${prefix}/cuda/bin
+    cp -a ${WORKSPACE}/srcdir/*-linux-x86_64-*-archive/nvvm/{bin,lib64} ${prefix}/cuda/nvvm/
+fi
+
 install_license LICENSE
 
 if [[ "$target" != aarch64-apple-darwin* ]]; then
@@ -65,7 +76,7 @@ if [[ "$target" != aarch64-apple-darwin* ]]; then
         -DMLX_BUILD_METAL=OFF \
         -DBUILD_SHARED_LIBS=ON \
         -G Ninja \
-        ${CMAKE_EXTRA_OPTIONS[@]}
+        "${CMAKE_EXTRA_OPTIONS[@]}"
     cmake --build build --parallel $nproc
     cmake --install build
     cmake --install build --component headers
@@ -79,7 +90,14 @@ else
     # MLX includes metal-cpp (in `include/metal-cpp`), which could also be distributed separately, but it is assumed to be present by cmake in MLX_C.
     find {include,share} -type f -exec install -D -m 644 -v {} $prefix/{} \;
 fi
+
+if [[ $bb_full_target == *cuda* && $target == aarch64-* ]]; then
+    rm -rfv ${prefix}/cuda
+fi
 """
+
+# MLX uses Accelerate's new LAPACK interface, which needs macOS 13.3; 14.0 is the oldest available SDK that has it
+sources, script = require_macos_sdk("14.0", sources, script; deployment_target="13.3")
 
 platforms = supported_platforms()
 platforms = expand_cxxstring_abis(platforms)
@@ -99,12 +117,11 @@ products = Product[
 
 dependencies = [
     Dependency("libblastrampoline_jll"; compat="5.4", platforms = libblastrampoline_platforms),
-    Dependency("OpenBLAS32_jll"; platforms = openblas_platforms),
+    Dependency("OpenBLAS32_jll"; compat="0.3.28", platforms = openblas_platforms), # v0.3.28: v0.3.24–v0.3.27 have no aarch64-unknown-freebsd build
     Dependency("OpenMPI_jll"; compat="4.1.8, 5"), # OpenMPI 5 is ABI compatible with OpenMPI 4
     HostBuildDependency(PackageSpec(name="CMake_jll")), # Need CMake >= 3.30 for BLA_VENDOR=libblastrampoline
 ]
 
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
-    julia_compat="1.9",
-    preferred_gcc_version = v"10", # v10: C++-17, with std::reduce, required
-)
+julia_compat="1.9"
+
+preferred_gcc_version = v"11" # v11: C++20, with `__builtin_cpu_supports("f16c")`, required

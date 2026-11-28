@@ -1,0 +1,20 @@
+Install the DLL next to the Python extension only when building the Python bindings
+https://github.com/ml-explore/mlx/pull/5003
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 26e580ad5..07d53417a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -418,8 +418,10 @@ endif()
+ include(GNUInstallDirs)
+ 
+ if(WIN32)
+-  # Install DLLs to the same dir with extension file (core.pyd) on Windows.
+-  set(CMAKE_INSTALL_BINDIR ".")
++  if(MLX_BUILD_PYTHON_BINDINGS)
++    # Install DLLs to the same dir with extension file (core.pyd) on Windows.
++    set(CMAKE_INSTALL_BINDIR ".")
++  endif()
+   if(MLX_BUILD_CPU)
+     # Install OpenBLAS.
+     install(FILES ${OPENBLAS_DLL_FILE} TYPE BIN)
