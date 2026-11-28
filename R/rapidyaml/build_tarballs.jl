@@ -22,9 +22,12 @@ cd ${WORKSPACE}/srcdir/rapidyaml
 cmake -S . -B build \
     -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON \
-    -DRYML_BUILD_TESTS=OFF -DRYML_BUILD_BENCHMARKS=OFF \
-    -DRYML_BUILD_TOOLS=OFF -DRYML_INSTALL=ON
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DRYML_BUILD_TESTS=OFF \
+    -DRYML_BUILD_BENCHMARKS=OFF \
+    -DRYML_BUILD_TOOLS=OFF \
+    -DRYML_INSTALL=ON
 cmake --build build --parallel ${nproc}
 cmake --install build
 # Upstream incorporates c4core into ryml; retain the bundled notices.
