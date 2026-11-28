@@ -19,14 +19,21 @@ version = v"2.19.1"
 # `compat="~200.1900.100"`. The JLL patch level can then be bumped for
 # rebuilds, and a rebuild that breaks ABI without an upstream change can bump
 # the minor version (200.1900.100 -> 200.1901.100).
+#
+# offset: bump for rebuilds of the same upstream release, reset to 0 on a new
+# one. 1: adds the libpari_trap product (200.1900.101).
+offset = 1
 ygg_version = VersionNumber(100 * version.major, 100 * version.minor,
-                            100 * version.patch)
+                            100 * version.patch + offset)
 
 sources = [
     ArchiveSource(
         "https://pari.math.u-bordeaux.fr/pub/pari/unix/pari-$(version).tar.gz",
         "419553b11ff8c3ecb8e9031b7d91d7cee003a5d721e685fcb499565c96fe2943",
     ),
+    # libpari_trap, see below.
+    GitSource("https://github.com/s-celles/libpari-trap.git",
+              "ca56b0927b278c3c4970b650b471f890016a2913"),
 ]
 
 # Bash recipe for building across all platforms
@@ -109,6 +116,23 @@ make -j${nproc} gp
 make install
 make install-lib-dyn
 
+# libpari_trap (https://github.com/s-celles/libpari-trap, GPL-2.0-or-later):
+# calls a libpari function with PARI's error trap armed, so that a PARI error
+# longjmps across C frames only and comes back as an error number. Programs
+# that embed libpari from a language runtime (e.g. Julia's) need it, and
+# otherwise have to compile it at load, which needs a C compiler. It is one C
+# file, compiled directly (the project's own build is meson). On Windows it is
+# linked with -shared-libgcc, to share libpari's emulated-TLS runtime: PARI's
+# error trap is a thread-local.
+cd ${WORKSPACE}/srcdir/libpari-trap
+trap_flags=""
+if [[ "${target}" == *-mingw* ]]; then
+    trap_flags="-shared-libgcc"
+fi
+${CC} -shared -fPIC -O2 ${trap_flags} -Iinclude -I${includedir} \
+    src/libpari_trap.c -o "${libdir}/libpari_trap.${dlext}" -L${libdir} -lpari
+install -Dvm 644 include/libpari_trap.h "${includedir}/libpari_trap.h"
+
 install_license ${WORKSPACE}/srcdir/pari-*/COPYING
 """
 
@@ -127,6 +151,8 @@ products = [
     # release stops shipping it -- it is the source consumed by auto-generated
     # high-level wrappers (e.g. a Julia binding generator, like cypari2's).
     FileProduct("share/pari/pari.desc", :pari_desc),
+    # The error trampoline for embedders; see the script.
+    LibraryProduct("libpari_trap", :libpari_trap),
 ]
 
 # Dependencies that must be installed before this package can be built
