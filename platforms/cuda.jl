@@ -5,7 +5,7 @@ using Pkg
 using BinaryBuilder
 
 using Base.BinaryPlatforms
-using Base.BinaryPlatforms: arch, os, tags
+using Base.BinaryPlatforms: arch, os, set_compare_strategy!, tags
 
 # the "cuda" platform tag contains the major and minor version of the CUDA runtime loaded
 # by CUDA_Runtime_jll, and is used to select artifacts that depend on the CUDA runtime.
@@ -73,22 +73,9 @@ augment_with(block::String, call::String) = """
         augment_cuda_tag!(platform)
     end"""
 
-# augmentation block for artifacts that depend on the CUDA compiler (i.e., the JIT
-# stack: nvrtc/nvJitLink) rather than on the CUDA runtime. selection follows
-# CUDA_Compiler_jll, which picks a toolkit independently from the runtime. the "cuda"
-# tag names the oldest compatible toolkit series, so an artifact also matches newer
-# JIT stacks from the same major series. unlike CUDA_Compiler_jll's own artifacts,
-# dependent artifacts may still be used with a compatible local toolkit.
-const compiler_augment = """
-    using Base.BinaryPlatforms
-
-    try
-        using CUDA_Compiler_jll
-    catch
-        # during initial package installation, CUDA_Compiler_jll may not be available.
-        # in that case, we just won't select an artifact.
-    end
-
+# the "cuda" comparison strategy of `compiler_augment`, which
+# `set_cuda_comparison_strategy!` also sets on build platforms
+const cuda_comparison_strategy_definition = """
     function cuda_comparison_strategy(_a::String, _b::String, a_requested::Bool, b_requested::Bool)
         # if either isn't a version number (e.g. "none"), perform a simple equality check
         a = tryparse(VersionNumber, _a)
@@ -113,7 +100,27 @@ const compiler_augment = """
         else
             is_compatible(a, b)
         end
+    end"""
+
+include_string(@__MODULE__, cuda_comparison_strategy_definition)
+
+# augmentation block for artifacts that depend on the CUDA compiler (i.e., the JIT
+# stack: nvrtc/nvJitLink) rather than on the CUDA runtime. selection follows
+# CUDA_Compiler_jll, which picks a toolkit independently from the runtime. the "cuda"
+# tag names the oldest compatible toolkit series, so an artifact also matches newer
+# JIT stacks from the same major series. unlike CUDA_Compiler_jll's own artifacts,
+# dependent artifacts may still be used with a compatible local toolkit.
+const compiler_augment = """
+    using Base.BinaryPlatforms
+
+    try
+        using CUDA_Compiler_jll
+    catch
+        # during initial package installation, CUDA_Compiler_jll may not be available.
+        # in that case, we just won't select an artifact.
     end
+
+    $cuda_comparison_strategy_definition
 
     function augment_platform!(platform::Platform)
         if !@isdefined(CUDA_Compiler_jll)
@@ -295,6 +302,23 @@ function cpu_platforms(platforms)
         platform["cuda"] = "none"
         platform
     end
+end
+
+"""
+    set_cuda_comparison_strategy!(platforms)
+
+Set the comparison strategy of [`compiler_augment`](@ref) on `platforms`, so that
+dependencies' artifacts for the same CUDA major and an older or equal minor are installed
+when building, as they are selected at run time. For example, CUDNN_jll's `cuda+12.0`
+artifact is then installed for `cuda+12.6`. Returns `platforms`.
+
+A platform in `ARGS` replaces the comparison strategy: select with
+`should_build_platform(triplet(platform))`, and pass `build_tarballs` only the `--`
+options from `ARGS`.
+"""
+function set_cuda_comparison_strategy!(platforms)
+    foreach(p -> set_compare_strategy!(p, "cuda", cuda_comparison_strategy), platforms)
+    return platforms
 end
 
 """
