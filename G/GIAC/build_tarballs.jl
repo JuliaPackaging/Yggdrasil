@@ -7,13 +7,30 @@
 using BinaryBuilder, Pkg
 
 name = "GIAC"
-version = v"2.0.3"
+version = v"2.1.0"
+
+# The JLL version is decoupled from the upstream version, as for PARI_jll and
+# FLINT_jll. The ABI of this JLL can change without an upstream major release:
+# GIAC_jll 2.0.2 and 2.0.3 were built from the JuliaGiac fork with an 8-bit
+# type field in `gen`, and this release goes back to upstream's 5-bit layout;
+# libgiac itself is always libgiac.so.0, so its soname does not tell ABIs
+# apart. Upstream X.Y.Z maps to X00.Y00.Z00, e.g. 2.1.0 -> 200.100.0: no
+# compat bound written for the 2.0.x JLLs (`"=2.0.3"` in libgiac_julia,
+# `"2.0.1 - 2"` in Giac.jl) admits it.
+#
+# Packages depending on this JLL should use `~` in their compat ranges, e.g.
+# `compat="~200.100.0"`. The JLL patch level can then be bumped for rebuilds,
+# and a rebuild that breaks ABI without an upstream change can bump the minor
+# version (200.100.0 -> 200.101.0).
+ygg_version = VersionNumber(100 * version.major, 100 * version.minor,
+                            100 * version.patch)
 
 # Collection of sources required to build GIAC
 # Using the Meson-based fork from https://github.com/JuliaGiac/giac
 sources = [
     GitSource("https://github.com/JuliaGiac/giac.git",
-        "21d9192abc95473579b24e5ed8b8ed8cf750bcf0"),  # v2.0.3: MinGW MPFR parsing fix + GIAC_TYPE_ON_8BITS default
+        "9f04834a25b23ca5292d0f95794fb5ae5c1ce02b"),  # dev: upstream giac 2.1.0, PARI 2.19, upstream's 5-bit type field,
+                                                       # with fixes to GIAC (JuliaGiac/giac#23, #24, #25)
 ]
 
 # Bash recipe for building across all platforms
@@ -127,10 +144,20 @@ dependencies = [
     Dependency("OpenBLAS32_jll"),
     Dependency("CompilerSupportLibraries_jll"),
     Dependency("GLPK_jll"; compat="5.0.2"),
-    Dependency("PARI_jll"; compat="2.17.3"),
+    Dependency("PARI_jll"; compat="~200.1900.100"),
+    # Readline_jll pulls Ncurses_jll, whose 6.6.1 and later builds (BinaryBuilder2)
+    # reference musl 1.2 time64 symbols (`__clock_gettime64` etc.) on 32-bit musl,
+    # which our musl sysroot lacks, so linking icas fails. Build against the
+    # previous Ncurses instead, as H/HDF5 does for XML2. This works at run time on
+    # musl >= 1.2, and fails with an error message otherwise.
+    BuildDependency(PackageSpec(; name="Ncurses_jll", version=v"6.6.0+2");
+                    platforms=filter(p -> Sys.islinux(p) && libc(p) == "musl" && nbits(p) == 32, platforms)),
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.
 # preferred_gcc_version aligned with libgiac_julia_jll's recipe (Giac.jl#22).
-build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies;
+# Since 2.1.0 `gen` uses upstream's 5-bit type bitfield again (the 8-bit
+# type gave wrong integrals from the second call on): libgiac and every
+# consumer must keep being built with the same GCC.
+build_tarballs(ARGS, name, ygg_version, sources, script, platforms, products, dependencies;
   clang_use_lld=false, preferred_gcc_version=v"10", julia_compat="1.10")
