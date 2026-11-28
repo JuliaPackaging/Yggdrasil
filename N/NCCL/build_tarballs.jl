@@ -82,6 +82,22 @@ fi
 cd nccl
 make -j ${nproc} src.build CUDA_HOME=${CUDA_HOME} PREFIX=${prefix}
 
+# Device-API LLVM bitcode for the SMs of NCCL's default NVCC_GENCODE (makefiles/common.mk).
+# `ir.llvm_ir` builds a single `BITCODE_LIB_ARCH` into a fixed path, hence the loop and `ir.clean`.
+case "${bb_full_target}" in
+    *-cuda+12.[0-7]*) sms="60 61 70 80 90" ;;
+    *-cuda+12.*)      sms="60 61 70 80 90 100 120" ;;
+    *-cuda+13.[0-3]*) sms="75 80 90 100 110 120" ;;
+    *-cuda+13.*)      sms="75 80 90 100 107 110 120" ;;
+esac
+
+for sm in ${sms}; do
+    make -j ${nproc} ir.llvm_ir CUDA_HOME=${CUDA_HOME} BITCODE_LIB_ARCH=sm_${sm} CLANG="clang -include new"
+    install -Dvm 644 build/lib/libnccl_device.bc "${libdir}/libnccl_device.sm_${sm}.bc"
+    make ir.clean
+done
+install -Dvm 644 bindings/ir/nccl_device_wrapper.h "${includedir}/nccl_device_wrapper.h"
+
 make -j ${nproc} install PREFIX=${prefix}
 
 rm -f ${libdir}/libnccl_static.a
@@ -118,8 +134,8 @@ for platform in CUDA.supported_platforms(; min_version=v"12")
         x86_platform = deepcopy(platform)
         x86_platform["arch"] = "x86_64"
         append!(platform_sources, get_sources("cuda", components;
-                                              version=CUDA.full_version(cuda_ver),
-                                              platform=x86_platform))
+            version=CUDA.full_version(cuda_ver),
+            platform=x86_platform))
     end
 
     push!(
